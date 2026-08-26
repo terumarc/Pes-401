@@ -23,6 +23,7 @@ import {
   Store,
   Wallet,
   CalendarDays,
+  Swords,
 } from "lucide-react"
 
 import { NAV_ITEMS } from "@/constants"
@@ -35,6 +36,7 @@ const ICONS = {
   Store,
   Wallet,
   CalendarDays,
+  Swords,
 } as const;
 
 const user = {
@@ -47,12 +49,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
 
   const navMain = NAV_ITEMS.map((item) => {
-    const Icon = ICONS[item.icon];
+    const Icon = ICONS[item.icon as keyof typeof ICONS] || Trophy;
     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
     return {
       title: item.label,
       url: item.href,
-      icon: <Icon />,
+      icon: <Icon className="size-4" />,
       isActive,
     }
   });

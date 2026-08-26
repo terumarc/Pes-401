@@ -61,9 +61,7 @@ export function MatchRow({ match }: MatchRowProps) {
       {/* CABECERA / ESTADO */}
       <div className="mb-2 flex items-center justify-between text-[11px]">
         <div className="flex items-center gap-1.5 font-bold tracking-wider text-muted-foreground uppercase">
-          <span>J{match.matchday}</span>
-          <span>·</span>
-          <span>{match.round === 2 ? "Vuelta" : "Ida"}</span>
+          <span>{match.round === 2 ? "Partido de Vuelta" : "Partido de Ida"}</span>
         </div>
 
         <div>
