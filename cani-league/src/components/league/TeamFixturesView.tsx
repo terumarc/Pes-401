@@ -2,15 +2,9 @@
 
 import { useState } from "react";
 import { Filter, Calendar, CheckCircle2, Clock } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { TeamLogo } from "@/components/teams/TeamCard";
 import { MatchRow } from "@/components/league/MatchRow";
+import { cn } from "@/lib/utils";
 import type { MatchWithTeams, Team } from "@/types";
 
 type TeamFixturesViewProps = {
@@ -39,41 +33,66 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
   const totalPlayed = matches.filter((m) => m.played).length;
 
   return (
-    <div className="space-y-4">
-      {/* Controles de filtro */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <Filter className="size-4 text-muted-foreground" />
-          <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-            <SelectTrigger className="w-56">
-              <SelectValue placeholder="Filtrar por equipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los equipos</SelectItem>
-              {teams.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="size-2.5 rounded-full"
-                      style={{ backgroundColor: t.primary_color }}
-                    />
-                    <span>{t.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="space-y-5">
+      {/* 1. SELECTOR VISUAL DE EQUIPOS POR CHIPS CON ESCUDO */}
+      <div className="space-y-2">
+        <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
+          Filtrar por Equipo
+        </p>
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedTeamId("all")}
+            className={cn(
+              "flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold transition-all",
+              selectedTeamId === "all"
+                ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Filter className="size-3.5" />
+            Todos los Equipos
+          </button>
 
-        <div className="flex items-center gap-1.5">
+          {teams.map((t) => {
+            const isSelected = selectedTeamId === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setSelectedTeamId(isSelected ? "all" : t.id)}
+                className={cn(
+                  "flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all",
+                  isSelected
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm ring-2 ring-primary/30"
+                    : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <TeamLogo
+                  name={t.name}
+                  logoUrl={t.logo_url}
+                  color={t.primary_color}
+                  size="sm"
+                />
+                <span>{t.short_name || t.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2. FILTROS DE ESTADO (PENDIENTES / JUGADOS / TODOS) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border/50 py-3">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setFilterState("pending")}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
               filterState === "pending"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:text-foreground",
+            )}
           >
             <Clock className="size-3.5" />
             Pendientes ({totalPending})
@@ -81,11 +100,12 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
           <button
             type="button"
             onClick={() => setFilterState("played")}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
               filterState === "played"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:text-foreground",
+            )}
           >
             <CheckCircle2 className="size-3.5" />
             Jugados ({totalPlayed})
@@ -93,33 +113,37 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
           <button
             type="button"
             onClick={() => setFilterState("all")}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
               filterState === "all"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:text-foreground",
+            )}
           >
             <Calendar className="size-3.5" />
             Todos ({matches.length})
           </button>
         </div>
+
+        <p className="text-xs text-muted-foreground">
+          Mostrando <span className="font-bold text-foreground">{filteredMatches.length}</span> partido(s)
+        </p>
       </div>
 
-      {/* Grid de partidos */}
+      {/* 3. GRID DE PARTIDOS VISUALES */}
       {filteredMatches.length === 0 ? (
-        <div className="rounded-xl border border-dashed py-12 text-center text-sm text-muted-foreground">
-          No hay partidos que coincidan con el filtro seleccionado.
+        <div className="rounded-2xl border border-dashed py-14 text-center">
+          <p className="font-display text-base font-bold text-foreground">
+            No hay partidos con este filtro
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Prueba a seleccionar otro equipo o cambiar el estado de filtro.
+          </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredMatches.map((match) => (
-            <div key={match.id} className="relative">
-              <div className="mb-1 flex items-center justify-between px-1 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
-                <span>Jornada {match.matchday}</span>
-                <span>{match.round === 2 ? "Vuelta" : "Ida"}</span>
-              </div>
-              <MatchRow match={match} />
-            </div>
+            <MatchRow key={match.id} match={match} />
           ))}
         </div>
       )}
