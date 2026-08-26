@@ -67,23 +67,62 @@ export async function getTeamsWithStandings(
   const standings = await getStandingsWithTeams(leagueId);
   const supabase = await createClient();
 
-  const { data: counts, error } = await supabase
+  const { data: playersData, error } = await supabase
     .from("players")
-    .select("team_id");
+    .select("team_id, name, overall, market_value");
 
   if (error) throw error;
 
-  const countMap = new Map<string, number>();
-  for (const row of counts ?? []) {
-    countMap.set(row.team_id, (countMap.get(row.team_id) ?? 0) + 1);
+  type TeamStats = {
+    count: number;
+    totalOverall: number;
+    overallCount: number;
+    squadValue: number;
+    topPlayer: { name: string; overall: number } | null;
+  };
+
+  const teamStatsMap = new Map<string, TeamStats>();
+
+  for (const p of playersData ?? []) {
+    const stat = teamStatsMap.get(p.team_id) ?? {
+      count: 0,
+      totalOverall: 0,
+      overallCount: 0,
+      squadValue: 0,
+      topPlayer: null,
+    };
+
+    stat.count += 1;
+    stat.squadValue += p.market_value || 0;
+
+    if (p.overall != null) {
+      stat.totalOverall += p.overall;
+      stat.overallCount += 1;
+      if (!stat.topPlayer || p.overall > stat.topPlayer.overall) {
+        stat.topPlayer = { name: p.name, overall: p.overall };
+      }
+    }
+
+    teamStatsMap.set(p.team_id, stat);
   }
 
-  return standings.map((s) => ({
-    ...s.team,
-    position: s.position,
-    previous_position: s.previous_position,
-    player_count: countMap.get(s.team_id) ?? 0,
-  }));
+  return standings.map((s) => {
+    const stats = teamStatsMap.get(s.team_id);
+    const avgOverall =
+      stats && stats.overallCount > 0
+        ? Math.round(stats.totalOverall / stats.overallCount)
+        : undefined;
+
+    return {
+      ...s.team,
+      position: s.position,
+      previous_position: s.previous_position,
+      player_count: stats?.count ?? 0,
+      avg_overall: avgOverall,
+      squad_value: stats?.squadValue ?? 0,
+      top_player: stats?.topPlayer ?? undefined,
+    };
+  });
 }
 
 export async function updateTeam(

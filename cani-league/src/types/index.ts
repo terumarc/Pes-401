@@ -68,6 +68,9 @@ export type TeamWithStanding = Team & {
   position: number;
   previous_position: number | null;
   player_count?: number;
+  avg_overall?: number;
+  squad_value?: number;
+  top_player?: { name: string; overall: number };
 };
 
 export type PlayerWithTeam = Player & {

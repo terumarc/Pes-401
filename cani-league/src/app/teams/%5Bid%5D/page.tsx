@@ -26,6 +26,7 @@ import {
   getTeamById,
   getTeamsByLeague,
 } from "@/lib/data/league";
+import { formatStat } from "@/lib/format/stats";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
