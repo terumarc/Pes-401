@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -79,7 +80,12 @@ export function Navigation() {
           <Brand compact />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Abrir menú">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Abrir menú"
+                onClick={() => setOpen(true)}
+              >
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>
@@ -88,8 +94,11 @@ export function Navigation() {
                 <SheetTitle className="font-display text-left">
                   Cani League
                 </SheetTitle>
+                <SheetDescription className="sr-only">
+                  Navegación móvil de la liga
+                </SheetDescription>
               </SheetHeader>
-              <nav className="mt-6 flex flex-col gap-1 px-2">
+              <nav className="mt-6 flex flex-col gap-1 px-1">
                 {NAV_ITEMS.map((item) => {
                   const Icon = ICONS[item.icon];
                   const active =
@@ -101,10 +110,10 @@ export function Navigation() {
                       href={item.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
+                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                         active
-                          ? "bg-accent font-medium text-accent-foreground"
-                          : "text-muted-foreground",
+                          ? "bg-accent font-semibold text-accent-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                     >
                       <Icon className="size-4" />

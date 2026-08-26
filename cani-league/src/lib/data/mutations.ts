@@ -292,6 +292,90 @@ export async function recordMatchResultClient(
   return data as Match;
 }
 
+export async function recordDirectMatchClient(
+  leagueId: string,
+  homeTeamId: string,
+  awayTeamId: string,
+  homeGoals: number,
+  awayGoals: number,
+  preferredMatchId?: string,
+): Promise<Match> {
+  const supabase = createClient();
+
+  if (preferredMatchId) {
+    return recordMatchResultClient(preferredMatchId, homeGoals, awayGoals);
+  }
+
+  // 1. Buscar si hay partido pendiente con este orden exacto (local/visitante)
+  const { data: exactMatch } = await supabase
+    .from("matches")
+    .select("*")
+    .eq("league_id", leagueId)
+    .eq("home_team_id", homeTeamId)
+    .eq("away_team_id", awayTeamId)
+    .eq("played", false)
+    .order("matchday", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (exactMatch) {
+    return recordMatchResultClient(exactMatch.id, homeGoals, awayGoals);
+  }
+
+  // 2. Buscar si hay partido pendiente invertido
+  const { data: reverseMatch } = await supabase
+    .from("matches")
+    .select("*")
+    .eq("league_id", leagueId)
+    .eq("home_team_id", awayTeamId)
+    .eq("away_team_id", homeTeamId)
+    .eq("played", false)
+    .order("matchday", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (reverseMatch) {
+    const { data: updatedMatch, error: updateErr } = await supabase
+      .from("matches")
+      .update({
+        home_team_id: homeTeamId,
+        away_team_id: awayTeamId,
+        home_goals: homeGoals,
+        away_goals: awayGoals,
+        played: true,
+        played_at: new Date().toISOString(),
+      })
+      .eq("id", reverseMatch.id)
+      .select("*")
+      .single();
+
+    if (updateErr) throw updateErr;
+    await applyMatchRewardsClient(reverseMatch.id);
+    return updatedMatch as Match;
+  }
+
+  // 3. Si no hay fixture previo, crear y guardar el partido jugado
+  const { data: newMatch, error: insertErr } = await supabase
+    .from("matches")
+    .insert({
+      league_id: leagueId,
+      home_team_id: homeTeamId,
+      away_team_id: awayTeamId,
+      matchday: 99,
+      round: 1,
+      home_goals: homeGoals,
+      away_goals: awayGoals,
+      played: true,
+      played_at: new Date().toISOString(),
+    })
+    .select("*")
+    .single();
+
+  if (insertErr) throw insertErr;
+  await applyMatchRewardsClient(newMatch.id);
+  return newMatch as Match;
+}
+
 export async function resetMatchResultClient(matchId: string): Promise<Match> {
   const supabase = createClient();
   const { data, error } = await supabase
