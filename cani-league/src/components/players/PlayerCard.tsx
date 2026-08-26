@@ -3,6 +3,7 @@ import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatStat } from "@/lib/format/stats";
+import { getPlayerTier } from "@/lib/players";
 import type { Player, Team } from "@/types";
 
 type PlayerCardProps = {
@@ -11,6 +12,8 @@ type PlayerCardProps = {
 };
 
 export function PlayerCard({ player, href }: PlayerCardProps) {
+  const tierInfo = getPlayerTier(player.overall);
+
   const content = (
     <Card size="sm" className="transition hover:ring-foreground/20">
       <CardContent className="flex items-center gap-3 sm:gap-4">
@@ -18,8 +21,11 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="truncate font-display text-base font-semibold tracking-tight">
+              <h3 className="truncate font-display text-base font-semibold tracking-tight flex items-center gap-2">
                 {player.name}
+                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-sm ${tierInfo.bgColor} ${tierInfo.color}`}>
+                  {tierInfo.tier}
+                </span>
               </h3>
               <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 <span>{player.position}</span>

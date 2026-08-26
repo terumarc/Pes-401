@@ -79,6 +79,31 @@ export async function transferPlayerClient(
     .eq("id", player.team_id);
   if (sellerUpdateErr) throw sellerUpdateErr;
 
+  // 7. Registrar el fichaje en la tabla de transferencias
+  const buyerTeamData = await supabase
+    .from("teams")
+    .select("name, league_id")
+    .eq("id", buyerTeamId)
+    .single();
+  const sellerTeamData = await supabase
+    .from("teams")
+    .select("name")
+    .eq("id", player.team_id)
+    .single();
+
+  if (buyerTeamData.data && sellerTeamData.data) {
+    await supabase.from("transfers").insert({
+      league_id: buyerTeamData.data.league_id,
+      player_id: playerId,
+      player_name: player.name,
+      from_team_id: player.team_id,
+      from_team_name: sellerTeamData.data.name,
+      to_team_id: buyerTeamId,
+      to_team_name: buyerTeamData.data.name,
+      fee: price,
+    });
+  }
+
   return {
     player: updatedPlayer,
     buyerBudget: newBuyerBudget,
@@ -194,7 +219,53 @@ export async function reorderStandingsClient(
 
 // ─── Partidos ────────────────────────────────────────────────
 
-import type { Match } from "@/types";
+import { calculateMatchReward, calculateStartingBudget } from "@/lib/economy";
+
+export async function applyMatchRewardsClient(matchId: string): Promise<void> {
+  const supabase = createClient();
+
+  // 1. Obtener el partido
+  const { data: match, error: matchErr } = await supabase
+    .from("matches")
+    .select("*")
+    .eq("id", matchId)
+    .single();
+  if (matchErr || !match) throw matchErr;
+  if (!match.played) return; // No hacer nada si no se ha jugado
+
+  // 2. Determinar resultados
+  let homeResult: "win" | "draw" | "loss" = "draw";
+  let awayResult: "win" | "draw" | "loss" = "draw";
+
+  if ((match.home_goals || 0) > (match.away_goals || 0)) {
+    homeResult = "win";
+    awayResult = "loss";
+  } else if ((match.home_goals || 0) < (match.away_goals || 0)) {
+    homeResult = "loss";
+    awayResult = "win";
+  }
+
+  // 3. Calcular recompensas planas (igual para todos)
+  const homeReward = calculateMatchReward(homeResult);
+  const awayReward = calculateMatchReward(awayResult);
+
+  // 4. Aplicar recompensas (sumar al presupuesto)
+  const { data: teams, error: teamsErr } = await supabase
+    .from("teams")
+    .select("id, budget")
+    .in("id", [match.home_team_id, match.away_team_id]);
+  if (teamsErr || !teams) throw teamsErr;
+
+  const homeTeam = teams.find(t => t.id === match.home_team_id);
+  const awayTeam = teams.find(t => t.id === match.away_team_id);
+
+  if (homeTeam) {
+    await supabase.from("teams").update({ budget: homeTeam.budget + homeReward }).eq("id", homeTeam.id);
+  }
+  if (awayTeam) {
+    await supabase.from("teams").update({ budget: awayTeam.budget + awayReward }).eq("id", awayTeam.id);
+  }
+}
 
 export async function recordMatchResultClient(
   matchId: string,
@@ -214,6 +285,10 @@ export async function recordMatchResultClient(
     .select("*")
     .single();
   if (error) throw error;
+  
+  // Aplicar recompensas automáticamente al registrar el resultado
+  await applyMatchRewardsClient(matchId);
+
   return data as Match;
 }
 
@@ -289,16 +364,35 @@ export async function generateFixturesClient(
   if (error) throw error;
 }
 
+import { ECONOMY_CONFIG } from "@/lib/economy";
+
 export async function resetLeagueClient(leagueId: string): Promise<void> {
   const supabase = createClient();
   // Borrar todos los partidos de la liga
   const { error: matchesError } = await supabase.from("matches").delete().eq("league_id", leagueId);
   if (matchesError) throw matchesError;
 
-  // Restaurar el presupuesto de los equipos (p. ej. a 50 millones por defecto)
-  const { error: teamsError } = await supabase
-    .from("teams")
-    .update({ budget: 50000000 })
+  // Leer la tabla de posiciones anterior para asignar el presupuesto escalonado
+  const { data: standings } = await supabase
+    .from("league_standings")
+    .select("team_id, position")
     .eq("league_id", leagueId);
-  if (teamsError) throw teamsError;
+
+  const { data: teams } = await supabase
+    .from("teams")
+    .select("id")
+    .eq("league_id", leagueId);
+
+  if (teams && teams.length > 0) {
+    const totalTeams = teams.length;
+    for (const team of teams) {
+      const position = standings?.find(s => s.team_id === team.id)?.position;
+      const initialBudget = calculateStartingBudget(position, totalTeams);
+      
+      await supabase
+        .from("teams")
+        .update({ budget: initialBudget })
+        .eq("id", team.id);
+    }
+  }
 }
