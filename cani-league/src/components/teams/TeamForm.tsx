@@ -6,6 +6,7 @@ import { MoneyInput } from "@/components/finances/MoneyInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { updateTeamClient } from "@/lib/data/mutations";
 import { teamSchema } from "@/lib/validations";
 import type { Team } from "@/types";
@@ -90,13 +91,13 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
           placeholder="Vacío por ahora"
         />
       </Field>
-      <Field label="Logo (URL)">
-        <Input
-          value={form.logo_url}
-          onChange={(e) => setForm((f) => ({ ...f, logo_url: e.target.value }))}
-          placeholder="https://..."
-        />
-      </Field>
+      <ImageUpload
+        label="Escudo / Logo del Club"
+        value={form.logo_url}
+        onChange={(logo_url) => setForm((f) => ({ ...f, logo_url }))}
+        shape="circle"
+        bucketName="teams"
+      />
       <div className="grid grid-cols-2 gap-3">
         <Field label="Color principal">
           <Input

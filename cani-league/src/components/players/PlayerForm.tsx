@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Select,
   SelectContent,
@@ -133,6 +134,14 @@ export function PlayerForm({
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
         />
       </Field>
+
+      <ImageUpload
+        label="Foto del Jugador"
+        value={form.photo_url}
+        onChange={(photo_url) => setForm((f) => ({ ...f, photo_url }))}
+        shape="circle"
+        bucketName="players"
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Equipo">
