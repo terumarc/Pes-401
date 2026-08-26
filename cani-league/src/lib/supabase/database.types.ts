@@ -9,6 +9,74 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      transfers: {
+  Row: {
+    id: string;
+    league_id: string;
+    player_id: string;
+    player_name: string;
+    from_team_id: string | null;
+    from_team_name: string | null;
+    to_team_id: string | null;
+    to_team_name: string | null;
+    fee: number;
+    created_at: string;
+  };
+  Insert: {
+    id?: string;
+    league_id: string;
+    player_id: string;
+    player_name: string;
+    from_team_id?: string | null;
+    from_team_name?: string | null;
+    to_team_id?: string | null;
+    to_team_name?: string | null;
+    fee: number;
+    created_at?: string;
+  };
+  Update: {
+    id?: string;
+    league_id?: string;
+    player_id?: string;
+    player_name?: string;
+    from_team_id?: string | null;
+    from_team_name?: string | null;
+    to_team_id?: string | null;
+    to_team_name?: string | null;
+    fee?: number;
+    created_at?: string;
+  };
+  Relationships: [
+    {
+      foreignKeyName: "transfers_league_id_fkey";
+      columns: ["league_id"];
+      isOneToOne: false;
+      referencedRelation: "leagues";
+      referencedColumns: ["id"];
+    },
+    {
+      foreignKeyName: "transfers_player_id_fkey";
+      columns: ["player_id"];
+      isOneToOne: false;
+      referencedRelation: "players";
+      referencedColumns: ["id"];
+    },
+    {
+      foreignKeyName: "transfers_from_team_id_fkey";
+      columns: ["from_team_id"];
+      isOneToOne: false;
+      referencedRelation: "teams";
+      referencedColumns: ["id"];
+    },
+    {
+      foreignKeyName: "transfers_to_team_id_fkey";
+      columns: ["to_team_id"];
+      isOneToOne: false;
+      referencedRelation: "teams";
+      referencedColumns: ["id"];
+    },
+  ];
+};
       leagues: {
         Row: {
           id: string;
