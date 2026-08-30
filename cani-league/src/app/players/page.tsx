@@ -1,104 +1,79 @@
 
-"use client";
-
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import Link from "next/link";
-
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlayerCard } from "@/components/players/PlayerCard";
 import { PlayersPageClient } from "@/components/players/PlayersPageClient";
+import Link from "next/link";
 
 import { getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 type Props = {
-  searchParams: Promise<{ new?: string; team?: string; edit?: string; q?: string }>;
+  searchParams: Promise<{
+    new?: string;
+    team?: string;
+    edit?: string;
+    q?: string;
+  }>;
 };
 
-export default function PlayersPage({ searchParams }: Props) {
-  const [data, setData] = useState<any>(null);
-  const [params, setParams] = useState<any>(null);
-  const router = useRouter();
-  const searchParamsHook = useSearchParams();
-  const pathname = usePathname();
+export default async function PlayersPage({ searchParams }: Props) {
+  const params = await searchParams;
 
-  useEffect(() => {
-    async function fetchData() {
-      const p = await searchParams;
-      setParams(p);
-      
-      if (!isSupabaseConfigured()) {
-        setData({ status: "setup" });
-        return;
-      }
+  if (!isSupabaseConfigured()) {
+    return <SetupNotice />;
+  }
 
-      const league = await getPrimaryLeague();
-      if (!league) {
-        setData({ status: "no-league" });
-        return;
-      }
+  const league = await getPrimaryLeague();
+  if (!league) {
+    return <p className="text-ink-muted">No hay liga configurada.</p>;
+  }
 
-      const [players, teams] = await Promise.all([
-        getPlayers(),
-        getTeamsByLeague(league.id),
-      ]);
-      setData({ players, teams });
-    }
-    fetchData();
-  }, [searchParams]);
+  const [players, teams] = await Promise.all([
+    getPlayers(),
+    getTeamsByLeague(league.id),
+  ]);
 
-  if (!data) return null;
-  if (data.status === "setup") return <SetupNotice />;
-  if (data.status === "no-league") return <p className="text-muted-foreground">No hay liga configurada.</p>;
-
-  const { players, teams } = data;
   const leaguePlayers = players.filter((p: any) =>
-    teams.some((t: any) => t.id === p.team_id),
+    teams.some((t: any) => t.id === p.team_id)
   );
 
-  const searchQuery = searchParamsHook.get("q")?.toLowerCase() ?? "";
-  const filteredPlayers = leaguePlayers.filter((p: any) =>
-    p.name.toLowerCase().includes(searchQuery) ||
-    (p.position?.toLowerCase().includes(searchQuery) ?? false)
+  const searchQuery = params.q?.toLowerCase() ?? "";
+  const filteredPlayers = leaguePlayers.filter(
+    (p: any) =>
+      p.name.toLowerCase().includes(searchQuery) ||
+      (p.position?.toLowerCase().includes(searchQuery) ?? false)
   );
 
   return (
-    <div className="animate-fade-up">
+    <div className="animate-fade-up space-y-8 pb-12">
       <PageHeader
         eyebrow="Plantilla global"
         title="Jugadores"
         description={`${filteredPlayers.length} jugadores registrados`}
         actions={
           <>
-            <Input
-              placeholder="Buscar jugador…"
-              defaultValue={searchQuery}
-              onChange={(e) => {
-                const url = new URL(window.location.href);
-                if (e.target.value) {
-                  url.searchParams.set("q", e.target.value);
-                } else {
-                  url.searchParams.delete("q");
-                }
-                router.replace(url.pathname + url.search);
-              }}
-              className="mr-2 w-64"
-            />
-            <Button asChild>
-              <Link href="/players?new=1">Nuevo jugador</Link>
-            </Button>
+            <form method="GET" className="flex items-center gap-2">
+              <Input
+                name="q"
+                placeholder="Buscar jugador…"
+                defaultValue={searchQuery}
+                className="mr-2 w-64"
+              />
+              <Button asChild>
+                <Link href="/players?new=1">Nuevo jugador</Link>
+              </Button>
+            </form>
           </>
         }
       />
 
       <PlayersPageClient
         teams={teams}
-        showForm={params?.new === "1"}
-        defaultTeamId={params?.team}
+        showForm={params.new === "1"}
+        defaultTeamId={params.team}
       />
 
       <div className="mt-6 grid gap-3">

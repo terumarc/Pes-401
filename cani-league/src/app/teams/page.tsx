@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { Shield, Users, Wallet, Trophy } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
-import { TeamCard } from "@/components/teams/TeamCard";
+import { TeamFinancialCard } from "@/components/teams/TeamFinancialCard";
 import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import {
   getPrimaryLeague,
