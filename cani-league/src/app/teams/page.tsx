@@ -79,7 +79,7 @@ export default async function TeamsPage() {
       {/* GRID DE EQUIPOS */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {teams.map((team) => (
-          <TeamCard key={team.id} team={team} />
+          <TeamFinancialCard key={team.id} team={team} />
         ))}
       </div>
     </div>

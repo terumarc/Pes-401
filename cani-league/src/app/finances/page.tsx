@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { BudgetTrendChart } from "@/components/charts/BudgetTrendChart";
+import { SquadValueChart } from "@/components/charts/SquadValueChart";
 
 export default async function FinancesPage() {
   if (!isSupabaseConfigured()) {
@@ -25,6 +27,10 @@ export default async function FinancesPage() {
         description="Presupuestos editables. Barras relativas al máximo."
       />
       <FinancesPanel teams={teams} />
+      <div className="mt-8 grid gap-6 md:grid-cols-2">
+        <BudgetTrendChart />
+        <SquadValueChart />
+      </div>
     </div>
   );
 }
