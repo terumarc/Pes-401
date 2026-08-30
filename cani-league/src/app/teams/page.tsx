@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { Shield, Users, Wallet, Trophy } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
-import { TeamFinancialCard } from "@/components/teams/TeamFinancialCard";
+import { TeamCard } from "@/components/teams/TeamCard";
 import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import {
   getPrimaryLeague,
@@ -79,7 +79,7 @@ export default async function TeamsPage() {
       {/* GRID DE EQUIPOS */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {teams.map((team) => (
-          <TeamFinancialCard key={team.id} team={team} />
+          <TeamCard key={team.id} team={team} />
         ))}
       </div>
     </div>
