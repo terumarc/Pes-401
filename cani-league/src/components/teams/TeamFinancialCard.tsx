@@ -2,7 +2,7 @@
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { BudgetComparisonChart } from "@/components/charts/LeagueCharts";
 
-export function TeamFinancialCard({ team }) {
+export function TeamFinancialCard({ team }: { team: any }) {
   const data = [team]; // BudgetComparisonChart expects array of teams
   return (
     <Card className="w-full">
