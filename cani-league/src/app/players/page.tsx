@@ -1,4 +1,24 @@
 
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import Link from "next/link";
+
+import { PageHeader } from "@/components/layout/PageHeader";
+import { SetupNotice } from "@/components/layout/SetupNotice";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { PlayerCard } from "@/components/players/PlayerCard";
+import { PlayersPageClient } from "@/components/players/PlayersPageClient";
+
+import { getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
+
+type Props = {
+  searchParams: Promise<{ new?: string; team?: string; edit?: string; q?: string }>;
+};
+
 export default function PlayersPage({ searchParams }: Props) {
   const [data, setData] = useState<any>(null);
   const [params, setParams] = useState<any>(null);
