@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
-import { MarketCard } from "@/components/market/MarketCard";
+import { MarketSearchList } from "@/components/market/MarketSearchList";
 import {
   getPlayers,
   getPrimaryLeague,
@@ -16,7 +16,7 @@ export default async function MarketPage() {
 
   const league = await getPrimaryLeague();
   if (!league) {
-    return <p className="text-ink-muted">No hay liga configurada.</p>;
+    return <p className="text-muted-foreground">No hay liga configurada.</p>;
   }
 
   const [players, teams] = await Promise.all([
@@ -29,22 +29,14 @@ export default async function MarketPage() {
   );
 
   return (
-    <div className="animate-fade-up">
+    <div className="animate-fade-up space-y-6 pb-12">
       <PageHeader
-        eyebrow="Transferencias"
-        title="Mercado"
-        description={`${marketPlayers.length} jugadores disponibles`}
+        eyebrow="Transferencias y Fichajes"
+        title="Mercado de Jugadores"
+        description={`${marketPlayers.length.toLocaleString()} jugadores transferibles listados en el mercado`}
       />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {marketPlayers.map((player) => (
-          <MarketCard key={player.id} player={player} teams={teams} />
-        ))}
-      </div>
-      {marketPlayers.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-line-strong px-5 py-12 text-center text-sm text-ink-muted">
-          No hay jugadores en el mercado. Márcalos desde su ficha.
-        </p>
-      )}
+
+      <MarketSearchList players={marketPlayers} teams={teams} />
     </div>
   );
 }

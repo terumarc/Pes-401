@@ -13,13 +13,13 @@ export interface TierInfo {
 export function getPlayerTier(overall: number | null | undefined): TierInfo {
   const media = overall || 0;
   
-  if (media >= 90) return { tier: "S+", label: "Leyenda / Top", color: "text-purple-600", bgColor: "bg-purple-100" };
-  if (media >= 85) return { tier: "S", label: "Clase Mundial", color: "text-yellow-600", bgColor: "bg-yellow-100" };
-  if (media >= 80) return { tier: "A", label: "Estrella", color: "text-blue-600", bgColor: "bg-blue-100" };
-  if (media >= 75) return { tier: "B", label: "Titular", color: "text-emerald-600", bgColor: "bg-emerald-100" };
-  if (media >= 70) return { tier: "C", label: "Rotación", color: "text-gray-600", bgColor: "bg-gray-100" };
+  if (media >= 90) return { tier: "S+", label: "Leyenda / Top", color: "text-purple-600 dark:text-purple-400 font-extrabold", bgColor: "bg-purple-500/10 border border-purple-500/30 dark:bg-purple-500/20" };
+  if (media >= 85) return { tier: "S", label: "Clase Mundial", color: "text-amber-600 dark:text-amber-400 font-bold", bgColor: "bg-amber-500/10 border border-amber-500/30 dark:bg-amber-500/20" };
+  if (media >= 80) return { tier: "A", label: "Estrella", color: "text-sky-600 dark:text-sky-400 font-bold", bgColor: "bg-sky-500/10 border border-sky-500/30 dark:bg-sky-500/20" };
+  if (media >= 75) return { tier: "B", label: "Titular", color: "text-emerald-600 dark:text-emerald-400 font-semibold", bgColor: "bg-emerald-500/10 border border-emerald-500/30 dark:bg-emerald-500/20" };
+  if (media >= 70) return { tier: "C", label: "Rotación", color: "text-slate-600 dark:text-slate-300 font-medium", bgColor: "bg-slate-500/10 border border-slate-500/30 dark:bg-slate-500/20" };
   
-  return { tier: "D", label: "Reserva", color: "text-stone-600", bgColor: "bg-stone-100" };
+  return { tier: "D", label: "Reserva", color: "text-zinc-500 dark:text-zinc-400 font-medium", bgColor: "bg-zinc-500/10 border border-zinc-500/20 dark:bg-zinc-500/20" };
 }
 
 /**

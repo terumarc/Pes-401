@@ -15,37 +15,67 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
   const tierInfo = getPlayerTier(player.overall);
 
   const content = (
-    <Card size="sm" className="transition hover:ring-foreground/20">
-      <CardContent className="flex items-center gap-3 sm:gap-4">
+    <Card size="sm" className="group relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md dark:hover:shadow-primary/5">
+      <CardContent className="flex items-center gap-3.5 sm:gap-4 p-4">
         <PlayerAvatar name={player.name} photoUrl={player.photo_url} />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="truncate font-display text-base font-semibold tracking-tight flex items-center gap-2">
-                {player.name}
-                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-sm ${tierInfo.bgColor} ${tierInfo.color}`}>
+              <div className="flex items-center gap-2">
+                <h3 className="truncate font-display text-base font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                  {player.name}
+                </h3>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${tierInfo.bgColor} ${tierInfo.color}`}>
                   {tierInfo.tier}
                 </span>
-              </h3>
-              <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                <span>{player.position}</span>
-                {player.team ? <span>· {player.team.name}</span> : null}
+              </div>
+              <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground/80 bg-muted/80 px-1.5 py-0.5 rounded text-[11px]">
+                  {player.position}
+                </span>
+                {player.nationality ? (
+                  <span className="text-muted-foreground font-medium">
+                    · {player.nationality}
+                  </span>
+                ) : null}
+                {player.team ? (
+                  <span className="flex items-center gap-1.5">
+                    <span 
+                      className="size-2 rounded-full shrink-0" 
+                      style={{ backgroundColor: player.team.primary_color || '#94a3b8' }} 
+                    />
+                    <span className="truncate max-w-[140px]">{player.team.name}</span>
+                  </span>
+                ) : null}
                 {player.available_in_market ? (
-                  <Badge variant="secondary">Mercado</Badge>
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    Mercado
+                  </Badge>
                 ) : null}
               </p>
             </div>
-            <span className="font-display text-xl font-semibold tabular-nums">
-              {formatStat(player.overall)}
-            </span>
+            <div className="text-right shrink-0">
+              <span className="font-display text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                {formatStat(player.overall)}
+              </span>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Media
+              </p>
+            </div>
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span>
-              Valor <BudgetDisplay amount={player.market_value} size="sm" />
-            </span>
-            <span>
-              Fichaje <BudgetDisplay amount={player.transfer_price} size="sm" />
-            </span>
+          <div className="mt-3 flex flex-wrap items-center justify-between border-t border-border/40 pt-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px]">Valor:</span>
+              <span className="font-medium text-foreground">
+                <BudgetDisplay amount={player.market_value} size="sm" />
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px]">Cláusula:</span>
+              <span className="font-semibold text-foreground">
+                <BudgetDisplay amount={player.transfer_price} size="sm" />
+              </span>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -54,7 +84,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
 
   if (href) {
     return (
-      <Link href={href} className="block">
+      <Link href={href} className="block outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
         {content}
       </Link>
     );

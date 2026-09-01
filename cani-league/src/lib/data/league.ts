@@ -67,9 +67,11 @@ export async function getTeamsWithStandings(
   const standings = await getStandingsWithTeams(leagueId);
   const supabase = await createClient();
 
+  const standingTeamIds = standings.map((s) => s.team_id);
   const { data: playersData, error } = await supabase
     .from("players")
-    .select("team_id, name, overall, market_value");
+    .select("team_id, name, overall, market_value")
+    .in("team_id", standingTeamIds);
 
   if (error) throw error;
 
@@ -146,22 +148,35 @@ export async function getPlayers(options?: {
   marketOnly?: boolean;
 }): Promise<(Player & { team: Team })[]> {
   const supabase = await createClient();
-  let query = supabase.from("players").select("*, team:teams(*)");
+  const allPlayers: (Player & { team: Team })[] = [];
+  const pageSize = 1000;
+  let page = 0;
 
-  if (options?.teamId) {
-    query = query.eq("team_id", options.teamId);
+  while (true) {
+    let query = supabase.from("players").select("*, team:teams(*)");
+
+    if (options?.teamId) {
+      query = query.eq("team_id", options.teamId);
+    }
+    if (options?.marketOnly) {
+      query = query.eq("available_in_market", true);
+    }
+
+    const { data, error } = await query
+      .order("overall", { ascending: false, nullsFirst: false })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+
+    allPlayers.push(...(data as (Player & { team: Team })[]));
+
+    // If we received fewer rows than pageSize or if filtering by specific team, stop
+    if (data.length < pageSize || options?.teamId) break;
+    page++;
   }
-  if (options?.marketOnly) {
-    query = query.eq("available_in_market", true);
-  }
 
-  const { data, error } = await query.order("overall", {
-    ascending: false,
-    nullsFirst: false,
-  });
-
-  if (error) throw error;
-  return (data ?? []) as (Player & { team: Team })[];
+  return allPlayers;
 }
 
 export async function getPlayerById(
