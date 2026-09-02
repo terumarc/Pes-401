@@ -59,6 +59,7 @@ useEffect(() => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   className={cn(
                     "group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150",
                     active
@@ -126,6 +127,7 @@ useEffect(() => {
                     <Link
                       key={item.href}
                       href={item.href}
+                      prefetch={false}
                       onClick={() => setOpen(false)}
                       className={cn(
                         "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",

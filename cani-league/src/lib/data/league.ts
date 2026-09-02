@@ -1,5 +1,6 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
-import { unstable_cache, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
+import { safeCache, invalidateMemCache } from "./cache";
 import type {
   League,
   Player,
@@ -10,31 +11,6 @@ import type {
   TeamUpdateInput,
   TeamWithStanding,
 } from "@/types";
-
-function safeCache<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  keyParts?: string[],
-  options?: { revalidate?: number | false; tags?: string[] }
-): T {
-  try {
-    const cached = unstable_cache(fn, keyParts, options);
-    return (async (...args: Parameters<T>) => {
-      try {
-        return await cached(...args);
-      } catch (err: any) {
-        if (
-          err?.message?.includes("incrementalCache") ||
-          err?.message?.includes("Invariant")
-        ) {
-          return await fn(...args);
-        }
-        throw err;
-      }
-    }) as T;
-  } catch {
-    return fn;
-  }
-}
 
 export const getPrimaryLeague = safeCache(
   async (): Promise<League | null> => {
@@ -178,11 +154,15 @@ export async function updateTeam(
     .single();
 
   if (error) throw error;
+  invalidateMemCache("team");
   try {
     revalidateTag("teams", "max");
   } catch {}
   return data;
 }
+
+const PLAYER_LIST_COLUMNS =
+  "id,team_id,name,short_name,photo_url,position,age,nationality,overall,speed,acceleration,shooting,passing,dribbling,defending,physical,market_value,transfer_price,available_in_market,created_at,team:teams(id,name,short_name,primary_color,logo_url)";
 
 /** Internal helper to fetch all players in parallel chunks */
 async function fetchAllPlayersInParallel(
@@ -205,7 +185,7 @@ async function fetchAllPlayersInParallel(
 
   const totalPages = Math.ceil(total / pageSize);
   const pagePromises = Array.from({ length: totalPages }, (_, page) => {
-    let query = supabase.from("players").select("*, team:teams(*)");
+    let query = supabase.from("players").select(PLAYER_LIST_COLUMNS);
     if (marketOnly) {
       query = query.eq("available_in_market", true);
     }
@@ -219,24 +199,41 @@ async function fetchAllPlayersInParallel(
   for (const res of results) {
     if (res.error) throw res.error;
     if (res.data) {
-      allPlayers.push(...(res.data as (Player & { team: Team })[]));
+      allPlayers.push(...(res.data as unknown as (Player & { team: Team })[]));
     }
   }
 
   return allPlayers;
 }
 
-const getCachedAllPlayers = safeCache(
-  () => fetchAllPlayersInParallel(false),
-  ["cached-all-players"],
-  { revalidate: 120, tags: ["players"] }
-);
+let memoryAllPlayers: { data: (Player & { team: Team })[]; expires: number } | null = null;
+let memoryMarketPlayers: { data: (Player & { team: Team })[]; expires: number } | null = null;
 
-const getCachedMarketPlayers = safeCache(
-  () => fetchAllPlayersInParallel(true),
-  ["cached-market-players"],
-  { revalidate: 120, tags: ["players", "market"] }
-);
+export function invalidatePlayersCache() {
+  memoryAllPlayers = null;
+  memoryMarketPlayers = null;
+  invalidateMemCache("player");
+}
+
+async function getCachedAllPlayers(): Promise<(Player & { team: Team })[]> {
+  const now = Date.now();
+  if (memoryAllPlayers && memoryAllPlayers.expires > now) {
+    return memoryAllPlayers.data;
+  }
+  const data = await fetchAllPlayersInParallel(false);
+  memoryAllPlayers = { data, expires: now + 60_000 };
+  return data;
+}
+
+async function getCachedMarketPlayers(): Promise<(Player & { team: Team })[]> {
+  const now = Date.now();
+  if (memoryMarketPlayers && memoryMarketPlayers.expires > now) {
+    return memoryMarketPlayers.data;
+  }
+  const data = await fetchAllPlayersInParallel(true);
+  memoryMarketPlayers = { data, expires: now + 60_000 };
+  return data;
+}
 
 export async function getPlayers(options?: {
   teamId?: string;
@@ -287,6 +284,7 @@ export async function createPlayer(input: PlayerCreateInput): Promise<Player> {
     .single();
 
   if (error) throw error;
+  invalidatePlayersCache();
   try {
     revalidateTag("players", "max");
   } catch {}
@@ -306,6 +304,7 @@ export async function updatePlayer(
     .single();
 
   if (error) throw error;
+  invalidatePlayersCache();
   try {
     revalidateTag("players", "max");
   } catch {}
@@ -316,6 +315,7 @@ export async function deletePlayer(id: string): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("players").delete().eq("id", id);
   if (error) throw error;
+  invalidatePlayersCache();
   try {
     revalidateTag("players", "max");
   } catch {}
@@ -401,6 +401,7 @@ export async function reorderStandings(
     if (error) throw error;
   }
 
+  invalidateMemCache("standing");
   try {
     revalidateTag("standings", "max");
   } catch {}

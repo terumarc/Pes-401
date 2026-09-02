@@ -1,29 +1,42 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { revalidateTag } from "next/cache";
+import { safeCache, invalidateMemCache } from "./cache";
 import type { League, LeagueTableRow, Match, MatchWithTeams, Team } from "@/types";
 
 // ─── Queries ────────────────────────────────────────────────
+
+const fetchMatchesByLeague = safeCache(
+    async (
+        leagueId: string,
+        options?: { matchday?: number; round?: number },
+    ): Promise<MatchWithTeams[]> => {
+        const supabase = createStaticClient();
+        let query = supabase
+            .from("matches")
+            .select(
+                `*, home_team:teams!matches_home_team_id_fkey(id,name,short_name,primary_color,logo_url),
+               away_team:teams!matches_away_team_id_fkey(id,name,short_name,primary_color,logo_url)`,
+            )
+            .eq("league_id", leagueId)
+            .order("matchday", { ascending: true })
+            .order("created_at", { ascending: true });
+
+        if (options?.matchday) query = query.eq("matchday", options.matchday);
+        if (options?.round) query = query.eq("round", options.round);
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data ?? []) as MatchWithTeams[];
+    },
+    ["matches-by-league"],
+    { revalidate: 60, tags: ["matches"] }
+);
 
 export async function getMatchesByLeague(
     leagueId: string,
     options?: { matchday?: number; round?: number },
 ): Promise<MatchWithTeams[]> {
-    const supabase = createStaticClient();
-    let query = supabase
-        .from("matches")
-        .select(
-            `*, home_team:teams!matches_home_team_id_fkey(id,name,short_name,primary_color,logo_url),
-           away_team:teams!matches_away_team_id_fkey(id,name,short_name,primary_color,logo_url)`,
-        )
-        .eq("league_id", leagueId)
-        .order("matchday", { ascending: true })
-        .order("created_at", { ascending: true });
-
-    if (options?.matchday) query = query.eq("matchday", options.matchday);
-    if (options?.round) query = query.eq("round", options.round);
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return (data ?? []) as MatchWithTeams[];
+    return fetchMatchesByLeague(leagueId, options);
 }
 
 export async function getMatchById(id: string): Promise<MatchWithTeams | null> {
@@ -107,6 +120,10 @@ export async function generateFixtures(
         .insert(inserts)
         .select("*");
     if (error) throw error;
+    invalidateMemCache("matches");
+    try {
+        revalidateTag("matches", "max");
+    } catch {}
     return (data ?? []) as Match[];
 }
 

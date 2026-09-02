@@ -209,8 +209,15 @@ export function PlayerList({
 
         // Team filter
         if (selectedTeam !== "TODOS") {
-          if (selectedTeam === "SIN_EQUIPO" && p.team_id) return false;
-          if (selectedTeam !== "SIN_EQUIPO" && p.team_id !== selectedTeam) return false;
+          if (selectedTeam === "SIN_EQUIPO") {
+            const isFreeAgent =
+              !p.team_id ||
+              p.team?.name?.toLowerCase().includes("libre") ||
+              p.team?.name?.toLowerCase().includes("sin equipo");
+            if (!isFreeAgent) return false;
+          } else if (p.team_id !== selectedTeam) {
+            return false;
+          }
         }
 
         // Overall / Media rating match
@@ -579,7 +586,8 @@ export function PlayerList({
                   className="w-full h-8 rounded-lg border border-border/80 bg-background px-2.5 text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="TODOS">Todos los equipos</option>
-                  {teams.map((t) => (
+                  <option value="SIN_EQUIPO">Agentes Libres / Sin equipo</option>
+                  {teams.filter(t => !t.name.toLowerCase().includes("libre")).map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.name}
                     </option>
