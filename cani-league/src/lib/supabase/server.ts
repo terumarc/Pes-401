@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient, SupabaseClient } from "@supabase/supabase-js";
 
 // Lazy‑load `cookies` only on the server. Importing from "next/headers" at the top level
 // causes the module to be included in client bundles, which Turbopack rejects.
@@ -43,4 +44,28 @@ export function isSupabaseConfigured(): boolean {
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
+}
+
+let staticClientInstance: SupabaseClient<Database> | null = null;
+
+export function createStaticClient(): SupabaseClient<Database> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    throw new Error(
+      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    );
+  }
+
+  if (!staticClientInstance) {
+    staticClientInstance = createSupabaseClient<Database>(url, key, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  }
+
+  return staticClientInstance;
 }

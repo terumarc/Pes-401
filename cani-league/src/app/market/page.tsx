@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { MarketSearchList } from "@/components/market/MarketSearchList";

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import type { League, LeagueTableRow, Match, MatchWithTeams, Team } from "@/types";
 
 // ─── Queries ────────────────────────────────────────────────
@@ -7,7 +7,7 @@ export async function getMatchesByLeague(
     leagueId: string,
     options?: { matchday?: number; round?: number },
 ): Promise<MatchWithTeams[]> {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     let query = supabase
         .from("matches")
         .select(

@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 import { Shield, Users, Wallet, Trophy } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";

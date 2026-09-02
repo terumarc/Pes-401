@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 import Link from "next/link";
 import { DashboardBudgetChart } from "@/components/dashboard/DashboardBudgetChart";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";

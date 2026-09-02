@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, X, RotateCcw, SlidersHorizontal, ArrowUpDown, Store } from "lucide-react";
+import {
+  Search,
+  X,
+  RotateCcw,
+  SlidersHorizontal,
+  ArrowUpDown,
+  Store,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +66,8 @@ function isPositionInGroup(pos: string, group: string): boolean {
   return p === group;
 }
 
+const PAGE_SIZE = 24;
+
 export function MarketSearchList({ players, teams }: MarketSearchListProps) {
   const [search, setSearch] = useState("");
   const [nationality, setNationality] = useState<string>("ALL");
@@ -75,6 +86,9 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
   // Sort
   const [sortBy, setSortBy] = useState<string>("overall_desc");
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Show extended filter panel
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -118,6 +132,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     setCustomMinValue("");
     setCustomMaxValue("");
     setSortBy("overall_desc");
+    setCurrentPage(1);
   };
 
   // Filtered & Sorted players
@@ -230,6 +245,14 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     sortBy,
   ]);
 
+  const totalPages = Math.ceil(filteredPlayers.length / PAGE_SIZE) || 1;
+  const safePage = Math.min(currentPage, totalPages);
+
+  const paginatedPlayers = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredPlayers.slice(start, start + PAGE_SIZE);
+  }, [filteredPlayers, safePage]);
+
   return (
     <div className="space-y-6">
       {/* FILTER CONTROL PANEL */}
@@ -240,14 +263,20 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
               placeholder="Buscar jugadores en el mercado por nombre, club, país o posición..."
               className="pl-9 pr-9"
             />
             {search && (
               <button
                 type="button"
-                onClick={() => setSearch("")}
+                onClick={() => {
+                  setSearch("");
+                  setCurrentPage(1);
+                }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label="Limpiar búsqueda"
               >
@@ -279,7 +308,13 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
             <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
               Nacionalidad
             </label>
-            <Select value={nationality} onValueChange={(val) => setNationality(val ?? "ALL")}>
+            <Select
+              value={nationality}
+              onValueChange={(val) => {
+                setNationality(val ?? "ALL");
+                setCurrentPage(1);
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Todas las nacionalidades" />
               </SelectTrigger>
@@ -299,7 +334,13 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
             <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
               Posición
             </label>
-            <Select value={positionFilter} onValueChange={(val) => setPositionFilter(val ?? "ALL")}>
+            <Select
+              value={positionFilter}
+              onValueChange={(val) => {
+                setPositionFilter(val ?? "ALL");
+                setCurrentPage(1);
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Todas las posiciones" />
               </SelectTrigger>
@@ -324,7 +365,13 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
             <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
               Puntos de Media (OVR)
             </label>
-            <Select value={overallPreset} onValueChange={(val) => setOverallPreset(val ?? "ALL")}>
+            <Select
+              value={overallPreset}
+              onValueChange={(val) => {
+                setOverallPreset(val ?? "ALL");
+                setCurrentPage(1);
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Cualquier media" />
               </SelectTrigger>
@@ -343,7 +390,13 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
             <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
               Rango de Valor / Precio
             </label>
-            <Select value={valuePreset} onValueChange={(val) => setValuePreset(val ?? "ALL")}>
+            <Select
+              value={valuePreset}
+              onValueChange={(val) => {
+                setValuePreset(val ?? "ALL");
+                setCurrentPage(1);
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Cualquier valor" />
               </SelectTrigger>
@@ -376,6 +429,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   onChange={(e) => {
                     setOverallPreset("CUSTOM");
                     setCustomMinOverall(e.target.value);
+                    setCurrentPage(1);
                   }}
                   className="h-8 text-xs"
                 />
@@ -389,6 +443,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   onChange={(e) => {
                     setOverallPreset("CUSTOM");
                     setCustomMaxOverall(e.target.value);
+                    setCurrentPage(1);
                   }}
                   className="h-8 text-xs"
                 />
@@ -410,6 +465,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   onChange={(e) => {
                     setValuePreset("CUSTOM");
                     setCustomMinValue(e.target.value);
+                    setCurrentPage(1);
                   }}
                   className="h-8 text-xs"
                 />
@@ -423,6 +479,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   onChange={(e) => {
                     setValuePreset("CUSTOM");
                     setCustomMaxValue(e.target.value);
+                    setCurrentPage(1);
                   }}
                   className="h-8 text-xs"
                 />
@@ -435,7 +492,13 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                 <span className="text-xs font-semibold text-foreground">
                   Equipo de origen
                 </span>
-                <Select value={teamFilter} onValueChange={(val) => setTeamFilter(val ?? "ALL")}>
+                <Select
+                  value={teamFilter}
+                  onValueChange={(val) => {
+                    setTeamFilter(val ?? "ALL");
+                    setCurrentPage(1);
+                  }}
+                >
                   <SelectTrigger className="w-full h-8 text-xs">
                     <SelectValue placeholder="Todos los equipos" />
                   </SelectTrigger>
@@ -464,14 +527,26 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
             {nationality !== "ALL" && (
               <Badge variant="secondary" className="gap-1 text-xs">
                 País: {nationality}
-                <X className="size-3 cursor-pointer" onClick={() => setNationality("ALL")} />
+                <X
+                  className="size-3 cursor-pointer"
+                  onClick={() => {
+                    setNationality("ALL");
+                    setCurrentPage(1);
+                  }}
+                />
               </Badge>
             )}
 
             {positionFilter !== "ALL" && (
               <Badge variant="secondary" className="gap-1 text-xs">
                 Posición: {positionFilter}
-                <X className="size-3 cursor-pointer" onClick={() => setPositionFilter("ALL")} />
+                <X
+                  className="size-3 cursor-pointer"
+                  onClick={() => {
+                    setPositionFilter("ALL");
+                    setCurrentPage(1);
+                  }}
+                />
               </Badge>
             )}
 
@@ -484,6 +559,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                     setOverallPreset("ALL");
                     setCustomMinOverall("");
                     setCustomMaxOverall("");
+                    setCurrentPage(1);
                   }}
                 />
               </Badge>
@@ -498,6 +574,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                     setValuePreset("ALL");
                     setCustomMinValue("");
                     setCustomMaxValue("");
+                    setCurrentPage(1);
                   }}
                 />
               </Badge>
@@ -506,7 +583,13 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
             {teamFilter !== "ALL" && (
               <Badge variant="secondary" className="gap-1 text-xs">
                 Equipo: {teams.find((t) => t.id === teamFilter)?.name || teamFilter}
-                <X className="size-3 cursor-pointer" onClick={() => setTeamFilter("ALL")} />
+                <X
+                  className="size-3 cursor-pointer"
+                  onClick={() => {
+                    setTeamFilter("ALL");
+                    setCurrentPage(1);
+                  }}
+                />
               </Badge>
             )}
 
@@ -527,7 +610,13 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
           <div className="flex items-center gap-2 shrink-0">
             <ArrowUpDown className="size-3.5 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Ordenar:</span>
-            <Select value={sortBy} onValueChange={(val) => setSortBy(val ?? "overall_desc")}>
+            <Select
+              value={sortBy}
+              onValueChange={(val) => {
+                setSortBy(val ?? "overall_desc");
+                setCurrentPage(1);
+              }}
+            >
               <SelectTrigger className="w-52 h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
@@ -564,11 +653,76 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredPlayers.map((player) => (
-            <MarketCard key={player.id} player={player} teams={teams} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {paginatedPlayers.map((player) => (
+              <MarketCard key={player.id} player={player} teams={teams} />
+            ))}
+          </div>
+
+          {/* Pagination Footer */}
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-4 text-xs text-muted-foreground">
+              <span>
+                Página <strong className="text-foreground">{safePage}</strong> de{" "}
+                <strong className="text-foreground">{totalPages}</strong> (
+                {filteredPlayers.length} jugadores en el mercado)
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  size="xs"
+                  disabled={safePage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="gap-1"
+                >
+                  <ChevronLeft className="size-3.5" /> Anterior
+                </Button>
+
+                {/* Quick Page Selector */}
+                <div className="flex items-center gap-1 px-2">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pNum: number;
+                    if (totalPages <= 5) {
+                      pNum = i + 1;
+                    } else if (safePage <= 3) {
+                      pNum = i + 1;
+                    } else if (safePage >= totalPages - 2) {
+                      pNum = totalPages - 4 + i;
+                    } else {
+                      pNum = safePage - 2 + i;
+                    }
+                    return (
+                      <button
+                        key={pNum}
+                        type="button"
+                        onClick={() => setCurrentPage(pNum)}
+                        className={`size-7 rounded-md text-xs font-medium transition-colors ${
+                          safePage === pNum
+                            ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {pNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="xs"
+                  disabled={safePage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="gap-1"
+                >
+                  Siguiente <ChevronRight className="size-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

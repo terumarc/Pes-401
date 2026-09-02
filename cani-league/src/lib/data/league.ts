@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { unstable_cache, revalidateTag } from "next/cache";
 import type {
   League,
   Player,
@@ -10,33 +11,66 @@ import type {
   TeamWithStanding,
 } from "@/types";
 
-export async function getPrimaryLeague(): Promise<League | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("leagues")
-    .select("*")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
+function safeCache<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  keyParts?: string[],
+  options?: { revalidate?: number | false; tags?: string[] }
+): T {
+  try {
+    const cached = unstable_cache(fn, keyParts, options);
+    return (async (...args: Parameters<T>) => {
+      try {
+        return await cached(...args);
+      } catch (err: any) {
+        if (
+          err?.message?.includes("incrementalCache") ||
+          err?.message?.includes("Invariant")
+        ) {
+          return await fn(...args);
+        }
+        throw err;
+      }
+    }) as T;
+  } catch {
+    return fn;
+  }
 }
 
-export async function getTeamsByLeague(leagueId: string): Promise<Team[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("teams")
-    .select("*")
-    .eq("league_id", leagueId)
-    .order("name");
+export const getPrimaryLeague = safeCache(
+  async (): Promise<League | null> => {
+    const supabase = createStaticClient();
+    const { data, error } = await supabase
+      .from("leagues")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
-  if (error) throw error;
-  return data ?? [];
-}
+    if (error) throw error;
+    return data;
+  },
+  ["primary-league"],
+  { revalidate: 3600, tags: ["league"] }
+);
+
+export const getTeamsByLeague = safeCache(
+  async (leagueId: string): Promise<Team[]> => {
+    const supabase = createStaticClient();
+    const { data, error } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("league_id", leagueId)
+      .order("name");
+
+    if (error) throw error;
+    return data ?? [];
+  },
+  ["teams-by-league"],
+  { revalidate: 300, tags: ["teams"] }
+);
 
 export async function getTeamById(id: string): Promise<Team | null> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("teams")
     .select("*")
@@ -47,85 +81,89 @@ export async function getTeamById(id: string): Promise<Team | null> {
   return data;
 }
 
-export async function getStandingsWithTeams(
-  leagueId: string,
-): Promise<StandingWithTeam[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("league_standings")
-    .select("*, team:teams(*)")
-    .eq("league_id", leagueId)
-    .order("position", { ascending: true });
+export const getStandingsWithTeams = safeCache(
+  async (leagueId: string): Promise<StandingWithTeam[]> => {
+    const supabase = createStaticClient();
+    const { data, error } = await supabase
+      .from("league_standings")
+      .select("*, team:teams(*)")
+      .eq("league_id", leagueId)
+      .order("position", { ascending: true });
 
-  if (error) throw error;
-  return (data ?? []) as StandingWithTeam[];
-}
+    if (error) throw error;
+    return (data ?? []) as StandingWithTeam[];
+  },
+  ["standings-with-teams"],
+  { revalidate: 120, tags: ["standings", "teams"] }
+);
 
-export async function getTeamsWithStandings(
-  leagueId: string,
-): Promise<TeamWithStanding[]> {
-  const standings = await getStandingsWithTeams(leagueId);
-  const supabase = await createClient();
+export const getTeamsWithStandings = safeCache(
+  async (leagueId: string): Promise<TeamWithStanding[]> => {
+    const standings = await getStandingsWithTeams(leagueId);
+    const supabase = createStaticClient();
 
-  const standingTeamIds = standings.map((s) => s.team_id);
-  const { data: playersData, error } = await supabase
-    .from("players")
-    .select("team_id, name, overall, market_value")
-    .in("team_id", standingTeamIds);
+    const standingTeamIds = standings.map((s) => s.team_id);
+    const { data: playersData, error } = await supabase
+      .from("players")
+      .select("team_id, name, overall, market_value")
+      .in("team_id", standingTeamIds);
 
-  if (error) throw error;
+    if (error) throw error;
 
-  type TeamStats = {
-    count: number;
-    totalOverall: number;
-    overallCount: number;
-    squadValue: number;
-    topPlayer: { name: string; overall: number } | null;
-  };
-
-  const teamStatsMap = new Map<string, TeamStats>();
-
-  for (const p of playersData ?? []) {
-    const stat = teamStatsMap.get(p.team_id) ?? {
-      count: 0,
-      totalOverall: 0,
-      overallCount: 0,
-      squadValue: 0,
-      topPlayer: null,
+    type TeamStats = {
+      count: number;
+      totalOverall: number;
+      overallCount: number;
+      squadValue: number;
+      topPlayer: { name: string; overall: number } | null;
     };
 
-    stat.count += 1;
-    stat.squadValue += p.market_value || 0;
+    const teamStatsMap = new Map<string, TeamStats>();
 
-    if (p.overall != null) {
-      stat.totalOverall += p.overall;
-      stat.overallCount += 1;
-      if (!stat.topPlayer || p.overall > stat.topPlayer.overall) {
-        stat.topPlayer = { name: p.name, overall: p.overall };
+    for (const p of playersData ?? []) {
+      const stat = teamStatsMap.get(p.team_id) ?? {
+        count: 0,
+        totalOverall: 0,
+        overallCount: 0,
+        squadValue: 0,
+        topPlayer: null,
+      };
+
+      stat.count += 1;
+      stat.squadValue += p.market_value || 0;
+
+      if (p.overall != null) {
+        stat.totalOverall += p.overall;
+        stat.overallCount += 1;
+        if (!stat.topPlayer || p.overall > stat.topPlayer.overall) {
+          stat.topPlayer = { name: p.name, overall: p.overall };
+        }
       }
+
+      teamStatsMap.set(p.team_id, stat);
     }
 
-    teamStatsMap.set(p.team_id, stat);
-  }
+    return standings.map((s) => {
+      const stats = teamStatsMap.get(s.team_id);
+      const avgOverall =
+        stats && stats.overallCount > 0
+          ? Math.round(stats.totalOverall / stats.overallCount)
+          : undefined;
 
-  return standings.map((s) => {
-    const stats = teamStatsMap.get(s.team_id);
-    const avgOverall =
-      stats && stats.overallCount > 0
-        ? Math.round(stats.totalOverall / stats.overallCount)
-        : undefined;
-
-    return {
-      ...s.team,
-      position: s.position,
-      previous_position: s.previous_position,
-      player_count: stats?.count ?? 0,
-      avg_overall: avgOverall,
-      squad_value: stats?.squadValue ?? 0,
-      top_player: stats?.topPlayer ?? undefined,
-    };
-  });
-}
+      return {
+        ...s.team,
+        position: s.position,
+        previous_position: s.previous_position,
+        player_count: stats?.count ?? 0,
+        avg_overall: avgOverall,
+        squad_value: stats?.squadValue ?? 0,
+        top_player: stats?.topPlayer ?? undefined,
+      };
+    });
+  },
+  ["teams-with-standings"],
+  { revalidate: 120, tags: ["teams", "standings", "players"] }
+);
 
 export async function updateTeam(
   id: string,
@@ -140,49 +178,96 @@ export async function updateTeam(
     .single();
 
   if (error) throw error;
+  try {
+    revalidateTag("teams", "max");
+  } catch {}
   return data;
 }
 
-export async function getPlayers(options?: {
-  teamId?: string;
-  marketOnly?: boolean;
-}): Promise<(Player & { team: Team })[]> {
-  const supabase = await createClient();
-  const allPlayers: (Player & { team: Team })[] = [];
+/** Internal helper to fetch all players in parallel chunks */
+async function fetchAllPlayersInParallel(
+  marketOnly = false,
+): Promise<(Player & { team: Team })[]> {
+  const supabase = createStaticClient();
   const pageSize = 1000;
-  let page = 0;
 
-  while (true) {
+  let countQuery = supabase
+    .from("players")
+    .select("*", { count: "exact", head: true });
+  if (marketOnly) {
+    countQuery = countQuery.eq("available_in_market", true);
+  }
+  const { count, error: countErr } = await countQuery;
+  if (countErr) throw countErr;
+
+  const total = count ?? 0;
+  if (total === 0) return [];
+
+  const totalPages = Math.ceil(total / pageSize);
+  const pagePromises = Array.from({ length: totalPages }, (_, page) => {
     let query = supabase.from("players").select("*, team:teams(*)");
-
-    if (options?.teamId) {
-      query = query.eq("team_id", options.teamId);
-    }
-    if (options?.marketOnly) {
+    if (marketOnly) {
       query = query.eq("available_in_market", true);
     }
-
-    const { data, error } = await query
+    return query
       .order("overall", { ascending: false, nullsFirst: false })
       .range(page * pageSize, (page + 1) * pageSize - 1);
+  });
 
-    if (error) throw error;
-    if (!data || data.length === 0) break;
-
-    allPlayers.push(...(data as (Player & { team: Team })[]));
-
-    // If we received fewer rows than pageSize or if filtering by specific team, stop
-    if (data.length < pageSize || options?.teamId) break;
-    page++;
+  const results = await Promise.all(pagePromises);
+  const allPlayers: (Player & { team: Team })[] = [];
+  for (const res of results) {
+    if (res.error) throw res.error;
+    if (res.data) {
+      allPlayers.push(...(res.data as (Player & { team: Team })[]));
+    }
   }
 
   return allPlayers;
 }
 
+const getCachedAllPlayers = safeCache(
+  () => fetchAllPlayersInParallel(false),
+  ["cached-all-players"],
+  { revalidate: 120, tags: ["players"] }
+);
+
+const getCachedMarketPlayers = safeCache(
+  () => fetchAllPlayersInParallel(true),
+  ["cached-market-players"],
+  { revalidate: 120, tags: ["players", "market"] }
+);
+
+export async function getPlayers(options?: {
+  teamId?: string;
+  marketOnly?: boolean;
+}): Promise<(Player & { team: Team })[]> {
+  // If requesting players for a specific team, fetch directly (typically ~25 rows, very fast)
+  if (options?.teamId) {
+    const supabase = createStaticClient();
+    const { data, error } = await supabase
+      .from("players")
+      .select("*, team:teams(*)")
+      .eq("team_id", options.teamId)
+      .order("overall", { ascending: false, nullsFirst: false });
+
+    if (error) throw error;
+    return (data ?? []) as (Player & { team: Team })[];
+  }
+
+  // If requesting all market players, use cached parallel loader
+  if (options?.marketOnly) {
+    return getCachedMarketPlayers();
+  }
+
+  // Otherwise return all players from cached parallel loader
+  return getCachedAllPlayers();
+}
+
 export async function getPlayerById(
   id: string,
 ): Promise<(Player & { team: Team }) | null> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("players")
     .select("*, team:teams(*)")
@@ -202,6 +287,9 @@ export async function createPlayer(input: PlayerCreateInput): Promise<Player> {
     .single();
 
   if (error) throw error;
+  try {
+    revalidateTag("players", "max");
+  } catch {}
   return data;
 }
 
@@ -218,6 +306,9 @@ export async function updatePlayer(
     .single();
 
   if (error) throw error;
+  try {
+    revalidateTag("players", "max");
+  } catch {}
   return data;
 }
 
@@ -225,27 +316,39 @@ export async function deletePlayer(id: string): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("players").delete().eq("id", id);
   if (error) throw error;
+  try {
+    revalidateTag("players", "max");
+  } catch {}
 }
 
 export async function getDashboardStats(leagueId: string) {
-  const [teams, players, marketPlayers, standings] = await Promise.all([
+  // 1. Fetch teams and standings in parallel
+  const [teams, standings] = await Promise.all([
     getTeamsByLeague(leagueId),
-    getPlayers(),
-    getPlayers({ marketOnly: true }),
     getStandingsWithTeams(leagueId),
   ]);
 
-  const leaguePlayers = players.filter((p) =>
-    teams.some((t) => t.id === p.team_id),
-  );
+  const teamIds = teams.map((t) => t.id);
+  const supabase = createStaticClient();
+
+  // 2. Fetch counts directly using lightweight HEAD requests (transfers 0 rows instead of 10,000!)
+  const [playerCountRes, marketCountRes] = await Promise.all([
+    supabase
+      .from("players")
+      .select("*", { count: "exact", head: true })
+      .in("team_id", teamIds),
+    supabase
+      .from("players")
+      .select("*", { count: "exact", head: true })
+      .in("team_id", teamIds)
+      .eq("available_in_market", true),
+  ]);
 
   return {
     teams,
     teamCount: teams.length,
-    playerCount: leaguePlayers.length,
-    marketCount: marketPlayers.filter((p) =>
-      teams.some((t) => t.id === p.team_id),
-    ).length,
+    playerCount: playerCountRes.count ?? 0,
+    marketCount: marketCountRes.count ?? 0,
     standings,
   };
 }
@@ -297,4 +400,8 @@ export async function reorderStandings(
 
     if (error) throw error;
   }
+
+  try {
+    revalidateTag("standings", "max");
+  } catch {}
 }

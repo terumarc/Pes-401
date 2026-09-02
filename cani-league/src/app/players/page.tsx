@@ -1,4 +1,6 @@
 
+export const revalidate = 60;
+
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { Button } from "@/components/ui/button";
