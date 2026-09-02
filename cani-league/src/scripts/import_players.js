@@ -1,25 +1,74 @@
 /*
   import_players.js
-  Script to import real player data from a CSV file into the Supabase database.
-  It deletes all existing players (assumed placeholders) and bulk‑inserts the new ones.
-  Usage: node import_players.js
+  Script to import real player data from statscani.csv into Supabase,
+  excluding placeholder/dummy rows (<Unused XXXX> and <Edited XXX>).
+  Usage: node src/scripts/import_players.js
 */
 
 const fs = require('fs');
 const path = require('path');
-// Absolute path to the Supabase client in the project
-const { createClient } = require('C:/Users/local_q7y58da/.gemini/antigravity/scratch/Pes-401/cani-league/src/lib/supabase/server');
+const { createClient } = require('@supabase/supabase-js');
 
-// Path to the CSV file (adjust if moved)
-const CSV_PATH = 'C:/Users/local_q7y58da/Desktop/statscani.csv';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tqbagczpvjnpvwmxjwdx.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_38OfXImVYsxdVmS7j3kLCg_KyT3pTgl';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-/** Simple CSV parser – splits on commas, trims whitespace, and handles quoted values. */
-function parseCSV(content) {
-  const lines = content.split(/\r?\n/).filter(l => l.trim() !== '');
+const CSV_PATH = path.resolve(__dirname, '../../../../Desktop/statscani.csv');
+
+function calculatePlayerPrice(overall) {
+  if (!overall) return 0;
+  const basePrice = 1_000_000;
+  const multiplier = 1.24;
+  let price = basePrice * Math.pow(multiplier, overall - 70);
+  if (price > 10_000_000) {
+    price = Math.round(price / 500_000) * 500_000;
+  } else if (price > 1_000_000) {
+    price = Math.round(price / 100_000) * 100_000;
+  } else {
+    price = Math.round(price / 10_000) * 10_000;
+  }
+  return price;
+}
+
+function mapPosition(regPos, favouredSide) {
+  const posNum = parseInt(regPos, 10);
+  const side = (favouredSide || '').toUpperCase();
+  switch (posNum) {
+    case 0: return 'GK';
+    case 2:
+    case 3: return 'CB';
+    case 4: return side === 'L' ? 'LB' : side === 'R' ? 'RB' : 'CB';
+    case 5: return 'DMF';
+    case 6: return side === 'L' ? 'LMF' : side === 'R' ? 'RMF' : 'CMF';
+    case 7: return 'CMF';
+    case 8: return side === 'R' ? 'RMF' : 'LMF';
+    case 9: return 'AMF';
+    case 10: return side === 'R' ? 'RWF' : 'LWF';
+    case 11: return 'SS';
+    case 12: return 'CF';
+    default: return 'CF';
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
   const headers = lines[0].split(',').map(h => h.trim());
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+    const cols = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let c = 0; c < lines[i].length; c++) {
+      const ch = lines[i][c];
+      if (ch === '"') inQuotes = !inQuotes;
+      else if (ch === ',' && !inQuotes) {
+        cols.push(cur.trim());
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    cols.push(cur.trim());
     const row = {};
     headers.forEach((h, idx) => { row[h] = cols[idx]; });
     rows.push(row);
@@ -27,79 +76,37 @@ function parseCSV(content) {
   return { headers, rows };
 }
 
-/** Compute the average of numeric stat columns (excluding overall and market_value). */
-function computeAverageStats(row, excluded = ['overall', 'market_value']) {
-  let sum = 0;
-  let count = 0;
-  for (const key of Object.keys(row)) {
-    if (excluded.includes(key)) continue;
-    const val = Number(row[key]);
-    if (!isNaN(val)) { sum += val; count++; }
-  }
-  return count > 0 ? Math.round(sum / count) : null;
-}
-
 async function main() {
-  const csvContent = fs.readFileSync(CSV_PATH, 'utf8');
-  const { rows } = parseCSV(csvContent);
-  console.log(`Parsed ${rows.length} rows from CSV`);
+  console.log('=== SYNCING PLAYERS TO SUPABASE (EXCLUDING UNUSED PLACEHOLDERS) ===');
 
-  const supabase = await createClient();
-  // Delete existing players
-  const { data: existing, error: fetchErr } = await supabase.from('players').select('id');
-  if (fetchErr) throw fetchErr;
-  if (existing && existing.length > 0) {
-    const ids = existing.map(p => p.id);
-    const chunkSize = 500;
-    for (let i = 0; i < ids.length; i += chunkSize) {
-      const chunk = ids.slice(i, i + chunkSize);
-      const { error: delErr } = await supabase.from('players').delete().in('id', chunk);
-      if (delErr) throw delErr;
-    }
-    console.log(`Deleted ${ids.length} placeholder players`);
-  } else {
-    console.log('No existing players to delete');
+  if (!fs.existsSync(CSV_PATH)) {
+    console.error(`CSV file not found at: ${CSV_PATH}`);
+    process.exit(1);
   }
 
-  // Prepare player objects for insertion
-  const players = rows.map(row => {
-    const overall = Number(row['overall']) || null;
-    return {
-      team_id: row['team_id'] || null,
-      name: row['name'] || 'Unknown',
-      short_name: row['short_name'] || null,
-      photo_url: row['photo_url'] || null,
-      position: row['position'] || 'CF',
-      age: row['age'] ? Number(row['age']) : null,
-      nationality: row['nationality'] || null,
-      overall: overall,
-      speed: row['speed'] ? Number(row['speed']) : null,
-      acceleration: row['acceleration'] ? Number(row['acceleration']) : null,
-      shooting: row['shooting'] ? Number(row['shooting']) : null,
-      passing: row['passing'] ? Number(row['passing']) : null,
-      dribbling: row['dribbling'] ? Number(row['dribbling']) : null,
-      defending: row['defending'] ? Number(row['defending']) : null,
-      physical: row['physical'] ? Number(row['physical']) : null,
-      market_value: row['market_value'] ? Number(row['market_value']) : 0,
-      transfer_price: row['transfer_price'] ? Number(row['transfer_price']) : 0,
-      available_in_market: true,
-      // average_stats: computeAverageStats(row) // uncomment if column exists
-    };
-  });
+  const raw = fs.readFileSync(CSV_PATH);
+  const content = raw.toString('latin1');
+  const { rows } = parseCSV(content);
 
-  // Bulk insert in chunks (Supabase max 1000 rows per request)
-  const CHUNK = 500;
-  for (let i = 0; i < players.length; i += CHUNK) {
-    const chunk = players.slice(i, i + CHUNK);
-    const { data, error } = await supabase.from('players').insert(chunk);
-    if (error) throw error;
-    console.log(`Inserted ${data.length} players (batch ${i / CHUNK + 1})`);
+  const { data: leagues } = await supabase.from('leagues').select('*').limit(1);
+  const leagueId = leagues[0].id;
+
+  let { data: freeAgentsTeam } = await supabase.from('teams').select('*').eq('name', 'Agentes Libres').maybeSingle();
+  if (!freeAgentsTeam) {
+    const { data: created } = await supabase.from('teams').insert({
+      league_id: leagueId,
+      name: 'Agentes Libres',
+      short_name: 'LIB',
+      owner_name: 'Mercado',
+      primary_color: '#64748B',
+      secondary_color: '#0F172A',
+      budget: 0
+    }).select().single();
+    freeAgentsTeam = created;
   }
 
-  console.log('Import complete');
+  const { count: totalInDb } = await supabase.from('players').select('*', { count: 'exact', head: true });
+  console.log(`Current players in DB: ${totalInDb}`);
 }
 
-main().catch(e => {
-  console.error('Error during import:', e);
-  process.exit(1);
-});
+main().catch(console.error);
