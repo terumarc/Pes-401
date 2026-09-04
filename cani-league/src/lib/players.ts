@@ -255,34 +255,104 @@ export function getPlayerTier(
   };
 }
 
-/**
- * Calcula el precio de un jugador basado en su media usando una fórmula matemática exponencial.
- * 
- * - Un jugador de media 70 cuesta aproximadamente 1,000,000.
- * - El precio aumenta de forma exponencial (aprox. 24% más caro por cada punto extra de media).
- */
-export function calculatePlayerPrice(overall: number | null | undefined): number {
-  if (!overall) return 0;
-  
-  const basePrice = 1_000_000;
-  const multiplier = 1.24; // 24% de incremento por punto de media
-  
-  // Fórmula: Precio = Base * (Multiplier ^ (Media - 70))
-  let price = basePrice * Math.pow(multiplier, overall - 70);
-  
-  // Redondear para evitar números raros y tener precios "limpios"
-  if (price > 10_000_000) {
-    // Redondear al medio millón más cercano si es muy caro
-    price = Math.round(price / 500_000) * 500_000;
-  } else if (price > 1_000_000) {
-    // Redondear a 100k más cercanos
-    price = Math.round(price / 100_000) * 100_000;
-  } else {
-    // Redondear a 10k más cercanos para los baratos
-    price = Math.round(price / 10_000) * 10_000;
+export type TierName = "S+" | "S" | "A" | "B" | "C" | "D";
+
+export const TIER_FIXED_PRICES: Record<TierName, number> = {
+  "S+": 180_000_000,
+  "S":   80_000_000,
+  "A":   35_000_000,
+  "B":   15_000_000,
+  "C":    5_000_000,
+  "D":    1_000_000,
+};
+
+export const TIER_CONTRACT_DURATIONS: Record<TierName, number> = {
+  "S+": 1,
+  "S":   2,
+  "A":   3,
+  "B":   3,
+  "C":   4,
+  "D":   4,
+};
+
+export const TIER_RENEWAL_PERCENTAGES: Record<TierName, number> = {
+  "S+": 0.50,
+  "S":   0.40,
+  "A":   0.25,
+  "B":   0.05,
+  "C":   0,
+  "D":   0,
+};
+
+export function getPlayerTierName(playerOrTier: any): TierName {
+  if (typeof playerOrTier === "string") {
+    return (["S+", "S", "A", "B", "C", "D"].includes(playerOrTier) ? playerOrTier : "D") as TierName;
   }
-  
-  return price;
+  return (getPlayerTier(playerOrTier).tier as TierName) || "D";
+}
+
+export function getPlayerFixedPrice(playerOrTier: any): number {
+  const tier = getPlayerTierName(playerOrTier);
+  return TIER_FIXED_PRICES[tier] ?? 1_000_000;
+}
+
+export function getPlayerContractDuration(playerOrTier: any): number {
+  const tier = getPlayerTierName(playerOrTier);
+  return TIER_CONTRACT_DURATIONS[tier] ?? 4;
+}
+
+export function getPlayerRenewalCost(playerOrTier: any): number {
+  const tier = getPlayerTierName(playerOrTier);
+  const price = getPlayerFixedPrice(tier);
+  const percent = TIER_RENEWAL_PERCENTAGES[tier] ?? 0;
+  return Math.round(price * percent);
+}
+
+export interface PlayerContractInfo {
+  tier: TierName;
+  price: number;
+  duration: number;
+  durationLabel: string;
+  durationBadge: string;
+  renewalPercent: number;
+  renewalPercentLabel: string;
+  renewalCost: number;
+  renewalCostLabel: string;
+}
+
+export function getPlayerContractInfo(playerOrTier: any): PlayerContractInfo {
+  const tier = getPlayerTierName(playerOrTier);
+  const price = TIER_FIXED_PRICES[tier] ?? 1_000_000;
+  const duration = TIER_CONTRACT_DURATIONS[tier] ?? 4;
+  const renewalPercent = TIER_RENEWAL_PERCENTAGES[tier] ?? 0;
+  const renewalCost = Math.round(price * renewalPercent);
+
+  return {
+    tier,
+    price,
+    duration,
+    durationLabel: duration === 1 ? "1 Temporada" : `${duration} Temporadas`,
+    durationBadge: `⏳ ${duration} ${duration === 1 ? "Temp." : "Temps."}`,
+    renewalPercent,
+    renewalPercentLabel: renewalPercent > 0 ? `${Math.round(renewalPercent * 100)}%` : "Gratis",
+    renewalCost,
+    renewalCostLabel: renewalCost > 0 ? `€${renewalCost.toLocaleString("es-ES")}` : "Gratis",
+  };
+}
+
+/**
+ * Calcula el precio fijo de un jugador en base a su Tier calibrado por posición.
+ */
+export function calculatePlayerPrice(playerOrOverall: any, position?: string): number {
+  if (!playerOrOverall) return 1_000_000;
+  if (typeof playerOrOverall === "object") {
+    return getPlayerFixedPrice(playerOrOverall);
+  }
+  if (typeof playerOrOverall === "number") {
+    const tier = getPlayerTier(playerOrOverall, position).tier;
+    return getPlayerFixedPrice(tier);
+  }
+  return getPlayerFixedPrice(playerOrOverall);
 }
 
 /**

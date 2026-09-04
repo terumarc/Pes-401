@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatStat } from "@/lib/format/stats";
-import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
+import { getPlayerTier, getPlayerEffectiveRating, getPlayerContractInfo } from "@/lib/players";
 import { ArrowRight, Eye } from "lucide-react";
 import type { Player, Team } from "@/types";
 
@@ -28,6 +28,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
   const [purchaseType, setPurchaseType] = useState<"clausula" | "mercado">("clausula");
   const tierInfo = getPlayerTier(player);
   const mediaValue = getPlayerEffectiveRating(player);
+  const contractInfo = getPlayerContractInfo(player);
 
   const isFreeAgent =
     !player.team_id ||
@@ -35,7 +36,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
     player.team.name.toLowerCase().includes("libre") ||
     player.team.name.toLowerCase().includes("sin equipo");
 
-  const clausePrice = player.clause_fee ?? player.transfer_price;
+  const clausePrice = player.clause_fee ?? contractInfo.price;
 
   return (
     <>
@@ -44,9 +45,15 @@ export function MarketCard({ player, teams }: MarketCardProps) {
           <PlayerAvatar name={player.name} photoUrl={player.photo_url} size="lg" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
-              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${tierInfo.bgColor} ${tierInfo.color}`}>
-                {tierInfo.tier}
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${tierInfo.bgColor} ${tierInfo.color}`}>
+                  {tierInfo.tier}
+                </span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-muted/80 text-muted-foreground border border-border/60 flex items-center gap-1" title={`Contrato: ${contractInfo.durationLabel}`}>
+                  <span>⏳</span>
+                  <span>{contractInfo.duration} {contractInfo.duration === 1 ? "Temp." : "Temps."}</span>
+                </span>
+              </div>
               <span className="rounded px-1.5 py-0.5 text-[11px] font-bold bg-muted text-foreground/80">
                 {player.position}
               </span>
@@ -70,19 +77,31 @@ export function MarketCard({ player, teams }: MarketCardProps) {
 
         <CardContent className="pt-0">
           <Separator className="mb-3 border-border/40" />
-          <dl className="space-y-2 text-xs">
+          <dl className="space-y-1.5 text-xs">
             <div className="flex justify-between items-center gap-3">
-              <dt className="text-muted-foreground">Valor Mercado</dt>
-              <dd className="font-medium text-foreground">
-                <BudgetDisplay amount={player.market_value} size="sm" />
+              <dt className="text-muted-foreground">Precio Fijo</dt>
+              <dd className="font-semibold text-foreground">
+                <BudgetDisplay amount={contractInfo.price} size="sm" />
               </dd>
             </div>
             <div className="flex justify-between items-center gap-3">
-              <dt className="text-muted-foreground font-medium">
-                {isFreeAgent ? "Coste Fichaje" : "Precio Cláusula"}
-              </dt>
+              <dt className="text-muted-foreground">Duración Contrato</dt>
+              <dd className="font-medium text-foreground">
+                {contractInfo.durationLabel}
+              </dd>
+            </div>
+            <div className="flex justify-between items-center gap-3">
+              <dt className="text-muted-foreground">Prima Renovación</dt>
               <dd className="font-semibold text-foreground">
-                <BudgetDisplay amount={isFreeAgent ? player.transfer_price : clausePrice} size="sm" />
+                {contractInfo.renewalCost > 0 ? (
+                  <span className="text-amber-600 dark:text-amber-400">
+                    {contractInfo.renewalPercentLabel} ({contractInfo.renewalCostLabel})
+                  </span>
+                ) : (
+                  <span className="text-emerald-600 dark:text-emerald-400">
+                    Gratis
+                  </span>
+                )}
               </dd>
             </div>
           </dl>

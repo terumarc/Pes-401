@@ -3,7 +3,12 @@ import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatStat } from "@/lib/format/stats";
-import { getPlayerTier, getPlayerEffectiveRating, type PositionGroup } from "@/lib/players";
+import {
+  getPlayerTier,
+  getPlayerEffectiveRating,
+  getPlayerContractInfo,
+  type PositionGroup,
+} from "@/lib/players";
 import type { Player, Team } from "@/types";
 
 type PlayerCardProps = {
@@ -15,6 +20,7 @@ type PlayerCardProps = {
 export function PlayerCard({ player, href, groupContext }: PlayerCardProps) {
   const tierInfo = getPlayerTier(player, undefined, undefined, groupContext);
   const mediaValue = getPlayerEffectiveRating(player);
+  const contractInfo = getPlayerContractInfo(player);
 
   const content = (
     <Card size="sm" className="group relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md dark:hover:shadow-primary/5">
@@ -23,12 +29,16 @@ export function PlayerCard({ player, href, groupContext }: PlayerCardProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="truncate font-display text-base font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors">
                   {player.name}
                 </h3>
                 <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${tierInfo.bgColor} ${tierInfo.color}`}>
                   {tierInfo.tier}
+                </span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-muted/80 text-muted-foreground border border-border/60 flex items-center gap-1" title={`Contrato: ${contractInfo.durationLabel}`}>
+                  <span>⏳</span>
+                  <span>{contractInfo.duration} {contractInfo.duration === 1 ? "Temp." : "Temps."}</span>
                 </span>
               </div>
               <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -69,13 +79,17 @@ export function PlayerCard({ player, href, groupContext }: PlayerCardProps) {
             <div className="flex items-center gap-1.5">
               <span className="text-[11px]">Valor:</span>
               <span className="font-medium text-foreground">
-                <BudgetDisplay amount={player.market_value} size="sm" />
+                <BudgetDisplay amount={contractInfo.price} size="sm" />
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px]">Cláusula:</span>
+            <div className="flex items-center gap-1.5" title={contractInfo.renewalPercent > 0 ? `Coste de renovación: ${contractInfo.renewalPercentLabel} (${contractInfo.renewalCostLabel})` : "Renovación gratuita"}>
+              <span className="text-[11px]">Renovación:</span>
               <span className="font-semibold text-foreground">
-                <BudgetDisplay amount={player.transfer_price} size="sm" />
+                {contractInfo.renewalCost > 0 ? (
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">{contractInfo.renewalPercentLabel} ({contractInfo.renewalCostLabel})</span>
+                ) : (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">Gratis</span>
+                )}
               </span>
             </div>
           </div>

@@ -13,7 +13,7 @@ import {
   getTeamsByLeague,
 } from "@/lib/data/league";
 import { formatStat } from "@/lib/format/stats";
-import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
+import { getPlayerTier, getPlayerEffectiveRating, getPlayerContractInfo } from "@/lib/players";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 type Props = {
@@ -35,6 +35,7 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
   const teams = league ? await getTeamsByLeague(league.id) : [];
   const tierInfo = getPlayerTier(player);
   const mediaValue = getPlayerEffectiveRating(player);
+  const contractInfo = getPlayerContractInfo(player);
 
   if (edit === "1") {
     return (
@@ -85,27 +86,45 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
             <div className="flex justify-between gap-3">
               <dt className="text-ink-muted">Equipo</dt>
               <dd>
-                <Link href={`/teams/${player.team.id}`} className="hover:underline">
+                <Link href={`/teams/${player.team.id}`} className="hover:underline font-medium">
                   {player.team.name}
                 </Link>
               </dd>
             </div>
             <div className="flex justify-between gap-3">
-              <dt className="text-ink-muted">Valor</dt>
-              <dd>
-                <BudgetDisplay amount={player.market_value} size="sm" />
+              <dt className="text-ink-muted">Precio Fijo (Tier {tierInfo.tier})</dt>
+              <dd className="font-semibold text-foreground">
+                <BudgetDisplay amount={contractInfo.price} size="sm" />
               </dd>
             </div>
             <div className="flex justify-between gap-3">
-              <dt className="text-ink-muted">Precio de fichaje</dt>
-              <dd>
-                <BudgetDisplay amount={player.transfer_price} size="sm" />
+              <dt className="text-ink-muted">Duración Contrato</dt>
+              <dd className="font-medium text-foreground">
+                {contractInfo.durationLabel}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-ink-muted">Prima de Renovación</dt>
+              <dd className="font-semibold">
+                {contractInfo.renewalCost > 0 ? (
+                  <span className="text-amber-600 dark:text-amber-400">
+                    {contractInfo.renewalPercentLabel} · <BudgetDisplay amount={contractInfo.renewalCost} size="sm" />
+                  </span>
+                ) : (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                    Gratis
+                  </span>
+                )}
               </dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-ink-muted">Mercado</dt>
               <dd>
-                {player.available_in_market ? "Disponible" : "No listado"}
+                {player.available_in_market ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">Disponible</span>
+                ) : (
+                  <span className="text-ink-muted">No listado</span>
+                )}
               </dd>
             </div>
           </dl>

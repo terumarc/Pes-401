@@ -43,11 +43,12 @@ const OUTFIELD_CATEGORIES = [
 
 const VALUE_PRESETS = [
   { label: "Cualquier valor", value: "ALL", min: null, max: null },
-  { label: "< €1.000.000", value: "<1M", min: null, max: 1_000_000 },
-  { label: "€1M - €5M", value: "1M-5M", min: 1_000_000, max: 5_000_000 },
-  { label: "€5M - €15M", value: "5M-15M", min: 5_000_000, max: 15_000_000 },
-  { label: "€15M - €30M", value: "15M-30M", min: 15_000_000, max: 30_000_000 },
-  { label: "> €30M", value: ">30M", min: 30_000_000, max: null },
+  { label: "★ €180M (Tier S+ Leyenda)", value: "180M", min: 180_000_000, max: null },
+  { label: "★ €80M (Tier S Clase Mundial)", value: "80M", min: 80_000_000, max: 80_000_000 },
+  { label: "★ €35M (Tier A Estrella)", value: "35M", min: 35_000_000, max: 35_000_000 },
+  { label: "★ €15M (Tier B Titular)", value: "15M", min: 15_000_000, max: 15_000_000 },
+  { label: "★ €5M (Tier C Rotación)", value: "5M", min: 5_000_000, max: 5_000_000 },
+  { label: "★ €1M (Tier D Reserva)", value: "1M", min: null, max: 1_000_000 },
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
 
