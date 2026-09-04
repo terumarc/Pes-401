@@ -1,5 +1,3 @@
-import { invalidatePlayersCache } from "./data/league";
-
 export type PlayerTier = "S+" | "S" | "A" | "B" | "C" | "D";
 
 export interface TierInfo {
@@ -36,8 +34,11 @@ export const DEFAULT_GK_THRESHOLDS: TierThresholds = {
 /**
  * Invalida la caché de tiers reutilizando la invalidación de jugadores.
  */
-export function invalidateTierCache() {
-  invalidatePlayersCache();
+export async function invalidateTierCache() {
+  if (typeof window === "undefined") {
+    const { invalidatePlayersCache } = await import("./data/league");
+    invalidatePlayersCache();
+  }
 }
 
 /**
