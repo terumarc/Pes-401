@@ -103,8 +103,11 @@ export async function POST(request: Request) {
           .eq("league_id", updatedMatch.league_id);
 
         if (leagueTeams) {
+          const playableTeams = (leagueTeams as Team[]).filter(
+            (t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo")
+          );
           const table = buildLeagueTable(
-            leagueTeams as Team[],
+            playableTeams,
             allLeagueMatches as unknown as MatchWithTeams[],
           );
           const standings = table.map((row, idx) => ({
@@ -122,8 +125,11 @@ export async function POST(request: Request) {
           .eq("league_id", updatedMatch.league_id);
 
         if (leagueTeams) {
+          const playableTeams = (leagueTeams as Team[]).filter(
+            (t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo")
+          );
           const table = buildLeagueTable(
-            leagueTeams as Team[],
+            playableTeams,
             round1 as unknown as MatchWithTeams[],
           );
           const standings = table.map((row, idx) => ({
