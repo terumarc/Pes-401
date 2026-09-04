@@ -38,16 +38,14 @@ type SortOption =
   | "shooting_desc"
   | "passing_desc";
 
-const POSITION_CATEGORIES = [
-  { label: "Todas las posiciones", value: "TODAS" },
-  { label: "🧤 Porteros (GK)", value: "GK" },
+const OUTFIELD_CATEGORIES = [
+  { label: "Todas las posiciones de campo", value: "TODAS" },
   { label: "🛡️ Defensas (CB, LB, RB, SW)", value: "DEF" },
   { label: "🎯 Centrocampistas (DMF, CMF, AMF, LMF, RMF)", value: "MID" },
   { label: "⚡ Delanteros (CF, SS, LWF, RWF)", value: "ATT" },
 ];
 
-const INDIVIDUAL_POSITIONS = [
-  "GK",
+const OUTFIELD_INDIVIDUAL_POSITIONS = [
   "CB",
   "LB",
   "RB",
@@ -62,7 +60,7 @@ const INDIVIDUAL_POSITIONS = [
   "CF",
 ];
 
-const OVERALL_PRESETS = [
+const OUTFIELD_OVERALL_PRESETS = [
   { label: "Cualquier media", value: "ALL", min: null, max: null },
   { label: "★ 85+ (S+ Leyenda)", value: "85+", min: 85, max: null },
   { label: "★ 82 - 84 (S Clase Mundial)", value: "82-84", min: 82, max: 84 },
@@ -70,6 +68,17 @@ const OVERALL_PRESETS = [
   { label: "★ 74 - 77 (B Titular)", value: "74-77", min: 74, max: 77 },
   { label: "★ 70 - 73 (C Rotación)", value: "70-73", min: 70, max: 73 },
   { label: "★ < 70 (D Reserva)", value: "<70", min: null, max: 69 },
+  { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
+];
+
+const GK_OVERALL_PRESETS = [
+  { label: "Todas las medias", value: "ALL", min: null, max: null },
+  { label: "★ 95+ (Leyendas Top)", value: "95+", min: 95, max: null },
+  { label: "★ 90 - 94 (Clase Mundial)", value: "90-94", min: 90, max: 94 },
+  { label: "★ 85 - 89 (Estrellas)", value: "85-89", min: 85, max: 89 },
+  { label: "★ 80 - 84 (Titulares)", value: "80-84", min: 80, max: 84 },
+  { label: "★ 70 - 79 (Rotación)", value: "70-79", min: 70, max: 79 },
+  { label: "★ < 70 (Reserva)", value: "<70", min: null, max: 69 },
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
 
@@ -83,7 +92,7 @@ const VALUE_PRESETS = [
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
 
-const TIERS = ["TODOS", "S+", "S", "A", "B", "C", "D", "PORTEROS"];
+const OUTFIELD_TIERS = ["TODOS", "S+", "S", "A", "B", "C", "D"];
 const PAGE_SIZE = 24;
 
 function isPositionInGroup(pos: string, group: string): boolean {
@@ -103,6 +112,7 @@ export function PlayerList({
   players: PlayerWithTeam[];
   teams?: Team[];
 }) {
+  const [playerTypeTab, setPlayerTypeTab] = useState<"outfield" | "gk">("outfield");
   const [search, setSearch] = useState("");
   const [selectedNationality, setSelectedNationality] = useState("TODAS");
   const [selectedPos, setSelectedPos] = useState("TODAS");
@@ -138,12 +148,23 @@ export function PlayerList({
       .map(([name, count]) => ({ name, count }));
   }, [players]);
 
+  const outfieldCount = useMemo(
+    () => players.filter((p) => p.position?.toUpperCase() !== "GK").length,
+    [players]
+  );
+  const gkCount = useMemo(
+    () => players.filter((p) => p.position?.toUpperCase() === "GK").length,
+    [players]
+  );
+
   const handleFilterChange = () => {
     setCurrentPage(1);
   };
 
   // Filter & sort
   const filteredAndSorted = useMemo(() => {
+    const isOutfield = playerTypeTab === "outfield";
+    const currentPresets = isOutfield ? OUTFIELD_OVERALL_PRESETS : GK_OVERALL_PRESETS;
     const term = search.toLowerCase().trim();
 
     // Determine overall bounds
@@ -154,7 +175,7 @@ export function PlayerList({
       minOvr = customMinOverall ? Number(customMinOverall) : null;
       maxOvr = customMaxOverall ? Number(customMaxOverall) : null;
     } else {
-      const preset = OVERALL_PRESETS.find((p) => p.value === overallPreset);
+      const preset = currentPresets.find((p) => p.value === overallPreset);
       if (preset) {
         minOvr = preset.min;
         maxOvr = preset.max;
@@ -178,6 +199,12 @@ export function PlayerList({
 
     return players
       .filter((p) => {
+        const isGK = p.position?.toUpperCase() === "GK";
+
+        // Estricta separación: los porteros NUNCA van en jugadores de campo, y viceversa
+        if (isOutfield && isGK) return false;
+        if (!isOutfield && !isGK) return false;
+
         // Search term
         if (term) {
           const matchName = p.name.toLowerCase().includes(term);
@@ -194,21 +221,17 @@ export function PlayerList({
           }
         }
 
-        // Position filter
-        if (selectedPos !== "TODAS") {
+        // Position filter (solo relevante para jugadores de campo)
+        if (isOutfield && selectedPos !== "TODAS") {
           if (!isPositionInGroup(p.position || "", selectedPos)) {
             return false;
           }
         }
 
-        // Tier filter
-        if (selectedTier !== "TODOS") {
-          if (selectedTier === "PORTEROS") {
-            if (p.position?.toUpperCase() !== "GK") return false;
-          } else {
-            const tier = getPlayerTier(p).tier;
-            if (tier !== selectedTier) return false;
-          }
+        // Tier filter (solo para jugadores de campo: S+ al D)
+        if (isOutfield && selectedTier !== "TODOS") {
+          const tier = getPlayerTier(p).tier;
+          if (tier !== selectedTier) return false;
         }
 
         // Team filter
@@ -260,6 +283,7 @@ export function PlayerList({
       });
   }, [
     players,
+    playerTypeTab,
     search,
     selectedNationality,
     selectedPos,
@@ -311,13 +335,95 @@ export function PlayerList({
     <div className="space-y-6">
       {/* FILTER & CONTROLS PANEL */}
       <div className="rounded-2xl border border-border/80 bg-card/60 p-4 shadow-xs backdrop-blur-xs space-y-4">
+        {/* Selector Principal: Jugadores de Campo vs Porteros */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setPlayerTypeTab("outfield");
+                setSelectedPos("TODAS");
+                setSelectedTier("TODOS");
+                setOverallPreset("ALL");
+                handleFilterChange();
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                playerTypeTab === "outfield"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <span>⚽ Jugadores de Campo</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                  playerTypeTab === "outfield"
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-muted-foreground/20 text-muted-foreground"
+                }`}
+              >
+                {outfieldCount.toLocaleString()}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setPlayerTypeTab("gk");
+                setSelectedPos("TODAS");
+                setSelectedTier("TODOS");
+                setOverallPreset("ALL");
+                handleFilterChange();
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                playerTypeTab === "gk"
+                  ? "bg-amber-500 text-white shadow-xs"
+                  : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <span>🧤 Porteros</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                  playerTypeTab === "gk"
+                    ? "bg-white/25 text-white"
+                    : "bg-muted-foreground/20 text-muted-foreground"
+                }`}
+              >
+                {gkCount.toLocaleString()}
+              </span>
+            </button>
+          </div>
+
+          <span className="text-[11px] text-muted-foreground hidden md:inline font-medium">
+            {playerTypeTab === "outfield"
+              ? "Promedio de 26 estadísticas PES · Tiers S+ al D"
+              : "Media calculada únicamente por Defensa + Portería"}
+          </span>
+        </div>
+
+        {/* Banner informativo exclusivo si está en pestaña de porteros */}
+        {playerTypeTab === "gk" && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start sm:items-center gap-2.5">
+            <span className="text-lg shrink-0">🧤</span>
+            <div className="min-w-0">
+              <p className="font-bold text-foreground">Apartado exclusivo de Porteros</p>
+              <p className="text-muted-foreground text-[11px]">
+                Los porteros se gestionan en este apartado separado. Su media cuenta exclusivamente <strong>Defensa</strong> y <strong>Portería</strong> ((DEF + GK) / 2) y no se mezclan con los jugadores de campo ni con los tiers de letras.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Search & Main Controls Bar */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Search input */}
           <div className="relative flex-1 min-w-[240px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nombre, posición, país o equipo..."
+              placeholder={
+                playerTypeTab === "outfield"
+                  ? "Buscar jugador de campo por nombre, posición, país o equipo..."
+                  : "Buscar portero por nombre, país o equipo..."
+              }
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -369,9 +475,13 @@ export function PlayerList({
               <option value="value_desc">Mayor Valor (€ ↓)</option>
               <option value="value_asc">Menor Valor (€ ↑)</option>
               <option value="name_asc">Nombre (A → Z)</option>
-              <option value="speed_desc">Velocidad</option>
-              <option value="shooting_desc">Tiro</option>
-              <option value="passing_desc">Pase</option>
+              {playerTypeTab === "outfield" && (
+                <>
+                  <option value="speed_desc">Velocidad</option>
+                  <option value="shooting_desc">Tiro</option>
+                  <option value="passing_desc">Pase</option>
+                </>
+              )}
             </select>
           </div>
 
@@ -431,31 +541,42 @@ export function PlayerList({
           </div>
 
           {/* 2. Position Category Selector */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Filter className="size-3" /> Posición
-            </label>
-            <select
-              value={selectedPos}
-              onChange={(e) => {
-                setSelectedPos(e.target.value);
-                handleFilterChange();
-              }}
-              className="w-full h-9 rounded-lg border border-border/80 bg-background px-2.5 text-xs sm:text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              {POSITION_CATEGORIES.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-              <option disabled>──────────</option>
-              {INDIVIDUAL_POSITIONS.map((pos) => (
-                <option key={pos} value={pos}>
-                  Posición exacta: {pos}
-                </option>
-              ))}
-            </select>
-          </div>
+          {playerTypeTab === "outfield" ? (
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                <Filter className="size-3" /> Posición de Campo
+              </label>
+              <select
+                value={selectedPos}
+                onChange={(e) => {
+                  setSelectedPos(e.target.value);
+                  handleFilterChange();
+                }}
+                className="w-full h-9 rounded-lg border border-border/80 bg-background px-2.5 text-xs sm:text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                {OUTFIELD_CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+                <option disabled>──────────</option>
+                {OUTFIELD_INDIVIDUAL_POSITIONS.map((pos) => (
+                  <option key={pos} value={pos}>
+                    Posición exacta: {pos}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                <Filter className="size-3" /> Posición
+              </label>
+              <div className="w-full h-9 rounded-lg border border-border/80 bg-muted/40 px-2.5 text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <span>🧤 Portero Exclusivo (GK)</span>
+              </div>
+            </div>
+          )}
 
           {/* 3. Average Points / Overall Selector */}
           <div className="space-y-1">
@@ -470,7 +591,7 @@ export function PlayerList({
               }}
               className="w-full h-9 rounded-lg border border-border/80 bg-background px-2.5 text-xs sm:text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
             >
-              {OVERALL_PRESETS.map((ovr) => (
+              {(playerTypeTab === "outfield" ? OUTFIELD_OVERALL_PRESETS : GK_OVERALL_PRESETS).map((ovr) => (
                 <option key={ovr.value} value={ovr.value}>
                   {ovr.label}
                 </option>
@@ -602,32 +723,60 @@ export function PlayerList({
           </div>
         )}
 
-        {/* TIER QUICK PILLS */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-2 shrink-0 flex items-center gap-1">
-            <SlidersHorizontal className="size-3" /> Tier:
-          </span>
-          {TIERS.map((tier) => {
-            const active = selectedTier === tier;
-            return (
-              <button
-                key={tier}
-                type="button"
-                onClick={() => {
-                  setSelectedTier(tier);
-                  handleFilterChange();
-                }}
-                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all ${
-                  active
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {tier === "PORTEROS" ? "🧤 Porteros" : tier}
-              </button>
-            );
-          })}
-        </div>
+        {/* TIER QUICK PILLS (Solo campo) O NIVELES DE MEDIA (Solo porteros) */}
+        {playerTypeTab === "outfield" ? (
+          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-2 shrink-0 flex items-center gap-1">
+              <SlidersHorizontal className="size-3" /> Tier de Campo:
+            </span>
+            {OUTFIELD_TIERS.map((tier) => {
+              const active = selectedTier === tier;
+              return (
+                <button
+                  key={tier}
+                  type="button"
+                  onClick={() => {
+                    setSelectedTier(tier);
+                    handleFilterChange();
+                  }}
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all cursor-pointer ${
+                    active
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {tier === "TODOS" ? "Todos los Tiers" : `Tier ${tier}`}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-2 shrink-0 flex items-center gap-1">
+              <SlidersHorizontal className="size-3" /> Nivel Portero:
+            </span>
+            {GK_OVERALL_PRESETS.filter((p) => p.value !== "CUSTOM").map((preset) => {
+              const active = overallPreset === preset.value;
+              return (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={() => {
+                    setOverallPreset(preset.value);
+                    handleFilterChange();
+                  }}
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all cursor-pointer ${
+                    active
+                      ? "bg-amber-500 text-white shadow-xs"
+                      : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* ACTIVE FILTERS & INFO BAR */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs">
@@ -764,15 +913,23 @@ export function PlayerList({
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border/80 bg-muted/50 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               <tr>
-                <th className="px-4 py-3">Jugador</th>
+                <th className="px-4 py-3">{playerTypeTab === "outfield" ? "Jugador" : "Portero"}</th>
                 <th className="px-3 py-3">Pos</th>
                 <th className="px-3 py-3">País</th>
                 <th className="px-3 py-3">Equipo</th>
-                <th className="px-3 py-3 text-center">Media</th>
-                <th className="px-3 py-3 text-center">Tier</th>
-                <th className="px-3 py-3 text-center hidden md:table-cell">VEL</th>
-                <th className="px-3 py-3 text-center hidden md:table-cell">TIR</th>
-                <th className="px-3 py-3 text-center hidden md:table-cell">PAS</th>
+                <th className="px-3 py-3 text-center">
+                  {playerTypeTab === "outfield" ? "Media (26 Stats)" : "Media (DEF+GK)"}
+                </th>
+                <th className="px-3 py-3 text-center">
+                  {playerTypeTab === "outfield" ? "Tier" : "Rol"}
+                </th>
+                {playerTypeTab === "outfield" && (
+                  <>
+                    <th className="px-3 py-3 text-center hidden md:table-cell">VEL</th>
+                    <th className="px-3 py-3 text-center hidden md:table-cell">TIR</th>
+                    <th className="px-3 py-3 text-center hidden md:table-cell">PAS</th>
+                  </>
+                )}
                 <th className="px-3 py-3 text-center hidden md:table-cell">DEF</th>
                 <th className="px-4 py-3 text-right">Valor</th>
               </tr>
@@ -812,15 +969,19 @@ export function PlayerList({
                         {tierInfo.tier}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
-                      {player.speed ?? "—"}
-                    </td>
-                    <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
-                      {player.shooting ?? "—"}
-                    </td>
-                    <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
-                      {player.passing ?? "—"}
-                    </td>
+                    {playerTypeTab === "outfield" && (
+                      <>
+                        <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
+                          {player.speed ?? "—"}
+                        </td>
+                        <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
+                          {player.shooting ?? "—"}
+                        </td>
+                        <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
+                          {player.passing ?? "—"}
+                        </td>
+                      </>
+                    )}
                     <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
                       {player.defending ?? "—"}
                     </td>

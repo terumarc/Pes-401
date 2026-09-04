@@ -43,9 +43,9 @@ export function GenerateFixturesBtn({ leagueId, teams, hasExisting = false }: Ge
         try {
             await generateFixturesClient(leagueId);
             toast.success("¡Calendario generado con éxito!");
+            setOpen(false);
             startTransition(() => {
                 router.refresh();
-                setOpen(false);
             });
         } catch (error: any) {
             console.error("Error al generar:", error);

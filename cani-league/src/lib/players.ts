@@ -173,16 +173,25 @@ export function getPlayerTier(
 
   const isGK = pos?.toUpperCase() === "GK";
 
+  // Los porteros tienen su propio distintivo exclusivo "POR" y NO van en S+, S, A, B, C, D
+  if (isGK) {
+    return {
+      tier: "POR",
+      label: "Portero",
+      color: "text-amber-600 dark:text-amber-400 font-extrabold",
+      bgColor: "bg-amber-500/10 border border-amber-500/30 dark:bg-amber-500/20",
+    };
+  }
+
   const thresholds =
     customThresholds ??
-    (isGK
-      ? activeTierThresholds?.gk ?? DEFAULT_GK_THRESHOLDS
-      : activeTierThresholds?.outfield ?? DEFAULT_OUTFIELD_THRESHOLDS);
+    activeTierThresholds?.outfield ??
+    DEFAULT_OUTFIELD_THRESHOLDS;
 
   if (media >= thresholds.sPlus) {
     return {
       tier: "S+",
-      label: isGK ? "Portero S+ (Leyenda)" : "Leyenda / Top",
+      label: "Leyenda / Top",
       color: "text-purple-600 dark:text-purple-400 font-extrabold",
       bgColor:
         "bg-purple-500/10 border border-purple-500/30 dark:bg-purple-500/20",
@@ -191,7 +200,7 @@ export function getPlayerTier(
   if (media >= thresholds.s) {
     return {
       tier: "S",
-      label: isGK ? "Portero S (Clase Mundial)" : "Clase Mundial",
+      label: "Clase Mundial",
       color: "text-amber-600 dark:text-amber-400 font-bold",
       bgColor: "bg-amber-500/10 border border-amber-500/30 dark:bg-amber-500/20",
     };
@@ -199,7 +208,7 @@ export function getPlayerTier(
   if (media >= thresholds.a) {
     return {
       tier: "A",
-      label: isGK ? "Portero A (Estrella)" : "Estrella",
+      label: "Estrella",
       color: "text-sky-600 dark:text-sky-400 font-bold",
       bgColor: "bg-sky-500/10 border border-sky-500/30 dark:bg-sky-500/20",
     };
@@ -207,7 +216,7 @@ export function getPlayerTier(
   if (media >= thresholds.b) {
     return {
       tier: "B",
-      label: isGK ? "Portero B (Titular)" : "Titular",
+      label: "Titular",
       color: "text-emerald-600 dark:text-emerald-400 font-semibold",
       bgColor:
         "bg-emerald-500/10 border border-emerald-500/30 dark:bg-emerald-500/20",
@@ -216,7 +225,7 @@ export function getPlayerTier(
   if (media >= thresholds.c) {
     return {
       tier: "C",
-      label: isGK ? "Portero C (Rotación)" : "Rotación",
+      label: "Rotación",
       color: "text-slate-600 dark:text-slate-300 font-medium",
       bgColor: "bg-slate-500/10 border border-slate-500/30 dark:bg-slate-500/20",
     };
@@ -224,7 +233,7 @@ export function getPlayerTier(
 
   return {
     tier: "D",
-    label: isGK ? "Portero D (Reserva)" : "Reserva",
+    label: "Reserva",
     color: "text-zinc-500 dark:text-zinc-400 font-medium",
     bgColor: "bg-zinc-500/10 border border-zinc-500/20 dark:bg-zinc-500/20",
   };

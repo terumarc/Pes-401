@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { invalidateMemCache } from "@/lib/data/cache";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { calculateMatchReward } from "@/lib/economy";
 import { applySeasonMultipliers } from "@/lib/data/budget";
 import { buildLeagueTable } from "@/lib/data/matches";
@@ -139,10 +139,18 @@ export async function POST(request: Request) {
     // 4. Invalidación de caché
     invalidateMemCache("matches");
     invalidateMemCache("teams");
+    invalidateMemCache("standing");
     try {
-      revalidateTag("matches", "max");
-      revalidateTag("standings", "max");
-      revalidateTag("teams", "max");
+      revalidateTag("matches", { expire: 0 });
+      revalidateTag("standings", { expire: 0 });
+      revalidateTag("teams", { expire: 0 });
+    } catch {}
+
+    try {
+      revalidatePath("/calendar");
+      revalidatePath("/standings");
+      revalidatePath("/league");
+      revalidatePath("/teams");
     } catch {}
 
     return NextResponse.json({

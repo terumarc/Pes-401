@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { invalidateMemCache } from "@/lib/data/cache";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import type { Team, Match } from "@/types";
 
 export async function POST(request: Request) {
@@ -45,7 +45,17 @@ export async function POST(request: Request) {
     }
 
     // 2. Eliminar cualquier calendario anterior de la liga
-    await supabase.from("matches").delete().eq("league_id", leagueId);
+    const { error: delErr } = await supabase
+      .from("matches")
+      .delete()
+      .eq("league_id", leagueId);
+
+    if (delErr) {
+      return NextResponse.json(
+        { error: "Error al borrar el calendario previo: " + delErr.message },
+        { status: 500 },
+      );
+    }
 
     // 3. Generar round-robin ida y vuelta
     const teamList = [...validTeams];
@@ -119,10 +129,18 @@ export async function POST(request: Request) {
     // 5. Invalidar cachés del servidor y tags
     invalidateMemCache("matches");
     invalidateMemCache("teams");
+    invalidateMemCache("standing");
     try {
-      revalidateTag("matches", "max");
-      revalidateTag("standings", "max");
-      revalidateTag("teams", "max");
+      revalidateTag("matches", { expire: 0 });
+      revalidateTag("standings", { expire: 0 });
+      revalidateTag("teams", { expire: 0 });
+    } catch {}
+
+    try {
+      revalidatePath("/calendar");
+      revalidatePath("/standings");
+      revalidatePath("/league");
+      revalidatePath("/teams");
     } catch {}
 
     return NextResponse.json({

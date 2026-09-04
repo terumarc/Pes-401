@@ -419,15 +419,23 @@ export async function generateFixturesClient(
 
 import { ECONOMY_CONFIG } from "@/lib/economy";
 
-export async function resetLeagueClient(leagueId: string): Promise<void> {
+export async function resetLeagueClient(
+  leagueId: string,
+  mode: "calendar" | "league" = "league",
+): Promise<void> {
   const res = await fetch("/api/matches/reset", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ leagueId }),
+    body: JSON.stringify({ leagueId, mode }),
   });
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
-    throw new Error(json.error || "Error al resetear la liga");
+    throw new Error(
+      json.error ||
+        (mode === "calendar"
+          ? "Error al reiniciar el calendario"
+          : "Error al resetear la liga"),
+    );
   }
 }
 
