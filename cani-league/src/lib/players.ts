@@ -15,21 +15,28 @@ export interface TierThresholds {
   c: number;
 }
 
-export const DEFAULT_OUTFIELD_THRESHOLDS: TierThresholds = {
-  sPlus: 89,
-  s: 85,
-  a: 82,
-  b: 78,
-  c: 74,
+export type PositionGroup = "all" | "def" | "mid" | "att" | "gk";
+
+export function getPositionGroup(position?: string | null): PositionGroup {
+  if (!position) return "mid";
+  const pos = position.toUpperCase();
+  if (pos === "GK") return "gk";
+  if (["CB", "LB", "RB", "SW"].includes(pos)) return "def";
+  if (["DMF", "CMF", "AMF", "LMF", "RMF"].includes(pos)) return "mid";
+  return "att";
+}
+
+export const GROUP_TIER_THRESHOLDS: Record<PositionGroup, TierThresholds> = {
+  def: { sPlus: 86, s: 83, a: 80, b: 76, c: 72 },
+  mid: { sPlus: 88, s: 85, a: 82, b: 78, c: 74 },
+  att: { sPlus: 91, s: 87, a: 83, b: 79, c: 75 },
+  gk:  { sPlus: 96, s: 91, a: 86, b: 81, c: 75 },
+  all: { sPlus: 89, s: 85, a: 82, b: 78, c: 74 },
 };
 
-export const DEFAULT_GK_THRESHOLDS: TierThresholds = {
-  sPlus: 95,
-  s: 90,
-  a: 85,
-  b: 80,
-  c: 70,
-};
+export const DEFAULT_OUTFIELD_THRESHOLDS: TierThresholds = GROUP_TIER_THRESHOLDS.all;
+
+export const DEFAULT_GK_THRESHOLDS: TierThresholds = GROUP_TIER_THRESHOLDS.gk;
 
 /**
  * Atributos clave por familia de posición (Opción B)
@@ -179,6 +186,7 @@ export function getPlayerTier(
       },
   position?: string,
   customThresholds?: TierThresholds,
+  groupContext?: PositionGroup,
 ): TierInfo {
   let media = 0;
   let pos = position;
@@ -190,21 +198,10 @@ export function getPlayerTier(
     media = overallOrPlayer || 0;
   }
 
-  const isGK = pos?.toUpperCase() === "GK";
-
-  // Los porteros tienen su propio distintivo exclusivo "POR" y NO van en S+, S, A, B, C, D
-  if (isGK) {
-    return {
-      tier: "POR",
-      label: "Portero",
-      color: "text-amber-600 dark:text-amber-400 font-extrabold",
-      bgColor: "bg-amber-500/10 border border-amber-500/30 dark:bg-amber-500/20",
-    };
-  }
-
+  const group: PositionGroup = groupContext ?? (pos ? getPositionGroup(pos) : "all");
   const thresholds =
     customThresholds ??
-    activeTierThresholds?.outfield ??
+    GROUP_TIER_THRESHOLDS[group] ??
     DEFAULT_OUTFIELD_THRESHOLDS;
 
   if (media >= thresholds.sPlus) {

@@ -18,7 +18,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MarketCard } from "@/components/market/MarketCard";
 import { PLAYER_POSITIONS } from "@/constants";
 import { formatMoney } from "@/lib/format/money";
-import { getPlayerEffectiveRating } from "@/lib/players";
+import {
+  getPlayerEffectiveRating,
+  getPositionGroup,
+  GROUP_TIER_THRESHOLDS,
+  type PositionGroup,
+} from "@/lib/players";
+import { POSITION_TABS } from "@/components/players/PlayerList";
 import type { Player, Team } from "@/types";
 
 type MarketPlayer = Player & { team?: Pick<Team, "id" | "name"> | null };
@@ -33,28 +39,6 @@ const OUTFIELD_CATEGORIES = [
   { label: "🛡️ Defensas (CB, LB, RB, SW)", value: "DEF" },
   { label: "🎯 Centrocampistas (DMF, CMF, AMF, LMF, RMF)", value: "MID" },
   { label: "⚡ Delanteros (CF, SS, LWF, RWF)", value: "ATT" },
-];
-
-const OUTFIELD_OVERALL_PRESETS = [
-  { label: "Cualquier media", value: "ALL", min: null, max: null },
-  { label: "★ 89+ (S+ Leyenda)", value: "89+", min: 89, max: null },
-  { label: "★ 85 - 88 (S Clase Mundial)", value: "85-88", min: 85, max: 88 },
-  { label: "★ 82 - 84 (A Estrella)", value: "82-84", min: 82, max: 84 },
-  { label: "★ 78 - 81 (B Titular)", value: "78-81", min: 78, max: 81 },
-  { label: "★ 74 - 77 (C Rotación)", value: "74-77", min: 74, max: 77 },
-  { label: "★ < 74 (D Reserva)", value: "<74", min: null, max: 73 },
-  { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
-];
-
-const GK_OVERALL_PRESETS = [
-  { label: "Todas las medias", value: "ALL", min: null, max: null },
-  { label: "★ 95+ (Leyendas Top)", value: "95+", min: 95, max: null },
-  { label: "★ 90 - 94 (Clase Mundial)", value: "90-94", min: 90, max: 94 },
-  { label: "★ 85 - 89 (Estrellas)", value: "85-89", min: 85, max: 89 },
-  { label: "★ 80 - 84 (Titulares)", value: "80-84", min: 80, max: 84 },
-  { label: "★ 70 - 79 (Rotación)", value: "70-79", min: 70, max: 79 },
-  { label: "★ < 70 (Reserva)", value: "<70", min: null, max: 69 },
-  { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
 
 const VALUE_PRESETS = [
@@ -80,7 +64,7 @@ function isPositionInGroup(pos: string, group: string): boolean {
 const PAGE_SIZE = 24;
 
 export function MarketSearchList({ players, teams }: MarketSearchListProps) {
-  const [playerTypeTab, setPlayerTypeTab] = useState<"outfield" | "gk">("outfield");
+  const [positionGroupTab, setPositionGroupTab] = useState<PositionGroup>("all");
   const [search, setSearch] = useState("");
   const [nationality, setNationality] = useState<string>("ALL");
   const [positionFilter, setPositionFilter] = useState<string>("ALL");
@@ -119,14 +103,72 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
       .map(([name, count]) => ({ name, count }));
   }, [players]);
 
-  const outfieldCount = useMemo(
-    () => players.filter((p) => p.position?.toUpperCase() !== "GK").length,
-    [players]
-  );
-  const gkCount = useMemo(
-    () => players.filter((p) => p.position?.toUpperCase() === "GK").length,
-    [players]
-  );
+  const countsByGroup = useMemo(() => {
+    let def = 0;
+    let mid = 0;
+    let att = 0;
+    let gk = 0;
+    for (const p of players) {
+      const grp = getPositionGroup(p.position);
+      if (grp === "def") def++;
+      else if (grp === "mid") mid++;
+      else if (grp === "att") att++;
+      else if (grp === "gk") gk++;
+    }
+    return { all: players.length, def, mid, att, gk };
+  }, [players]);
+
+  const currentPresets = useMemo(() => {
+    const t = GROUP_TIER_THRESHOLDS[positionGroupTab];
+    return [
+      { label: "Cualquier media", value: "ALL", min: null, max: null },
+      { label: `★ ${t.sPlus}+ (S+ Leyenda)`, value: "S+", min: t.sPlus, max: null },
+      { label: `★ ${t.s} - ${t.sPlus - 1} (S Clase Mundial)`, value: "S", min: t.s, max: t.sPlus - 1 },
+      { label: `★ ${t.a} - ${t.s - 1} (A Estrella)`, value: "A", min: t.a, max: t.s - 1 },
+      { label: `★ ${t.b} - ${t.a - 1} (B Titular)`, value: "B", min: t.b, max: t.a - 1 },
+      { label: `★ ${t.c} - ${t.b - 1} (C Rotación)`, value: "C", min: t.c, max: t.b - 1 },
+      { label: `★ < ${t.c} (D Reserva)`, value: "D", min: null, max: t.c - 1 },
+      { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
+    ];
+  }, [positionGroupTab]);
+
+  const subPositionOptions = useMemo(() => {
+    if (positionGroupTab === "def") {
+      return [
+        { label: "Todas las defensas (CB, LB, RB)", value: "ALL" },
+        { label: "Centrales (CB)", value: "CB" },
+        { label: "Laterales Izquierdos (LB)", value: "LB" },
+        { label: "Laterales Derechos (RB)", value: "RB" },
+      ];
+    }
+    if (positionGroupTab === "mid") {
+      return [
+        { label: "Todos los centrocampistas", value: "ALL" },
+        { label: "Pivotes Defensivos (DMF)", value: "DMF" },
+        { label: "Mediocentros Organizadores (CMF)", value: "CMF" },
+        { label: "Mediapuntas (AMF)", value: "AMF" },
+        { label: "Banda Izquierda (LMF)", value: "LMF" },
+        { label: "Banda Derecha (RMF)", value: "RMF" },
+      ];
+    }
+    if (positionGroupTab === "att") {
+      return [
+        { label: "Todos los delanteros", value: "ALL" },
+        { label: "Delanteros Centro (CF)", value: "CF" },
+        { label: "Segundos Delanteros (SS)", value: "SS" },
+        { label: "Extremo Izquierdo (LWF)", value: "LWF" },
+        { label: "Extremo Derecho (RWF)", value: "RWF" },
+      ];
+    }
+    if (positionGroupTab === "gk") {
+      return [{ label: "Porteros (GK)", value: "ALL" }];
+    }
+    return [
+      { label: "Todas las posiciones", value: "ALL" },
+      ...OUTFIELD_CATEGORIES.filter((c) => c.value !== "ALL"),
+      ...PLAYER_POSITIONS.map((pos) => ({ label: `Posición: ${pos}`, value: pos })),
+    ];
+  }, [positionGroupTab]);
 
   // Handle active filter resets
   const hasActiveFilters =
@@ -158,8 +200,6 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
   // Filtered & Sorted players
   const filteredPlayers = useMemo(() => {
-    const isOutfield = playerTypeTab === "outfield";
-    const currentPresets = isOutfield ? OUTFIELD_OVERALL_PRESETS : GK_OVERALL_PRESETS;
     const q = search.toLowerCase().trim();
 
     // Determine overall bounds
@@ -193,11 +233,10 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     }
 
     const result = players.filter((player) => {
-      const isGK = player.position?.toUpperCase() === "GK";
-
-      // Estricta separación: en pestaña de campo NUNCA entran porteros; en pestaña de porteros NUNCA entran jugadores de campo
-      if (isOutfield && isGK) return false;
-      if (!isOutfield && !isGK) return false;
+      // Position group filter (Todos, Defensas, Medios, Delanteros, Porteros)
+      if (positionGroupTab !== "all") {
+        if (getPositionGroup(player.position) !== positionGroupTab) return false;
+      }
 
       // Search text match
       if (q) {
@@ -218,8 +257,8 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
         }
       }
 
-      // Position match (solo en pestaña de jugadores de campo)
-      if (isOutfield && positionFilter !== "ALL") {
+      // Position match
+      if (positionFilter !== "ALL") {
         if (!isPositionInGroup(player.position || "", positionFilter)) {
           return false;
         }
@@ -270,7 +309,8 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     return result;
   }, [
     players,
-    playerTypeTab,
+    positionGroupTab,
+    currentPresets,
     search,
     nationality,
     positionFilter,
@@ -296,77 +336,57 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     <div className="space-y-6">
       {/* FILTER CONTROL PANEL */}
       <div className="rounded-2xl border bg-card/60 p-4 shadow-xs backdrop-blur-xs space-y-4">
-        {/* Selector Principal: Jugadores de Campo vs Porteros */}
+        {/* Selector Principal por Agrupaciones de Posición */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setPlayerTypeTab("outfield");
-                setPositionFilter("ALL");
-                setOverallPreset("ALL");
-                setCurrentPage(1);
-              }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                playerTypeTab === "outfield"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <span>⚽ Jugadores de Campo</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
-                  playerTypeTab === "outfield"
-                    ? "bg-primary-foreground/20 text-primary-foreground"
-                    : "bg-muted-foreground/20 text-muted-foreground"
-                }`}
-              >
-                {outfieldCount.toLocaleString()}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setPlayerTypeTab("gk");
-                setPositionFilter("ALL");
-                setOverallPreset("ALL");
-                setCurrentPage(1);
-              }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                playerTypeTab === "gk"
-                  ? "bg-amber-500 text-white shadow-xs"
-                  : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <span>🧤 Porteros</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
-                  playerTypeTab === "gk"
-                    ? "bg-white/25 text-white"
-                    : "bg-muted-foreground/20 text-muted-foreground"
-                }`}
-              >
-                {gkCount.toLocaleString()}
-              </span>
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {POSITION_TABS.map((tab) => {
+              const active = positionGroupTab === tab.id;
+              const count = countsByGroup[tab.id] ?? 0;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setPositionGroupTab(tab.id);
+                    setPositionFilter("ALL");
+                    setOverallPreset("ALL");
+                    setCurrentPage(1);
+                  }}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                    active
+                      ? tab.activeClass
+                      : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <span className="text-base leading-none">{tab.icon}</span>
+                  <span>{tab.label}</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                      active
+                        ? "bg-black/20 text-inherit dark:bg-white/20"
+                        : "bg-muted-foreground/20 text-muted-foreground"
+                    }`}
+                  >
+                    {count.toLocaleString()}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          <span className="text-[11px] text-muted-foreground hidden md:inline font-medium">
-            {playerTypeTab === "outfield"
-              ? "Jugadores de campo en el mercado"
-              : "Apartado exclusivo de porteros"}
+          <span className="text-[11px] text-muted-foreground hidden lg:inline font-medium">
+            {POSITION_TABS.find((t) => t.id === positionGroupTab)?.description}
           </span>
         </div>
 
-        {/* Banner exclusivo si está en pestaña de porteros */}
-        {playerTypeTab === "gk" && (
+        {/* Banner contextual si está en pestaña de porteros */}
+        {positionGroupTab === "gk" && (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start sm:items-center gap-2.5">
             <span className="text-lg shrink-0">🧤</span>
             <div className="min-w-0">
               <p className="font-bold text-foreground">Apartado exclusivo de Porteros en el Mercado</p>
               <p className="text-muted-foreground text-[11px]">
-                Mostrando únicamente porteros. Su valoración media corresponde a Defensa y Portería ((DEF + GK) / 2).
+                Mostrando únicamente guardametas. Su valoración media corresponde a Defensa y Portería ((DEF + GK) / 2) y sus tiers están calibrados a los estándares de porteros (S+ ≥ 96, S ≥ 91, A ≥ 86, B ≥ 81, C ≥ 75).
               </p>
             </div>
           </div>
@@ -383,9 +403,9 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                 setCurrentPage(1);
               }}
               placeholder={
-                playerTypeTab === "outfield"
-                  ? "Buscar jugadores de campo en el mercado..."
-                  : "Buscar porteros en el mercado..."
+                positionGroupTab === "all"
+                  ? "Buscar jugadores en el mercado..."
+                  : `Buscar ${POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel.toLowerCase()} en el mercado...`
               }
               className="pl-9 pr-9"
             />
@@ -449,51 +469,35 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
           </div>
 
           {/* 2. POSITION FILTER */}
-          {playerTypeTab === "outfield" ? (
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                Posición
-              </label>
-              <Select
-                value={positionFilter}
-                onValueChange={(val) => {
-                  setPositionFilter(val ?? "ALL");
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Todas las posiciones de campo" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {OUTFIELD_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                  <div className="my-1 border-t border-border/50" />
-                  {PLAYER_POSITIONS.filter((p) => p !== "GK").map((pos) => (
-                    <SelectItem key={pos} value={pos}>
-                      Posición exacta: {pos}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                Posición
-              </label>
-              <div className="w-full h-9 rounded-md border border-border/80 bg-muted/40 px-3 text-xs sm:text-sm font-semibold text-foreground flex items-center">
-                <span>🧤 Portero Exclusivo (GK)</span>
-              </div>
-            </div>
-          )}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+              {positionGroupTab === "all" ? "Posición" : `Filtro ${POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}`}
+            </label>
+            <Select
+              value={positionFilter}
+              onValueChange={(val) => {
+                setPositionFilter(val ?? "ALL");
+                setCurrentPage(1);
+              }}
+              disabled={positionGroupTab === "gk"}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Todas las posiciones" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {subPositionOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* 3. AVERAGE POINTS / OVERALL FILTER */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-              Puntos de Media (OVR)
+              Media ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel})
             </label>
             <Select
               value={overallPreset}
@@ -506,7 +510,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                 <SelectValue placeholder="Cualquier media" />
               </SelectTrigger>
               <SelectContent>
-                {(playerTypeTab === "outfield" ? OUTFIELD_OVERALL_PRESETS : GK_OVERALL_PRESETS).map((ovr) => (
+                {currentPresets.map((ovr) => (
                   <SelectItem key={ovr.value} value={ovr.value}>
                     {ovr.label}
                   </SelectItem>

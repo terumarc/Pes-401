@@ -3,16 +3,17 @@ import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatStat } from "@/lib/format/stats";
-import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
+import { getPlayerTier, getPlayerEffectiveRating, type PositionGroup } from "@/lib/players";
 import type { Player, Team } from "@/types";
 
 type PlayerCardProps = {
   player: Player & { team?: Pick<Team, "id" | "name" | "primary_color"> };
   href?: string;
+  groupContext?: PositionGroup;
 };
 
-export function PlayerCard({ player, href }: PlayerCardProps) {
-  const tierInfo = getPlayerTier(player);
+export function PlayerCard({ player, href, groupContext }: PlayerCardProps) {
+  const tierInfo = getPlayerTier(player, undefined, undefined, groupContext);
   const mediaValue = getPlayerEffectiveRating(player);
 
   const content = (
