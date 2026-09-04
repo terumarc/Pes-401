@@ -16,10 +16,18 @@ export interface TierThresholds {
 }
 
 export const DEFAULT_OUTFIELD_THRESHOLDS: TierThresholds = {
-  sPlus: 90,
-  s: 85,
-  a: 80,
-  b: 75,
+  sPlus: 85,
+  s: 82,
+  a: 78,
+  b: 74,
+  c: 70,
+};
+
+export const DEFAULT_GK_THRESHOLDS: TierThresholds = {
+  sPlus: 95,
+  s: 90,
+  a: 85,
+  b: 80,
   c: 70,
 };
 
@@ -61,7 +69,7 @@ export function getPlayerEffectiveRating(player: {
 }
 
 /**
- * Calcula dinámicamente los umbrales de tiers para jugadores de campo
+ * Calcula dinámicamente los umbrales de tiers para jugadores de campo y porteros
  * basándose en los promedios de la liga.
  */
 export function calcTierThresholds(
@@ -71,16 +79,27 @@ export function calcTierThresholds(
     defending?: number | null;
     goalkeeping?: number | null;
   }>,
-): { outfield: TierThresholds } {
+): { outfield: TierThresholds; gk: TierThresholds } {
   if (!players || players.length === 0) {
-    return { outfield: DEFAULT_OUTFIELD_THRESHOLDS };
+    return {
+      outfield: DEFAULT_OUTFIELD_THRESHOLDS,
+      gk: DEFAULT_GK_THRESHOLDS,
+    };
   }
 
   let outfieldSum = 0;
   let outfieldCount = 0;
+  let gkSum = 0;
+  let gkCount = 0;
 
   for (const p of players) {
-    if (p.position?.toUpperCase() !== "GK") {
+    if (p.position?.toUpperCase() === "GK") {
+      const rating = calcGoalkeeperRating(p);
+      if (rating > 0) {
+        gkSum += rating;
+        gkCount++;
+      }
+    } else {
       const rating = p.overall ?? 0;
       if (rating > 0) {
         outfieldSum += rating;
@@ -89,23 +108,32 @@ export function calcTierThresholds(
     }
   }
 
-  const outfieldAvg = outfieldCount > 0 ? Math.round(outfieldSum / outfieldCount) : 75;
+  const outfieldAvg = outfieldCount > 0 ? Math.round(outfieldSum / outfieldCount) : 76;
+  const gkAvg = gkCount > 0 ? Math.round(gkSum / gkCount) : 85;
 
-  const buildThresholds = (avg: number): TierThresholds => ({
-    sPlus: avg + 12,
-    s: avg + 7,
-    a: avg + 2,
-    b: avg - 3,
-    c: avg - 7,
-  });
-
-  return { outfield: buildThresholds(outfieldAvg) };
+  return {
+    outfield: {
+      sPlus: outfieldAvg + 9, // ej: 76 + 9 = 85
+      s: outfieldAvg + 6,     // ej: 76 + 6 = 82
+      a: outfieldAvg + 2,     // ej: 76 + 2 = 78
+      b: outfieldAvg - 2,     // ej: 76 - 2 = 74
+      c: outfieldAvg - 6,     // ej: 76 - 6 = 70
+    },
+    gk: {
+      sPlus: gkAvg + 10,      // ej: 85 + 10 = 95
+      s: gkAvg + 5,           // ej: 85 + 5 = 90
+      a: gkAvg,               // ej: 85
+      b: gkAvg - 5,           // ej: 85 - 5 = 80
+      c: gkAvg - 15,          // ej: 85 - 15 = 70
+    },
+  };
 }
 
-let activeTierThresholds: { outfield: TierThresholds } | null = null;
+let activeTierThresholds: { outfield: TierThresholds; gk: TierThresholds } | null = null;
 
 export function setGlobalTierThresholds(thresholds: {
   outfield: TierThresholds;
+  gk: TierThresholds;
 }) {
   activeTierThresholds = thresholds;
 }
@@ -113,6 +141,7 @@ export function setGlobalTierThresholds(thresholds: {
 /**
  * Devuelve el Tier de un jugador según su media/valoración y su posición.
  * Soporta invocación con (overall, position), o con (playerObject, position).
+ * Asigna S+ al C según los umbrales correspondientes a su rol (portero o jugador de campo).
  */
 export function getPlayerTier(
   overallOrPlayer:
@@ -140,23 +169,16 @@ export function getPlayerTier(
 
   const isGK = pos?.toUpperCase() === "GK";
 
-  // Los porteros van en un apartado exclusivo de porteros (POR), nunca en S+ ni tiers de campo
-  if (isGK) {
-    return {
-      tier: "POR",
-      label: "Portero",
-      color: "text-teal-600 dark:text-teal-400 font-extrabold",
-      bgColor: "bg-teal-500/10 border border-teal-500/30 dark:bg-teal-500/20",
-    };
-  }
-
   const thresholds =
-    customThresholds ?? activeTierThresholds?.outfield ?? DEFAULT_OUTFIELD_THRESHOLDS;
+    customThresholds ??
+    (isGK
+      ? activeTierThresholds?.gk ?? DEFAULT_GK_THRESHOLDS
+      : activeTierThresholds?.outfield ?? DEFAULT_OUTFIELD_THRESHOLDS);
 
   if (media >= thresholds.sPlus) {
     return {
       tier: "S+",
-      label: "Leyenda / Top",
+      label: isGK ? "Portero S+ (Leyenda)" : "Leyenda / Top",
       color: "text-purple-600 dark:text-purple-400 font-extrabold",
       bgColor:
         "bg-purple-500/10 border border-purple-500/30 dark:bg-purple-500/20",
@@ -165,7 +187,7 @@ export function getPlayerTier(
   if (media >= thresholds.s) {
     return {
       tier: "S",
-      label: "Clase Mundial",
+      label: isGK ? "Portero S (Clase Mundial)" : "Clase Mundial",
       color: "text-amber-600 dark:text-amber-400 font-bold",
       bgColor: "bg-amber-500/10 border border-amber-500/30 dark:bg-amber-500/20",
     };
@@ -173,7 +195,7 @@ export function getPlayerTier(
   if (media >= thresholds.a) {
     return {
       tier: "A",
-      label: "Estrella",
+      label: isGK ? "Portero A (Estrella)" : "Estrella",
       color: "text-sky-600 dark:text-sky-400 font-bold",
       bgColor: "bg-sky-500/10 border border-sky-500/30 dark:bg-sky-500/20",
     };
@@ -181,7 +203,7 @@ export function getPlayerTier(
   if (media >= thresholds.b) {
     return {
       tier: "B",
-      label: "Titular",
+      label: isGK ? "Portero B (Titular)" : "Titular",
       color: "text-emerald-600 dark:text-emerald-400 font-semibold",
       bgColor:
         "bg-emerald-500/10 border border-emerald-500/30 dark:bg-emerald-500/20",
@@ -190,7 +212,7 @@ export function getPlayerTier(
   if (media >= thresholds.c) {
     return {
       tier: "C",
-      label: "Rotación",
+      label: isGK ? "Portero C (Rotación)" : "Rotación",
       color: "text-slate-600 dark:text-slate-300 font-medium",
       bgColor: "bg-slate-500/10 border border-slate-500/30 dark:bg-slate-500/20",
     };
@@ -198,7 +220,7 @@ export function getPlayerTier(
 
   return {
     tier: "D",
-    label: "Reserva",
+    label: isGK ? "Portero D (Reserva)" : "Reserva",
     color: "text-zinc-500 dark:text-zinc-400 font-medium",
     bgColor: "bg-zinc-500/10 border border-zinc-500/20 dark:bg-zinc-500/20",
   };

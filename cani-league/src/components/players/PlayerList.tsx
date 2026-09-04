@@ -64,11 +64,11 @@ const INDIVIDUAL_POSITIONS = [
 
 const OVERALL_PRESETS = [
   { label: "Cualquier media", value: "ALL", min: null, max: null },
-  { label: "★ 90+ (S+ Leyenda)", value: "90+", min: 90, max: null },
-  { label: "★ 85 - 89 (S Clase Mundial)", value: "85-89", min: 85, max: 89 },
-  { label: "★ 80 - 84 (A Estrella)", value: "80-84", min: 80, max: 84 },
-  { label: "★ 75 - 79 (B Titular)", value: "75-79", min: 75, max: 79 },
-  { label: "★ 70 - 74 (C Rotación)", value: "70-74", min: 70, max: 74 },
+  { label: "★ 85+ (S+ Leyenda)", value: "85+", min: 85, max: null },
+  { label: "★ 82 - 84 (S Clase Mundial)", value: "82-84", min: 82, max: 84 },
+  { label: "★ 78 - 81 (A Estrella)", value: "78-81", min: 78, max: 81 },
+  { label: "★ 74 - 77 (B Titular)", value: "74-77", min: 74, max: 77 },
+  { label: "★ 70 - 73 (C Rotación)", value: "70-73", min: 70, max: 73 },
   { label: "★ < 70 (D Reserva)", value: "<70", min: null, max: 69 },
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
@@ -203,9 +203,12 @@ export function PlayerList({
 
         // Tier filter
         if (selectedTier !== "TODOS") {
-          const tier = getPlayerTier(p).tier;
-          const targetTier = selectedTier === "PORTEROS" ? "POR" : selectedTier;
-          if (tier !== targetTier) return false;
+          if (selectedTier === "PORTEROS") {
+            if (p.position?.toUpperCase() !== "GK") return false;
+          } else {
+            const tier = getPlayerTier(p).tier;
+            if (tier !== selectedTier) return false;
+          }
         }
 
         // Team filter
@@ -620,7 +623,7 @@ export function PlayerList({
                     : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
-                {tier}
+                {tier === "PORTEROS" ? "🧤 Porteros" : tier}
               </button>
             );
           })}
