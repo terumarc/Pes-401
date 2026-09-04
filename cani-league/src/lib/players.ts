@@ -16,11 +16,11 @@ export interface TierThresholds {
 }
 
 export const DEFAULT_OUTFIELD_THRESHOLDS: TierThresholds = {
-  sPlus: 85,
-  s: 82,
-  a: 78,
-  b: 74,
-  c: 70,
+  sPlus: 89,
+  s: 85,
+  a: 82,
+  b: 78,
+  c: 74,
 };
 
 export const DEFAULT_GK_THRESHOLDS: TierThresholds = {
@@ -29,6 +29,25 @@ export const DEFAULT_GK_THRESHOLDS: TierThresholds = {
   a: 85,
   b: 80,
   c: 70,
+};
+
+/**
+ * Atributos clave por familia de posición (Opción B)
+ */
+export const POSITION_KEY_STATS: Record<string, string[]> = {
+  GK: ["DEFENSE", "GOAL KEEPING"],
+  CB: ["DEFENSE", "BALANCE", "HEADING", "JUMP", "RESPONSE", "STAMINA", "TOP SPEED", "ACCELERATION", "SHORT PASS ACCURACY", "TEAM WORK", "MENTALITY", "AGGRESSION"],
+  LB: ["TOP SPEED", "ACCELERATION", "STAMINA", "DEFENSE", "LONG PASS ACCURACY", "SHORT PASS ACCURACY", "DRIBBLE SPEED", "AGILITY", "RESPONSE", "BALANCE", "TEAM WORK", "TECHNIQUE"],
+  RB: ["TOP SPEED", "ACCELERATION", "STAMINA", "DEFENSE", "LONG PASS ACCURACY", "SHORT PASS ACCURACY", "DRIBBLE SPEED", "AGILITY", "RESPONSE", "BALANCE", "TEAM WORK", "TECHNIQUE"],
+  DMF: ["DEFENSE", "SHORT PASS ACCURACY", "SHORT PASS SPEED", "LONG PASS ACCURACY", "STAMINA", "BALANCE", "RESPONSE", "TEAM WORK", "MENTALITY", "TECHNIQUE", "TOP SPEED", "ACCELERATION"],
+  CMF: ["SHORT PASS ACCURACY", "SHORT PASS SPEED", "LONG PASS ACCURACY", "LONG PASS SPEED", "TECHNIQUE", "DRIBBLE ACCURACY", "STAMINA", "RESPONSE", "BALANCE", "TEAM WORK", "MENTALITY", "ATTACK", "DEFENSE"],
+  AMF: ["ATTACK", "DRIBBLE ACCURACY", "DRIBBLE SPEED", "SHORT PASS ACCURACY", "LONG PASS ACCURACY", "TECHNIQUE", "AGILITY", "TOP SPEED", "ACCELERATION", "SHOT ACCURACY", "SHOT TECHNIQUE", "TEAM WORK", "STAMINA"],
+  LMF: ["ATTACK", "DRIBBLE ACCURACY", "DRIBBLE SPEED", "SHORT PASS ACCURACY", "LONG PASS ACCURACY", "TECHNIQUE", "AGILITY", "TOP SPEED", "ACCELERATION", "SHOT ACCURACY", "SHOT TECHNIQUE", "TEAM WORK", "STAMINA"],
+  RMF: ["ATTACK", "DRIBBLE ACCURACY", "DRIBBLE SPEED", "SHORT PASS ACCURACY", "LONG PASS ACCURACY", "TECHNIQUE", "AGILITY", "TOP SPEED", "ACCELERATION", "SHOT ACCURACY", "SHOT TECHNIQUE", "TEAM WORK", "STAMINA"],
+  LWF: ["ATTACK", "TOP SPEED", "ACCELERATION", "DRIBBLE ACCURACY", "DRIBBLE SPEED", "AGILITY", "SHOT ACCURACY", "SHOT POWER", "SHOT TECHNIQUE", "TECHNIQUE", "RESPONSE", "SHORT PASS ACCURACY"],
+  RWF: ["ATTACK", "TOP SPEED", "ACCELERATION", "DRIBBLE ACCURACY", "DRIBBLE SPEED", "AGILITY", "SHOT ACCURACY", "SHOT POWER", "SHOT TECHNIQUE", "TECHNIQUE", "RESPONSE", "SHORT PASS ACCURACY"],
+  SS: ["ATTACK", "TOP SPEED", "ACCELERATION", "DRIBBLE ACCURACY", "DRIBBLE SPEED", "AGILITY", "SHOT ACCURACY", "SHOT POWER", "SHOT TECHNIQUE", "TECHNIQUE", "RESPONSE", "SHORT PASS ACCURACY"],
+  CF: ["ATTACK", "SHOT ACCURACY", "SHOT POWER", "SHOT TECHNIQUE", "HEADING", "JUMP", "RESPONSE", "TOP SPEED", "ACCELERATION", "BALANCE", "TECHNIQUE", "MENTALITY"]
 };
 
 /**
@@ -112,16 +131,16 @@ export function calcTierThresholds(
     }
   }
 
-  const outfieldAvg = outfieldCount > 0 ? Math.round(outfieldSum / outfieldCount) : 76;
+  const outfieldAvg = outfieldCount > 0 ? Math.round(outfieldSum / outfieldCount) : 80;
   const gkAvg = gkCount > 0 ? Math.round(gkSum / gkCount) : 85;
 
   return {
     outfield: {
-      sPlus: outfieldAvg + 9, // ej: 76 + 9 = 85
-      s: outfieldAvg + 6,     // ej: 76 + 6 = 82
-      a: outfieldAvg + 2,     // ej: 76 + 2 = 78
-      b: outfieldAvg - 2,     // ej: 76 - 2 = 74
-      c: outfieldAvg - 6,     // ej: 76 - 6 = 70
+      sPlus: outfieldAvg + 9, // ej: 80 + 9 = 89 (Leyendas Top)
+      s: outfieldAvg + 5,     // ej: 80 + 5 = 85 (Clase Mundial)
+      a: outfieldAvg + 2,     // ej: 80 + 2 = 82 (Estrellas)
+      b: outfieldAvg - 2,     // ej: 80 - 2 = 78 (Titulares)
+      c: outfieldAvg - 6,     // ej: 80 - 6 = 74 (Rotación)
     },
     gk: {
       sPlus: gkAvg + 10,      // ej: 85 + 10 = 95

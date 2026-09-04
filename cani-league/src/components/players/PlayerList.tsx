@@ -62,12 +62,12 @@ const OUTFIELD_INDIVIDUAL_POSITIONS = [
 
 const OUTFIELD_OVERALL_PRESETS = [
   { label: "Cualquier media", value: "ALL", min: null, max: null },
-  { label: "★ 85+ (S+ Leyenda)", value: "85+", min: 85, max: null },
-  { label: "★ 82 - 84 (S Clase Mundial)", value: "82-84", min: 82, max: 84 },
-  { label: "★ 78 - 81 (A Estrella)", value: "78-81", min: 78, max: 81 },
-  { label: "★ 74 - 77 (B Titular)", value: "74-77", min: 74, max: 77 },
-  { label: "★ 70 - 73 (C Rotación)", value: "70-73", min: 70, max: 73 },
-  { label: "★ < 70 (D Reserva)", value: "<70", min: null, max: 69 },
+  { label: "★ 89+ (S+ Leyenda)", value: "89+", min: 89, max: null },
+  { label: "★ 85 - 88 (S Clase Mundial)", value: "85-88", min: 85, max: 88 },
+  { label: "★ 82 - 84 (A Estrella)", value: "82-84", min: 82, max: 84 },
+  { label: "★ 78 - 81 (B Titular)", value: "78-81", min: 78, max: 81 },
+  { label: "★ 74 - 77 (C Rotación)", value: "74-77", min: 74, max: 77 },
+  { label: "★ < 74 (D Reserva)", value: "<74", min: null, max: 73 },
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
 
