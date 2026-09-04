@@ -323,6 +323,7 @@ export default async function TeamDetailPage({ params }: Props) {
                         availableInMarket={player.available_in_market}
                         teams={teams}
                         currentTeamId={player.team_id}
+                        player={player}
                       />
                     </div>
                   </CardContent>

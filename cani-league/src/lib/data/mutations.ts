@@ -430,3 +430,31 @@ export async function resetLeagueClient(leagueId: string): Promise<void> {
     throw new Error(json.error || "Error al resetear la liga");
   }
 }
+
+export type ReleaseResult = {
+  player: Player;
+  sellerTeamId: string;
+  sellerTeamName: string;
+  previousBudget: number;
+  newBudget: number;
+  originalPrice: number;
+  releaseFee: number;
+};
+
+export async function releasePlayerClient(
+  playerId: string,
+): Promise<ReleaseResult> {
+  const res = await fetch("/api/market/release", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ playerId }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || "Error al liberar al jugador");
+  }
+
+  return json as ReleaseResult;
+}
+

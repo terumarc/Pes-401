@@ -41,14 +41,18 @@ export function calcGoalkeeperRating(player: {
   goalkeeping?: number | null;
   overall?: number | null;
 }): number {
-  const def = Number(player.defending ?? 0);
   const gk = (player as any).goalkeeping;
+  const def = Number(player.defending ?? 0);
 
   if (gk != null && !isNaN(Number(gk))) {
     return Math.round((def + Number(gk)) / 2);
   }
 
-  return Math.round(def || player.overall || 0);
+  if (player.overall != null && !isNaN(Number(player.overall)) && Number(player.overall) > 0) {
+    return Math.round(Number(player.overall));
+  }
+
+  return Math.round(def || 0);
 }
 
 /**
