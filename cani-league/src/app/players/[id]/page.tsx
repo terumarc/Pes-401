@@ -13,6 +13,7 @@ import {
   getTeamsByLeague,
 } from "@/lib/data/league";
 import { formatStat } from "@/lib/format/stats";
+import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 type Props = {
@@ -32,6 +33,8 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
 
   const league = await getPrimaryLeague();
   const teams = league ? await getTeamsByLeague(league.id) : [];
+  const tierInfo = getPlayerTier(player);
+  const mediaValue = getPlayerEffectiveRating(player);
 
   if (edit === "1") {
     return (
@@ -64,11 +67,16 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
               size="lg"
             />
             <div>
-              <p className="text-[11px] tracking-wide text-ink-subtle uppercase">
-                Overall
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-[11px] tracking-wide text-ink-subtle uppercase">
+                  Media
+                </p>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${tierInfo.bgColor} ${tierInfo.color}`}>
+                  {tierInfo.tier}
+                </span>
+              </div>
               <p className="font-display text-5xl font-semibold tabular-nums">
-                {formatStat(player.overall)}
+                {formatStat(mediaValue)}
               </p>
             </div>
           </div>

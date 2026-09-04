@@ -1,4 +1,4 @@
-export type PlayerTier = "S+" | "S" | "A" | "B" | "C" | "D";
+export type PlayerTier = "S+" | "S" | "A" | "B" | "C" | "D" | "POR";
 
 export interface TierInfo {
   tier: PlayerTier;
@@ -23,16 +23,9 @@ export const DEFAULT_OUTFIELD_THRESHOLDS: TierThresholds = {
   c: 70,
 };
 
-export const DEFAULT_GK_THRESHOLDS: TierThresholds = {
-  sPlus: 88,
-  s: 83,
-  a: 78,
-  b: 73,
-  c: 68,
-};
-
 /**
- * Calcula la valoración de un portero basándose exclusivamente en sus estadísticas de portería y defensa.
+ * Calcula la media/valoración de un portero basándose exclusivamente en sus estadísticas de portería y defensa.
+ * Fórmula: (defending + goalkeeping) / 2.
  * Si 'goalkeeping' no está presente o es nulo, usa 'defending' (o overall si defending es nulo).
  */
 export function calcGoalkeeperRating(player: {
@@ -40,19 +33,20 @@ export function calcGoalkeeperRating(player: {
   goalkeeping?: number | null;
   overall?: number | null;
 }): number {
-  const def = player.defending ?? player.overall ?? 0;
-  const gk = player.goalkeeping;
+  const def = Number(player.defending ?? 0);
+  const gk = (player as any).goalkeeping;
 
   if (gk != null && !isNaN(Number(gk))) {
     return Math.round((def + Number(gk)) / 2);
   }
 
-  return Math.round(def);
+  return Math.round(def || player.overall || 0);
 }
 
 /**
- * Obtiene la valoración efectiva de un jugador.
- * Para porteros (GK), usa calcGoalkeeperRating; para el resto, overall.
+ * Obtiene la media efectiva de un jugador.
+ * Para porteros (GK), solo cuenta defensa y portería (calcGoalkeeperRating).
+ * Para jugadores de campo, cuenta su media general (overall).
  */
 export function getPlayerEffectiveRating(player: {
   position?: string;
@@ -67,7 +61,7 @@ export function getPlayerEffectiveRating(player: {
 }
 
 /**
- * Calcula dinámicamente los umbrales de tiers para jugadores de campo y porteros
+ * Calcula dinámicamente los umbrales de tiers para jugadores de campo
  * basándose en los promedios de la liga.
  */
 export function calcTierThresholds(
@@ -77,27 +71,16 @@ export function calcTierThresholds(
     defending?: number | null;
     goalkeeping?: number | null;
   }>,
-): { outfield: TierThresholds; gk: TierThresholds } {
+): { outfield: TierThresholds } {
   if (!players || players.length === 0) {
-    return {
-      outfield: DEFAULT_OUTFIELD_THRESHOLDS,
-      gk: DEFAULT_GK_THRESHOLDS,
-    };
+    return { outfield: DEFAULT_OUTFIELD_THRESHOLDS };
   }
 
   let outfieldSum = 0;
   let outfieldCount = 0;
-  let gkSum = 0;
-  let gkCount = 0;
 
   for (const p of players) {
-    if (p.position?.toUpperCase() === "GK") {
-      const rating = calcGoalkeeperRating(p);
-      if (rating > 0) {
-        gkSum += rating;
-        gkCount++;
-      }
-    } else {
+    if (p.position?.toUpperCase() !== "GK") {
       const rating = p.overall ?? 0;
       if (rating > 0) {
         outfieldSum += rating;
@@ -107,7 +90,6 @@ export function calcTierThresholds(
   }
 
   const outfieldAvg = outfieldCount > 0 ? Math.round(outfieldSum / outfieldCount) : 75;
-  const gkAvg = gkCount > 0 ? Math.round(gkSum / gkCount) : 73;
 
   const buildThresholds = (avg: number): TierThresholds => ({
     sPlus: avg + 12,
@@ -117,17 +99,13 @@ export function calcTierThresholds(
     c: avg - 7,
   });
 
-  return {
-    outfield: buildThresholds(outfieldAvg),
-    gk: buildThresholds(gkAvg),
-  };
+  return { outfield: buildThresholds(outfieldAvg) };
 }
 
-let activeTierThresholds: { outfield: TierThresholds; gk: TierThresholds } | null = null;
+let activeTierThresholds: { outfield: TierThresholds } | null = null;
 
 export function setGlobalTierThresholds(thresholds: {
   outfield: TierThresholds;
-  gk: TierThresholds;
 }) {
   activeTierThresholds = thresholds;
 }
@@ -162,11 +140,18 @@ export function getPlayerTier(
 
   const isGK = pos?.toUpperCase() === "GK";
 
+  // Los porteros van en un apartado exclusivo de porteros (POR), nunca en S+ ni tiers de campo
+  if (isGK) {
+    return {
+      tier: "POR",
+      label: "Portero",
+      color: "text-teal-600 dark:text-teal-400 font-extrabold",
+      bgColor: "bg-teal-500/10 border border-teal-500/30 dark:bg-teal-500/20",
+    };
+  }
+
   const thresholds =
-    customThresholds ??
-    (isGK
-      ? activeTierThresholds?.gk ?? DEFAULT_GK_THRESHOLDS
-      : activeTierThresholds?.outfield ?? DEFAULT_OUTFIELD_THRESHOLDS);
+    customThresholds ?? activeTierThresholds?.outfield ?? DEFAULT_OUTFIELD_THRESHOLDS;
 
   if (media >= thresholds.sPlus) {
     return {

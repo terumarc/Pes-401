@@ -23,23 +23,26 @@ import {
 type GenerateFixturesBtnProps = {
     leagueId: string;
     teams: Team[];
+    hasExisting?: boolean;
 };
 
-export function GenerateFixturesBtn({ leagueId, teams }: GenerateFixturesBtnProps) {
+export function GenerateFixturesBtn({ leagueId, teams, hasExisting = false }: GenerateFixturesBtnProps) {
     const router = useRouter();
     const [, startTransition] = useTransition();
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
-    const totalMatches = (teams.length % 2 === 0 ? teams.length - 1 : teams.length) * 2 * Math.floor(teams.length / 2);
+    // Filtrar siempre para garantizar que Agentes Libres nunca se incluya
+    const validTeams = teams.filter(
+        (t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo")
+    );
+    const totalMatches = (validTeams.length % 2 === 0 ? validTeams.length - 1 : validTeams.length) * 2 * Math.floor(validTeams.length / 2);
 
     async function generate() {
         setLoading(true);
         try {
-            await generateFixturesClient(
-                leagueId,
-                teams.map((t) => t.id),
-            );
+            await generateFixturesClient(leagueId);
+            toast.success("¡Calendario generado con éxito!");
             startTransition(() => {
                 router.refresh();
                 setOpen(false);
@@ -55,9 +58,18 @@ export function GenerateFixturesBtn({ leagueId, teams }: GenerateFixturesBtnProp
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
-                <Button id="generate-fixtures-btn" disabled={loading} className="gap-2">
+                <Button
+                    id="generate-fixtures-btn"
+                    variant={hasExisting ? "outline" : "default"}
+                    disabled={loading}
+                    className="gap-2"
+                >
                     <CalendarPlusIcon className="h-4 w-4" />
-                    {loading ? "Generando…" : "Generar calendario"}
+                    {loading
+                        ? "Generando…"
+                        : hasExisting
+                        ? "Regenerar calendario"
+                        : "Generar calendario"}
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -66,9 +78,15 @@ export function GenerateFixturesBtn({ leagueId, teams }: GenerateFixturesBtnProp
                         <InfoIcon className="h-6 w-6" />
                     </AlertDialogMedia>
                     <div className="space-y-1">
-                        <AlertDialogTitle>¿Generar el calendario completo?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            {hasExisting
+                                ? "¿Regenerar el calendario completo?"
+                                : "¿Generar el calendario completo?"}
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Se generará el calendario (ida + vuelta) para {teams.length} equipos. Esto creará un total de {totalMatches} partidos.
+                            {hasExisting
+                                ? `Ya existen partidos programados. Al regenerar se borrarán los partidos existentes y se crearán los ${totalMatches} partidos oficiales (ida + vuelta) para los ${validTeams.length} equipos de la liga.`
+                                : `Se generará el calendario oficial (ida + vuelta) para ${validTeams.length} equipos (${totalMatches} partidos).`}
                         </AlertDialogDescription>
                     </div>
                 </AlertDialogHeader>

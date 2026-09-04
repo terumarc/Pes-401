@@ -24,10 +24,21 @@ export default async function CalendarPage() {
   if (!league)
     return <p className="text-ink-muted">No hay liga configurada.</p>;
 
-  const [teams, matches] = await Promise.all([
+  const [allTeams, rawMatches] = await Promise.all([
     getTeamsByLeague(league.id),
     getMatchesByLeague(league.id),
   ]);
+
+  // Filtrar estrictamente para excluir equipos de sistema (Agentes Libres) de partidos y calendario
+  const teams = allTeams.filter(
+    (t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo")
+  );
+
+  const matches = rawMatches.filter(
+    (m) =>
+      teams.some((t) => t.id === m.home_team_id) &&
+      teams.some((t) => t.id === m.away_team_id)
+  );
 
   const tableRows = buildLeagueTable(teams, matches);
   const hasFixtures = matches.length > 0;
@@ -52,10 +63,12 @@ export default async function CalendarPage() {
               teams={teams}
               matches={matches}
             />
+            <GenerateFixturesBtn
+              leagueId={league.id}
+              teams={teams}
+              hasExisting={hasFixtures}
+            />
             <ResetLeagueBtn leagueId={league.id} />
-            {!hasFixtures && (
-              <GenerateFixturesBtn leagueId={league.id} teams={teams} />
-            )}
           </div>
         }
       />

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatStat } from "@/lib/format/stats";
-import { getPlayerTier } from "@/lib/players";
+import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
 import { ArrowRight, Eye } from "lucide-react";
 import type { Player, Team } from "@/types";
 
@@ -27,6 +27,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [purchaseType, setPurchaseType] = useState<"clausula" | "mercado">("clausula");
   const tierInfo = getPlayerTier(player);
+  const mediaValue = getPlayerEffectiveRating(player);
 
   const isFreeAgent =
     !player.team_id ||
@@ -58,7 +59,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
             </p>
             <div className="mt-2 flex items-baseline gap-1.5">
               <span className="font-display text-3xl font-bold tabular-nums tracking-tight text-foreground">
-                {formatStat(player.overall)}
+                {formatStat(mediaValue)}
               </span>
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                 Media

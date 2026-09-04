@@ -10,7 +10,7 @@ import { PlayerCard } from "@/components/players/PlayerCard";
 import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import { formatStat } from "@/lib/format/stats";
 import { formatMoney } from "@/lib/format/money";
-import { getPlayerTier } from "@/lib/players";
+import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
 import {
   Search,
   X,
@@ -83,7 +83,7 @@ const VALUE_PRESETS = [
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
 
-const TIERS = ["TODOS", "S+", "S", "A", "B", "C", "D"];
+const TIERS = ["TODOS", "S+", "S", "A", "B", "C", "D", "PORTEROS"];
 const PAGE_SIZE = 24;
 
 function isPositionInGroup(pos: string, group: string): boolean {
@@ -204,7 +204,8 @@ export function PlayerList({
         // Tier filter
         if (selectedTier !== "TODOS") {
           const tier = getPlayerTier(p).tier;
-          if (tier !== selectedTier) return false;
+          const targetTier = selectedTier === "PORTEROS" ? "POR" : selectedTier;
+          if (tier !== targetTier) return false;
         }
 
         // Team filter
@@ -221,7 +222,7 @@ export function PlayerList({
         }
 
         // Overall / Media rating match
-        const ovr = p.overall ?? 0;
+        const ovr = getPlayerEffectiveRating(p);
         if (minOvr !== null && ovr < minOvr) return false;
         if (maxOvr !== null && ovr > maxOvr) return false;
 
@@ -235,9 +236,9 @@ export function PlayerList({
       .sort((a, b) => {
         switch (sortBy) {
           case "overall_desc":
-            return (b.overall ?? 0) - (a.overall ?? 0);
+            return getPlayerEffectiveRating(b) - getPlayerEffectiveRating(a);
           case "overall_asc":
-            return (a.overall ?? 0) - (b.overall ?? 0);
+            return getPlayerEffectiveRating(a) - getPlayerEffectiveRating(b);
           case "value_desc":
             return (b.market_value ?? 0) - (a.market_value ?? 0);
           case "value_asc":
@@ -801,7 +802,7 @@ export function PlayerList({
                       {player.team?.name || "Sin equipo"}
                     </td>
                     <td className="px-3 py-2.5 text-center font-display font-bold text-base tabular-nums">
-                      {formatStat(player.overall)}
+                      {formatStat(getPlayerEffectiveRating(player))}
                     </td>
                     <td className="px-3 py-2.5 text-center">
                       <span className={`text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full ${tierInfo.bgColor} ${tierInfo.color}`}>

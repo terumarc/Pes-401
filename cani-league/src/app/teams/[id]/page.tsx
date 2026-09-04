@@ -26,6 +26,7 @@ import {
   getTeamById,
   getTeamsByLeague,
 } from "@/lib/data/league";
+import { getPlayerEffectiveRating } from "@/lib/players";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -65,7 +66,7 @@ export default async function TeamDetailPage({ params }: Props) {
   const avgOverall =
     ratedPlayers.length > 0
       ? Math.round(
-          ratedPlayers.reduce((sum, p) => sum + (p.overall || 0), 0) /
+          ratedPlayers.reduce((sum, p) => sum + (getPlayerEffectiveRating(p) || 0), 0) /
             ratedPlayers.length,
         )
       : null;
@@ -228,7 +229,8 @@ export default async function TeamDetailPage({ params }: Props) {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {players.map((player) => {
               const posCat = getPositionCategory(player.position);
-              const isHighOvr = (player.overall ?? 0) >= 80;
+              const mediaValue = getPlayerEffectiveRating(player);
+              const isHighOvr = mediaValue >= 80;
 
               return (
                 <Card
@@ -273,10 +275,10 @@ export default async function TeamDetailPage({ params }: Props) {
                           )}
                         >
                           <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/80">
-                            OVR
+                            MEDIA
                           </span>
                           <span className="text-base font-extrabold tabular-nums">
-                            {player.overall}
+                            {mediaValue}
                           </span>
                         </div>
                       )}

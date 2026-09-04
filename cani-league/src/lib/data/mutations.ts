@@ -404,89 +404,29 @@ export async function resetMatchResultClient(matchId: string): Promise<Match> {
 
 export async function generateFixturesClient(
   leagueId: string,
-  teamIds: string[],
+  teamIds?: string[],
 ): Promise<void> {
-  const supabase = createClient();
-
-  const teamList = [...teamIds];
-  if (teamList.length % 2 !== 0) teamList.push("BYE");
-
-  const half = teamList.length / 2;
-  const rounds = teamList.length - 1;
-  const fixed = teamList[0];
-  const rotating = teamList.slice(1);
-
-  const inserts: any[] = [];
-
-  for (let round = 0; round < rounds; round++) {
-    const matchday = round + 1;
-    const pairs: [string, string][] = [];
-
-    pairs.push([fixed, rotating[round % (teamList.length - 1)]]);
-    for (let i = 1; i < half; i++) {
-      const home = rotating[(round + i) % (teamList.length - 1)];
-      const away = rotating[(round + teamList.length - 1 - i) % (teamList.length - 1)];
-      pairs.push([home, away]);
-    }
-
-    for (const [home, away] of pairs) {
-      if (home === "BYE" || away === "BYE") continue;
-
-      inserts.push({
-        league_id: leagueId,
-        home_team_id: home,
-        away_team_id: away,
-        matchday,
-        round: 1,
-        home_goals: null,
-        away_goals: null,
-        played: false,
-        played_at: null,
-      });
-
-      inserts.push({
-        league_id: leagueId,
-        home_team_id: away,
-        away_team_id: home,
-        matchday: rounds + matchday,
-        round: 2,
-        home_goals: null,
-        away_goals: null,
-        played: false,
-        played_at: null,
-      });
-    }
+  const res = await fetch("/api/matches/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ leagueId }),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.error || "Error al generar el calendario");
   }
-
-  const { error } = await supabase.from("matches").insert(inserts);
-  if (error) throw error;
 }
 
 import { ECONOMY_CONFIG } from "@/lib/economy";
 
 export async function resetLeagueClient(leagueId: string): Promise<void> {
-  const supabase = createClient();
-  // Borrar todos los partidos de la liga
-  const { error: matchesError } = await supabase.from("matches").delete().eq("league_id", leagueId);
-  if (matchesError) throw matchesError;
-
-  // Leer la tabla de posiciones anterior para asignar el presupuesto escalonado
-  const { data: standings } = await supabase
-    .from("league_standings")
-    .select("team_id, position")
-    .eq("league_id", leagueId);
-
-  const { data: teams } = await supabase
-    .from("teams")
-    .select("id")
-    .eq("league_id", leagueId);
-
-  if (teams && teams.length > 0) {
-    for (const team of teams) {
-      await supabase
-        .from("teams")
-        .update({ budget: 50_000_000 })
-        .eq("id", team.id);
-    }
+  const res = await fetch("/api/matches/reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ leagueId }),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.error || "Error al resetear la liga");
   }
 }

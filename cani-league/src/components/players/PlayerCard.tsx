@@ -3,7 +3,7 @@ import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatStat } from "@/lib/format/stats";
-import { getPlayerTier } from "@/lib/players";
+import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
 import type { Player, Team } from "@/types";
 
 type PlayerCardProps = {
@@ -13,6 +13,7 @@ type PlayerCardProps = {
 
 export function PlayerCard({ player, href }: PlayerCardProps) {
   const tierInfo = getPlayerTier(player);
+  const mediaValue = getPlayerEffectiveRating(player);
 
   const content = (
     <Card size="sm" className="group relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md dark:hover:shadow-primary/5">
@@ -56,7 +57,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
             </div>
             <div className="text-right shrink-0">
               <span className="font-display text-2xl font-bold tabular-nums tracking-tight text-foreground">
-                {formatStat(player.overall)}
+                {formatStat(mediaValue)}
               </span>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                 Media

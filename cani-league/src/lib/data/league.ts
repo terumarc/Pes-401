@@ -39,7 +39,12 @@ export const getTeamsByLeague = safeCache(
       .order("name");
 
     if (error) throw error;
-    return data ?? [];
+    // Excluir Agentes Libres y equipos de sistema de la lista de equipos de liga
+    return (data ?? []).filter(
+      (t) =>
+        !t.name.toLowerCase().includes("libre") &&
+        !t.name.toLowerCase().includes("sin equipo")
+    );
   },
   ["teams-by-league"],
   { revalidate: 300, tags: ["teams"] }
