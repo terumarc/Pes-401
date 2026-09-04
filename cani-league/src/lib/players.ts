@@ -32,16 +32,6 @@ export const DEFAULT_GK_THRESHOLDS: TierThresholds = {
 };
 
 /**
- * Invalida la caché de tiers reutilizando la invalidación de jugadores.
- */
-export async function invalidateTierCache() {
-  if (typeof window === "undefined") {
-    const { invalidatePlayersCache } = await import("./data/league");
-    invalidatePlayersCache();
-  }
-}
-
-/**
  * Calcula la valoración de un portero basándose exclusivamente en sus estadísticas de portería y defensa.
  * Si 'goalkeeping' no está presente o es nulo, usa 'defending' (o overall si defending es nulo).
  */

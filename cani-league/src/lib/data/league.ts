@@ -215,6 +215,10 @@ export function invalidatePlayersCache() {
   invalidateMemCache("player");
 }
 
+export function invalidateTierCache() {
+  invalidatePlayersCache();
+}
+
 async function getCachedAllPlayers(): Promise<(Player & { team: Team })[]> {
   const now = Date.now();
   if (memoryAllPlayers && memoryAllPlayers.expires > now) {
