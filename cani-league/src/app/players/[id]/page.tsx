@@ -58,8 +58,8 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
         description={`${player.position}${player.age ? ` · ${player.age} años` : ""}${player.nationality ? ` · ${player.nationality}` : ""}`}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
-        <section className="rounded-2xl border border-line bg-bg-elevated p-6 shadow-[var(--shadow-soft)]">
+      <div className="grid gap-6 lg:grid-cols-[340px_1fr] xl:grid-cols-[360px_1fr]">
+        <section className="h-fit rounded-2xl border border-line bg-bg-elevated p-6 shadow-[var(--shadow-soft)]">
           <div className="flex items-start gap-4">
             <PlayerAvatar
               name={player.name}
@@ -122,9 +122,14 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
         </section>
 
         <section className="rounded-2xl border border-line bg-bg-elevated p-6 shadow-[var(--shadow-soft)]">
-          <h2 className="mb-6 font-display text-xl font-semibold tracking-tight">
-            Estadísticas
-          </h2>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-display text-xl font-semibold tracking-tight">
+              Estadísticas PES
+            </h2>
+            <span className="rounded-full border border-line/80 bg-bg-surface px-2.5 py-0.5 text-xs font-semibold text-ink-muted">
+              26 Atributos
+            </span>
+          </div>
           <PlayerStats player={player} />
         </section>
       </div>

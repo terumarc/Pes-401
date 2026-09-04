@@ -35,11 +35,13 @@ export function formatMoneyCompact(amountEuros: number): string {
 
 export function PlayerRadarChart({
   data,
+  maxHeight = 300,
 }: {
-  data: { stat: string; value: number; fullMark: number }[];
+  data: { stat: string; value: number; fullMark: number; fullLabel?: string }[];
+  maxHeight?: number;
 }) {
   const config = {
-    value: { label: "Stat", color: "var(--primary)" },
+    value: { label: "Habilidad", color: "var(--primary)" },
   } satisfies ChartConfig;
 
   if (data.length === 0) {
@@ -50,17 +52,24 @@ export function PlayerRadarChart({
     );
   }
 
+  const isManyPoints = data.length > 12;
+
   return (
     <ChartContainer
       config={config}
-      className="mx-auto aspect-square max-h-[280px] w-full"
-      initialDimension={{ width: 280, height: 280 }}
+      className="mx-auto aspect-square w-full"
+      style={{ maxHeight: `${maxHeight}px` }}
+      initialDimension={{ width: maxHeight, height: maxHeight }}
     >
-      <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
-        <PolarGrid stroke="var(--border)" />
+      <RadarChart data={data} cx="50%" cy="50%" outerRadius={isManyPoints ? "66%" : "72%"}>
+        <PolarGrid stroke="var(--border)" strokeOpacity={0.6} />
         <PolarAngleAxis
           dataKey="stat"
-          tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+          tick={{
+            fill: "var(--muted-foreground)",
+            fontSize: isManyPoints ? 9 : 11,
+            fontWeight: 500,
+          }}
         />
         <PolarRadiusAxis
           angle={90}
@@ -68,7 +77,18 @@ export function PlayerRadarChart({
           tick={false}
           axisLine={false}
         />
-        <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              labelFormatter={(_, payload) => {
+                const item = payload?.[0]?.payload as
+                  | { stat?: string; fullLabel?: string }
+                  | undefined;
+                return item?.fullLabel ?? item?.stat ?? "";
+              }}
+            />
+          }
+        />
         <Radar
           dataKey="value"
           fill="var(--color-value)"
@@ -77,6 +97,73 @@ export function PlayerRadarChart({
           strokeWidth={2}
         />
       </RadarChart>
+    </ChartContainer>
+  );
+}
+
+export function PlayerPesBarChart({
+  data,
+}: {
+  data: {
+    stat: string;
+    value: number;
+    fullName: string;
+    fill: string;
+    category?: string;
+  }[];
+}) {
+  const config = {
+    value: { label: "Valor", color: "var(--primary)" },
+  } satisfies ChartConfig;
+
+  if (data.length === 0) return null;
+
+  return (
+    <ChartContainer
+      config={config}
+      className="aspect-auto w-full"
+      style={{ height: `${Math.max(260, data.length * 28)}px` }}
+      initialDimension={{ width: 480, height: 320 }}
+    >
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ left: 16, right: 24, top: 8, bottom: 8 }}
+      >
+        <CartesianGrid horizontal={false} strokeDasharray="3 3" strokeOpacity={0.5} />
+        <XAxis
+          type="number"
+          domain={[0, 100]}
+          tickLine={false}
+          axisLine={false}
+        />
+        <YAxis
+          type="category"
+          dataKey="stat"
+          width={70}
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+        />
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              labelFormatter={(_, payload) => {
+                const row = payload?.[0]?.payload as
+                  | { fullName?: string; category?: string }
+                  | undefined;
+                return row?.fullName ?? "";
+              }}
+              formatter={(val) => `${val} pts`}
+            />
+          }
+        />
+        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={16}>
+          {data.map((entry) => (
+            <Cell key={entry.fullName} fill={entry.fill} />
+          ))}
+        </Bar>
+      </BarChart>
     </ChartContainer>
   );
 }

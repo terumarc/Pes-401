@@ -1,6 +1,7 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { revalidateTag } from "next/cache";
 import { safeCache, invalidateMemCache } from "./cache";
+import { getOrEstimatePesStats } from "@/lib/data/pes_stats";
 import type {
   League,
   Player,
@@ -281,7 +282,10 @@ export async function getPlayerById(
     .maybeSingle();
 
   if (error) throw error;
-  return data as (Player & { team: Team }) | null;
+  if (!data) return null;
+  const player = data as unknown as (Player & { team: Team });
+  player.pes_stats = getOrEstimatePesStats(player);
+  return player;
 }
 
 export async function createPlayer(input: PlayerCreateInput): Promise<Player> {

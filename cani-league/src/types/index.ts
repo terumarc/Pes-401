@@ -33,6 +33,35 @@ export type PlayerPosition =
   | "SS"
   | "CF";
 
+export type PesStats = {
+  attack: number;
+  defense: number;
+  balance: number;
+  stamina: number;
+  top_speed: number;
+  acceleration: number;
+  response: number;
+  agility: number;
+  dribble_accuracy: number;
+  dribble_speed: number;
+  short_pass_accuracy: number;
+  short_pass_speed: number;
+  long_pass_accuracy: number;
+  long_pass_speed: number;
+  shot_accuracy: number;
+  shot_power: number;
+  shot_technique: number;
+  free_kick_accuracy: number;
+  swerve: number;
+  heading: number;
+  jump: number;
+  technique: number;
+  aggression: number;
+  mentality: number;
+  goal_keeping: number;
+  team_work: number;
+};
+
 export type Player = {
   id: string;
   team_id: string;
@@ -54,6 +83,7 @@ export type Player = {
   transfer_price: number;
   clause_fee?: number;
   available_in_market: boolean;
+  pes_stats?: PesStats;
   created_at: string;
 };
 
