@@ -20,12 +20,15 @@ export default async function MarketPage() {
   }
 
   const [players, teams] = await Promise.all([
-    getPlayers({ marketOnly: true }),
+    getPlayers(),
     getTeamsByLeague(league.id),
   ]);
 
-  const marketPlayers = players.filter((p) =>
-    teams.some((t) => t.id === p.team_id),
+  // Equipos compradores elegibles (equipos reales de la liga)
+  const buyerTeams = teams.filter(
+    (t) =>
+      !t.name.toLowerCase().includes("libre") &&
+      !t.name.toLowerCase().includes("sin equipo")
   );
 
   return (
@@ -33,10 +36,10 @@ export default async function MarketPage() {
       <PageHeader
         eyebrow="Transferencias y Fichajes"
         title="Mercado de Jugadores"
-        description={`${marketPlayers.length.toLocaleString()} jugadores transferibles listados en el mercado`}
+        description={`${players.length.toLocaleString()} jugadores disponibles (cláusulas de rescisión y agentes libres)`}
       />
 
-      <MarketSearchList players={marketPlayers} teams={teams} />
+      <MarketSearchList players={players} teams={buyerTeams} />
     </div>
   );
 }

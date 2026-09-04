@@ -25,10 +25,11 @@ import { formatMoney } from "@/lib/format/money";
 import type { Player, Team } from "@/types";
 
 type TransferModalProps = {
-    player: Player & { team: Pick<Team, "id" | "name"> };
+    player: Player & { team?: Pick<Team, "id" | "name"> | null };
     teams: Team[]; // todos los equipos de la liga
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    purchaseType?: "clausula" | "mercado";
 };
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -38,6 +39,7 @@ export function TransferModal({
     teams,
     open,
     onOpenChange,
+    purchaseType = "clausula",
 }: TransferModalProps) {
     const router = useRouter();
     const [, startTransition] = useTransition();
@@ -45,18 +47,41 @@ export function TransferModal({
     const [status, setStatus] = useState<Status>("idle");
     const [errorMsg, setErrorMsg] = useState("");
 
-    // Equipos disponibles (excluye el equipo actual del jugador)
-    const availableTeams = teams.filter((t) => t.id !== player.team_id);
+    // Determine purchase price: if clausula, check clause_fee then transfer_price
+    const price =
+        purchaseType === "clausula" && player.clause_fee != null
+            ? player.clause_fee
+            : player.transfer_price;
+
+    // Equipos disponibles (excluye el equipo actual del jugador y equipos de agentes libres)
+    const availableTeams = teams.filter(
+        (t) =>
+            t.id !== player.team_id &&
+            !t.name.toLowerCase().includes("libre") &&
+            !t.name.toLowerCase().includes("sin equipo")
+    );
     const selectedBuyer = teams.find((t) => t.id === buyerTeamId);
-    const canAfford =
-        selectedBuyer != null && selectedBuyer.budget >= player.transfer_price;
+    const canAfford = selectedBuyer != null && selectedBuyer.budget >= price;
 
     async function handleTransfer() {
         if (!buyerTeamId) return;
         setStatus("loading");
         setErrorMsg("");
         try {
-            await transferPlayerClient(player.id, buyerTeamId);
+            const res = await fetch("/api/market/buy", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    playerId: player.id,
+                    buyerTeamId,
+                    type: purchaseType,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "Error al realizar el fichaje");
+            }
+
             setStatus("success");
             startTransition(() => router.refresh());
         } catch (err) {
@@ -74,13 +99,19 @@ export function TransferModal({
         onOpenChange(open);
     }
 
+    const isClausula = purchaseType === "clausula";
+
     return (
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Fichar jugador</DialogTitle>
+                    <DialogTitle>
+                        {isClausula ? "Pagar Cláusula de Rescisión" : "Fichar Agente Libre (Mercado)"}
+                    </DialogTitle>
                     <DialogDescription>
-                        Selecciona el equipo que fichará a{" "}
+                        {isClausula
+                            ? `Ejecutar la cláusula para fichar a `
+                            : `Selecciona el equipo que fichará a `}
                         <span className="font-semibold text-foreground">{player.name}</span>
                     </DialogDescription>
                 </DialogHeader>
@@ -88,7 +119,7 @@ export function TransferModal({
                 {status === "success" ? (
                     <div className="flex flex-col items-center gap-3 py-6 text-center">
                         <CheckCircle2 className="h-12 w-12 text-green-500" />
-                        <p className="font-semibold text-lg">¡Transferencia completada!</p>
+                        <p className="font-semibold text-lg">¡Fichaje completado!</p>
                         <p className="text-sm text-muted-foreground">
                             {player.name} ahora juega en{" "}
                             {teams.find((t) => t.id === buyerTeamId)?.name}
@@ -110,12 +141,14 @@ export function TransferModal({
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Equipo actual</span>
-                                <span>{player.team.name}</span>
+                                <span>{player.team?.name || "Sin equipo"}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Precio de fichaje</span>
+                                <span className="text-muted-foreground">
+                                    {isClausula ? "Precio de Cláusula" : "Precio de Mercado"}
+                                </span>
                                 <span className="font-semibold text-foreground">
-                                    <BudgetDisplay amount={player.transfer_price} size="sm" />
+                                    <BudgetDisplay amount={price} size="sm" />
                                 </span>
                             </div>
                         </div>
@@ -158,7 +191,7 @@ export function TransferModal({
                                         <span className="flex items-center gap-1.5">
                                             <ArrowRight className="h-3 w-3 text-muted-foreground" />
                                             <BudgetDisplay
-                                                amount={selectedBuyer.budget - player.transfer_price}
+                                                amount={selectedBuyer.budget - price}
                                                 size="sm"
                                                 className={
                                                     canAfford ? "text-green-600" : "text-red-500"
@@ -189,7 +222,11 @@ export function TransferModal({
                                 disabled={!buyerTeamId || !canAfford || status === "loading"}
                                 onClick={handleTransfer}
                             >
-                                {status === "loading" ? "Procesando…" : "Confirmar fichaje"}
+                                {status === "loading"
+                                    ? "Procesando…"
+                                    : isClausula
+                                    ? "Pagar cláusula y fichar"
+                                    : "Confirmar fichaje"}
                             </Button>
                         </DialogFooter>
                     </>

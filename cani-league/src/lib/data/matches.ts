@@ -127,6 +127,36 @@ export async function generateFixtures(
     return (data ?? []) as Match[];
 }
 
+/** Registra el resultado de un partido y actualiza cachés */
+export async function recordMatchResult(
+    matchId: string,
+    homeScore: number,
+    awayScore: number,
+): Promise<Match> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from("matches")
+        .update({
+            home_goals: homeScore,
+            away_goals: awayScore,
+            played: true,
+            played_at: new Date().toISOString(),
+        })
+        .eq("id", matchId)
+        .select("*")
+        .single();
+
+    if (error) throw error;
+
+    invalidateMemCache("matches");
+    try {
+        revalidateTag("matches", "max");
+        revalidateTag("standings", "max");
+    } catch {}
+
+    return data as Match;
+}
+
 // ─── Clasificación calculada desde partidos ─────────────────
 
 export function buildLeagueTable(

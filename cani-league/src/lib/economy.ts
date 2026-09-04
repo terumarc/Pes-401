@@ -3,10 +3,10 @@
  */
 
 export const ECONOMY_CONFIG = {
-  // Presupuestos iniciales (Se otorgan al iniciar la temporada)
-  STARTING_BUDGET_BASE: 200_000_000, // Por defecto para ligas nuevas
-  STARTING_BUDGET_MIN: 150_000_000,  // Castigo por ir 1º en la liga anterior
-  STARTING_BUDGET_MAX: 250_000_000,  // Ayuda para el que quedó último
+  // Presupuesto inicial único por defecto (plano para todos los equipos)
+  STARTING_BUDGET_BASE: 50_000_000,
+  STARTING_BUDGET_MIN: 50_000_000,
+  STARTING_BUDGET_MAX: 50_000_000,
   
   // Recompensas base por partido (Justas para todos, sin multiplicadores)
   MATCH_REWARDS: {

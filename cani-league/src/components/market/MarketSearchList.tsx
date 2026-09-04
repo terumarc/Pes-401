@@ -20,7 +20,7 @@ import { PLAYER_POSITIONS } from "@/constants";
 import { formatMoney } from "@/lib/format/money";
 import type { Player, Team } from "@/types";
 
-type MarketPlayer = Player & { team: Pick<Team, "id" | "name"> };
+type MarketPlayer = Player & { team?: Pick<Team, "id" | "name"> | null };
 
 type MarketSearchListProps = {
   players: MarketPlayer[];
@@ -198,7 +198,14 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
       // Team match
       if (teamFilter !== "ALL") {
-        if (player.team.id !== teamFilter) {
+        if (teamFilter === "SIN_EQUIPO") {
+          const isFreeAgent =
+            !player.team_id ||
+            !player.team ||
+            player.team.name.toLowerCase().includes("libre") ||
+            player.team.name.toLowerCase().includes("sin equipo");
+          if (!isFreeAgent) return false;
+        } else if (player.team?.id !== teamFilter && player.team_id !== teamFilter) {
           return false;
         }
       }
@@ -504,11 +511,14 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     <SelectItem value="ALL">Todos los equipos</SelectItem>
-                    {teams.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="SIN_EQUIPO">⭐ Agentes Libres (Mercado)</SelectItem>
+                    {teams
+                      .filter((t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo"))
+                      .map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -582,7 +592,10 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
             {teamFilter !== "ALL" && (
               <Badge variant="secondary" className="gap-1 text-xs">
-                Equipo: {teams.find((t) => t.id === teamFilter)?.name || teamFilter}
+                Equipo:{" "}
+                {teamFilter === "SIN_EQUIPO"
+                  ? "Agentes Libres"
+                  : teams.find((t) => t.id === teamFilter)?.name || teamFilter}
                 <X
                   className="size-3 cursor-pointer"
                   onClick={() => {

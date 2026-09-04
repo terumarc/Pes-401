@@ -274,6 +274,18 @@ export async function recordMatchResultClient(
   homeGoals: number,
   awayGoals: number,
 ): Promise<Match> {
+  try {
+    const res = await fetch("/api/matches/record", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matchId, homeGoals, awayGoals }),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.match) return json.match as Match;
+    }
+  } catch {}
+
   const supabase = createClient();
   const { data, error } = await supabase
     .from("matches")
@@ -470,14 +482,10 @@ export async function resetLeagueClient(leagueId: string): Promise<void> {
     .eq("league_id", leagueId);
 
   if (teams && teams.length > 0) {
-    const totalTeams = teams.length;
     for (const team of teams) {
-      const position = standings?.find(s => s.team_id === team.id)?.position;
-      const initialBudget = calculateStartingBudget(position, totalTeams);
-      
       await supabase
         .from("teams")
-        .update({ budget: initialBudget })
+        .update({ budget: 50_000_000 })
         .eq("id", team.id);
     }
   }

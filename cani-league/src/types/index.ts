@@ -52,6 +52,7 @@ export type Player = {
   physical: number | null;
   market_value: number;
   transfer_price: number;
+  clause_fee?: number;
   available_in_market: boolean;
   created_at: string;
 };

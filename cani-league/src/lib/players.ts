@@ -1,25 +1,231 @@
+import { invalidatePlayersCache } from "./data/league";
+
 export type PlayerTier = "S+" | "S" | "A" | "B" | "C" | "D";
 
 export interface TierInfo {
   tier: PlayerTier;
   label: string;
-  color: string; // Útil para Tailwind si quieres colorear las etiquetas
+  color: string;
   bgColor: string;
 }
 
+export interface TierThresholds {
+  sPlus: number;
+  s: number;
+  a: number;
+  b: number;
+  c: number;
+}
+
+export const DEFAULT_OUTFIELD_THRESHOLDS: TierThresholds = {
+  sPlus: 90,
+  s: 85,
+  a: 80,
+  b: 75,
+  c: 70,
+};
+
+export const DEFAULT_GK_THRESHOLDS: TierThresholds = {
+  sPlus: 88,
+  s: 83,
+  a: 78,
+  b: 73,
+  c: 68,
+};
+
 /**
- * Devuelve el Tier de un jugador según su media (overall)
+ * Invalida la caché de tiers reutilizando la invalidación de jugadores.
  */
-export function getPlayerTier(overall: number | null | undefined): TierInfo {
-  const media = overall || 0;
-  
-  if (media >= 90) return { tier: "S+", label: "Leyenda / Top", color: "text-purple-600 dark:text-purple-400 font-extrabold", bgColor: "bg-purple-500/10 border border-purple-500/30 dark:bg-purple-500/20" };
-  if (media >= 85) return { tier: "S", label: "Clase Mundial", color: "text-amber-600 dark:text-amber-400 font-bold", bgColor: "bg-amber-500/10 border border-amber-500/30 dark:bg-amber-500/20" };
-  if (media >= 80) return { tier: "A", label: "Estrella", color: "text-sky-600 dark:text-sky-400 font-bold", bgColor: "bg-sky-500/10 border border-sky-500/30 dark:bg-sky-500/20" };
-  if (media >= 75) return { tier: "B", label: "Titular", color: "text-emerald-600 dark:text-emerald-400 font-semibold", bgColor: "bg-emerald-500/10 border border-emerald-500/30 dark:bg-emerald-500/20" };
-  if (media >= 70) return { tier: "C", label: "Rotación", color: "text-slate-600 dark:text-slate-300 font-medium", bgColor: "bg-slate-500/10 border border-slate-500/30 dark:bg-slate-500/20" };
-  
-  return { tier: "D", label: "Reserva", color: "text-zinc-500 dark:text-zinc-400 font-medium", bgColor: "bg-zinc-500/10 border border-zinc-500/20 dark:bg-zinc-500/20" };
+export function invalidateTierCache() {
+  invalidatePlayersCache();
+}
+
+/**
+ * Calcula la valoración de un portero basándose exclusivamente en sus estadísticas de portería y defensa.
+ * Si 'goalkeeping' no está presente o es nulo, usa 'defending' (o overall si defending es nulo).
+ */
+export function calcGoalkeeperRating(player: {
+  defending?: number | null;
+  goalkeeping?: number | null;
+  overall?: number | null;
+}): number {
+  const def = player.defending ?? player.overall ?? 0;
+  const gk = player.goalkeeping;
+
+  if (gk != null && !isNaN(Number(gk))) {
+    return Math.round((def + Number(gk)) / 2);
+  }
+
+  return Math.round(def);
+}
+
+/**
+ * Obtiene la valoración efectiva de un jugador.
+ * Para porteros (GK), usa calcGoalkeeperRating; para el resto, overall.
+ */
+export function getPlayerEffectiveRating(player: {
+  position?: string;
+  overall?: number | null;
+  defending?: number | null;
+  goalkeeping?: number | null;
+}): number {
+  if (player.position?.toUpperCase() === "GK") {
+    return calcGoalkeeperRating(player);
+  }
+  return player.overall ?? 0;
+}
+
+/**
+ * Calcula dinámicamente los umbrales de tiers para jugadores de campo y porteros
+ * basándose en los promedios de la liga.
+ */
+export function calcTierThresholds(
+  players: Array<{
+    position?: string;
+    overall?: number | null;
+    defending?: number | null;
+    goalkeeping?: number | null;
+  }>,
+): { outfield: TierThresholds; gk: TierThresholds } {
+  if (!players || players.length === 0) {
+    return {
+      outfield: DEFAULT_OUTFIELD_THRESHOLDS,
+      gk: DEFAULT_GK_THRESHOLDS,
+    };
+  }
+
+  let outfieldSum = 0;
+  let outfieldCount = 0;
+  let gkSum = 0;
+  let gkCount = 0;
+
+  for (const p of players) {
+    if (p.position?.toUpperCase() === "GK") {
+      const rating = calcGoalkeeperRating(p);
+      if (rating > 0) {
+        gkSum += rating;
+        gkCount++;
+      }
+    } else {
+      const rating = p.overall ?? 0;
+      if (rating > 0) {
+        outfieldSum += rating;
+        outfieldCount++;
+      }
+    }
+  }
+
+  const outfieldAvg = outfieldCount > 0 ? Math.round(outfieldSum / outfieldCount) : 75;
+  const gkAvg = gkCount > 0 ? Math.round(gkSum / gkCount) : 73;
+
+  const buildThresholds = (avg: number): TierThresholds => ({
+    sPlus: avg + 12,
+    s: avg + 7,
+    a: avg + 2,
+    b: avg - 3,
+    c: avg - 7,
+  });
+
+  return {
+    outfield: buildThresholds(outfieldAvg),
+    gk: buildThresholds(gkAvg),
+  };
+}
+
+let activeTierThresholds: { outfield: TierThresholds; gk: TierThresholds } | null = null;
+
+export function setGlobalTierThresholds(thresholds: {
+  outfield: TierThresholds;
+  gk: TierThresholds;
+}) {
+  activeTierThresholds = thresholds;
+}
+
+/**
+ * Devuelve el Tier de un jugador según su media/valoración y su posición.
+ * Soporta invocación con (overall, position), o con (playerObject, position).
+ */
+export function getPlayerTier(
+  overallOrPlayer:
+    | number
+    | null
+    | undefined
+    | {
+        position?: string;
+        overall?: number | null;
+        defending?: number | null;
+        goalkeeping?: number | null;
+      },
+  position?: string,
+  customThresholds?: TierThresholds,
+): TierInfo {
+  let media = 0;
+  let pos = position;
+
+  if (typeof overallOrPlayer === "object" && overallOrPlayer !== null) {
+    pos = overallOrPlayer.position ?? position;
+    media = getPlayerEffectiveRating(overallOrPlayer);
+  } else {
+    media = overallOrPlayer || 0;
+  }
+
+  const isGK = pos?.toUpperCase() === "GK";
+
+  const thresholds =
+    customThresholds ??
+    (isGK
+      ? activeTierThresholds?.gk ?? DEFAULT_GK_THRESHOLDS
+      : activeTierThresholds?.outfield ?? DEFAULT_OUTFIELD_THRESHOLDS);
+
+  if (media >= thresholds.sPlus) {
+    return {
+      tier: "S+",
+      label: "Leyenda / Top",
+      color: "text-purple-600 dark:text-purple-400 font-extrabold",
+      bgColor:
+        "bg-purple-500/10 border border-purple-500/30 dark:bg-purple-500/20",
+    };
+  }
+  if (media >= thresholds.s) {
+    return {
+      tier: "S",
+      label: "Clase Mundial",
+      color: "text-amber-600 dark:text-amber-400 font-bold",
+      bgColor: "bg-amber-500/10 border border-amber-500/30 dark:bg-amber-500/20",
+    };
+  }
+  if (media >= thresholds.a) {
+    return {
+      tier: "A",
+      label: "Estrella",
+      color: "text-sky-600 dark:text-sky-400 font-bold",
+      bgColor: "bg-sky-500/10 border border-sky-500/30 dark:bg-sky-500/20",
+    };
+  }
+  if (media >= thresholds.b) {
+    return {
+      tier: "B",
+      label: "Titular",
+      color: "text-emerald-600 dark:text-emerald-400 font-semibold",
+      bgColor:
+        "bg-emerald-500/10 border border-emerald-500/30 dark:bg-emerald-500/20",
+    };
+  }
+  if (media >= thresholds.c) {
+    return {
+      tier: "C",
+      label: "Rotación",
+      color: "text-slate-600 dark:text-slate-300 font-medium",
+      bgColor: "bg-slate-500/10 border border-slate-500/30 dark:bg-slate-500/20",
+    };
+  }
+
+  return {
+    tier: "D",
+    label: "Reserva",
+    color: "text-zinc-500 dark:text-zinc-400 font-medium",
+    bgColor: "bg-zinc-500/10 border border-zinc-500/20 dark:bg-zinc-500/20",
+  };
 }
 
 /**

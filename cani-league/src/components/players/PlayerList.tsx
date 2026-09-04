@@ -203,7 +203,7 @@ export function PlayerList({
 
         // Tier filter
         if (selectedTier !== "TODOS") {
-          const tier = getPlayerTier(p.overall).tier;
+          const tier = getPlayerTier(p).tier;
           if (tier !== selectedTier) return false;
         }
 
@@ -775,7 +775,7 @@ export function PlayerList({
             </thead>
             <tbody className="divide-y divide-border/40 font-medium">
               {paginatedPlayers.map((player) => {
-                const tierInfo = getPlayerTier(player.overall);
+                const tierInfo = getPlayerTier(player);
                 return (
                   <tr
                     key={player.id}

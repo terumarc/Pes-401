@@ -12,7 +12,7 @@ type PlayerCardProps = {
 };
 
 export function PlayerCard({ player, href }: PlayerCardProps) {
-  const tierInfo = getPlayerTier(player.overall);
+  const tierInfo = getPlayerTier(player);
 
   const content = (
     <Card size="sm" className="group relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md dark:hover:shadow-primary/5">
