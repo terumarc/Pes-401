@@ -1,8 +1,11 @@
+import React from "react";
+
 type PageHeaderProps = {
   eyebrow?: string;
   title: string;
   description?: string;
   actions?: React.ReactNode;
+  badge?: React.ReactNode;
 };
 
 export function PageHeader({
@@ -10,25 +13,36 @@ export function PageHeader({
   title,
   description,
   actions,
+  badge,
 }: PageHeaderProps) {
   return (
-    <header className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
-      <div>
+    <header className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between border-b border-white/[0.06] pb-6">
+      <div className="space-y-1.5">
         {eyebrow && (
-          <p className="mb-2 text-[11px] font-semibold tracking-[0.2em] text-accent uppercase">
-            {eyebrow}
-          </p>
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-1.5 rounded-full bg-emerald-500/80 ring-2 ring-emerald-500/20" />
+            <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+              {eyebrow}
+            </p>
+          </div>
         )}
-        <h1 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-          {title}
-        </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+            {title}
+          </h1>
+          {badge}
+        </div>
         {description && (
-          <p className="mt-2 max-w-xl text-sm text-ink-muted sm:text-base">
+          <p className="max-w-2xl text-xs sm:text-sm text-muted-foreground/90 leading-relaxed">
             {description}
           </p>
         )}
       </div>
-      {actions}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start sm:self-auto">
+          {actions}
+        </div>
+      )}
     </header>
   );
 }
