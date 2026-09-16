@@ -81,7 +81,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Todos",
     icon: "🌐",
     activeClass: "bg-primary text-primary-foreground shadow-xs",
-    description: "Todos los futbolistas de la liga · Tiers globales (S+ ≥ 89)",
+    description: "Todos los futbolistas de la liga · Tiers globales (S+ ≥ 90 · S 87-89 · A 85-86)",
   },
   {
     id: "def",
@@ -89,7 +89,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Defensas",
     icon: "🛡️",
     activeClass: "bg-blue-600 text-white shadow-xs",
-    description: "Centrales y laterales · Tiers calculados para defensores (S+ ≥ 86 · S 83-85 · A 80-82)",
+    description: "Centrales y laterales · Tiers para defensores (S+ ≥ 88 · S 85-87 · A 83-84 · B 80-82)",
   },
   {
     id: "mid",
@@ -97,7 +97,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Medios",
     icon: "🎯",
     activeClass: "bg-emerald-600 text-white shadow-xs",
-    description: "Pivotes, organizadores y mediapuntas · Tiers calculados para medios (S+ ≥ 88 · S 85-87 · A 82-84)",
+    description: "Pivotes, organizadores y mediapuntas · Tiers para medios (S+ ≥ 90 · S 88-89 · A 85-87 · B 82-84)",
   },
   {
     id: "att",
@@ -105,7 +105,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Delanteros",
     icon: "⚡",
     activeClass: "bg-rose-600 text-white shadow-xs",
-    description: "Extremos, segundos delanteros y arietes · Tiers calculados para atacantes (S+ ≥ 91 · S 87-90 · A 83-86)",
+    description: "Extremos, segundos delanteros y arietes · Tiers para atacantes (S+ ≥ 91 · S 88-90 · A 86-87 · B 83-85)",
   },
   {
     id: "gk",

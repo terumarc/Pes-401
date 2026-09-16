@@ -111,34 +111,23 @@ export function PlayerCard({ player, href, groupContext }: PlayerCardProps) {
 
 export function PlayerAvatar({
   name,
-  photoUrl,
+  photoUrl: _photoUrl,
   size = "md",
 }: {
   name: string;
-  photoUrl: string | null;
+  photoUrl?: string | null;
   size?: "sm" | "md" | "lg";
 }) {
   const sizeClass =
     size === "sm"
       ? "size-10 text-xs"
       : size === "lg"
-        ? "size-20 text-xl"
-        : "size-12 text-sm";
-
-  if (photoUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={photoUrl}
-        alt={name}
-        className={`${sizeClass} shrink-0 rounded-xl object-cover`}
-      />
-    );
-  }
+        ? "size-20 text-xl font-bold"
+        : "size-12 text-sm font-semibold";
 
   return (
     <div
-      className={`${sizeClass} flex shrink-0 items-center justify-center rounded-xl bg-accent font-display font-semibold text-accent-foreground`}
+      className={`${sizeClass} flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-accent/40 to-muted font-display text-foreground/80 border border-border/60 shadow-inner select-none`}
       aria-hidden
     >
       {name.slice(0, 1).toUpperCase()}
