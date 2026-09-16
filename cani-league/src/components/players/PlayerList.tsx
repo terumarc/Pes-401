@@ -214,12 +214,11 @@ export function PlayerList({
 
   const tierCounts = useMemo(() => {
     const counts: Record<string, number> = { "S+": 0, "S": 0, "A": 0, "B": 0, "C": 0, "D": 0 };
-    const thresholds = GROUP_TIER_THRESHOLDS[positionGroupTab];
     for (const p of players) {
       if (positionGroupTab !== "all" && getPositionGroup(p.position) !== positionGroupTab) {
         continue;
       }
-      const t = getPlayerTier(p, undefined, thresholds, positionGroupTab).tier;
+      const t = getPlayerTier(p).tier;
       if (counts[t] !== undefined) {
         counts[t]++;
       }
@@ -340,14 +339,9 @@ export function PlayerList({
           }
         }
 
-        // Tier filter (calculado según el estándar de la pestaña activa)
+        // Tier filter (calculado según el estándar de la posición del jugador)
         if (selectedTier !== "TODOS") {
-          const tier = getPlayerTier(
-            p,
-            undefined,
-            GROUP_TIER_THRESHOLDS[positionGroupTab],
-            positionGroupTab
-          ).tier;
+          const tier = getPlayerTier(p).tier;
           if (tier !== selectedTier) return false;
         }
 
@@ -981,7 +975,6 @@ export function PlayerList({
               key={player.id}
               player={player}
               href={`/players/${player.id}`}
-              groupContext={positionGroupTab}
             />
           ))}
         </div>
@@ -1013,12 +1006,7 @@ export function PlayerList({
             </thead>
             <tbody className="divide-y divide-border/40 font-medium">
               {paginatedPlayers.map((player) => {
-                const tierInfo = getPlayerTier(
-                  player,
-                  undefined,
-                  GROUP_TIER_THRESHOLDS[positionGroupTab],
-                  positionGroupTab
-                );
+                const tierInfo = getPlayerTier(player);
                 const contractInfo = getPlayerContractInfo(tierInfo.tier);
                 return (
                   <tr

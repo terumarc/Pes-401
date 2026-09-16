@@ -7,18 +7,16 @@ import {
   getPlayerTier,
   getPlayerEffectiveRating,
   getPlayerContractInfo,
-  type PositionGroup,
 } from "@/lib/players";
 import type { Player, Team } from "@/types";
 
 type PlayerCardProps = {
   player: Player & { team?: Pick<Team, "id" | "name" | "primary_color"> };
   href?: string;
-  groupContext?: PositionGroup;
 };
 
-export function PlayerCard({ player, href, groupContext }: PlayerCardProps) {
-  const tierInfo = getPlayerTier(player, undefined, undefined, groupContext);
+export function PlayerCard({ player, href }: PlayerCardProps) {
+  const tierInfo = getPlayerTier(player);
   const mediaValue = getPlayerEffectiveRating(player);
   const contractInfo = getPlayerContractInfo(player);
 

@@ -199,7 +199,10 @@ export function getPlayerTier(
     media = overallOrPlayer || 0;
   }
 
-  const group: PositionGroup = groupContext ?? (pos ? getPositionGroup(pos) : "all");
+  // Un jugador siempre debe evaluarse según los umbrales específicos de su posición (def, mid, att, gk).
+  // La pestaña activa ("all") nunca debe sobrescribir el Tier real del jugador.
+  const posGroup = pos ? getPositionGroup(pos) : "all";
+  const group: PositionGroup = (groupContext && groupContext !== "all") ? groupContext : posGroup;
   const thresholds =
     customThresholds ??
     GROUP_TIER_THRESHOLDS[group] ??
