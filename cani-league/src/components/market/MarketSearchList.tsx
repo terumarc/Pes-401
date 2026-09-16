@@ -19,10 +19,14 @@ import { MarketCard } from "@/components/market/MarketCard";
 import { PLAYER_POSITIONS } from "@/constants";
 import { formatMoney } from "@/lib/format/money";
 import {
+  getPlayerTier,
   getPlayerEffectiveRating,
   getPositionGroup,
   GROUP_TIER_THRESHOLDS,
+  getPlayerContractInfo,
+  getPlayerFixedPrice,
   type PositionGroup,
+  type PlayerTier,
 } from "@/lib/players";
 import { POSITION_TABS } from "@/components/players/PlayerList";
 import type { Player, Team } from "@/types";
@@ -66,6 +70,7 @@ const PAGE_SIZE = 24;
 
 export function MarketSearchList({ players, teams }: MarketSearchListProps) {
   const [positionGroupTab, setPositionGroupTab] = useState<PositionGroup>("all");
+  const [selectedTier, setSelectedTier] = useState<string>("TODOS");
   const [search, setSearch] = useState("");
   const [nationality, setNationality] = useState<string>("ALL");
   const [positionFilter, setPositionFilter] = useState<string>("ALL");
@@ -120,18 +125,44 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
   }, [players]);
 
   const currentPresets = useMemo(() => {
+    if (positionGroupTab === "all") {
+      return [
+        { label: "Cualquier media / tier", value: "ALL", tier: null as PlayerTier | null, min: null, max: null },
+        { label: "★ Tier S+ (Leyenda)", value: "S+", tier: "S+" as PlayerTier, min: null, max: null },
+        { label: "★ Tier S (Clase Mundial)", value: "S", tier: "S" as PlayerTier, min: null, max: null },
+        { label: "★ Tier A (Estrella)", value: "A", tier: "A" as PlayerTier, min: null, max: null },
+        { label: "★ Tier B (Titular)", value: "B", tier: "B" as PlayerTier, min: null, max: null },
+        { label: "★ Tier C (Rotación)", value: "C", tier: "C" as PlayerTier, min: null, max: null },
+        { label: "★ Tier D (Reserva)", value: "D", tier: "D" as PlayerTier, min: null, max: null },
+        { label: "Personalizado...", value: "CUSTOM", tier: null as PlayerTier | null, min: null, max: null },
+      ];
+    }
     const t = GROUP_TIER_THRESHOLDS[positionGroupTab];
     return [
-      { label: "Cualquier media", value: "ALL", min: null, max: null },
-      { label: `★ ${t.sPlus}+ (S+ Leyenda)`, value: "S+", min: t.sPlus, max: null },
-      { label: `★ ${t.s} - ${t.sPlus - 1} (S Clase Mundial)`, value: "S", min: t.s, max: t.sPlus - 1 },
-      { label: `★ ${t.a} - ${t.s - 1} (A Estrella)`, value: "A", min: t.a, max: t.s - 1 },
-      { label: `★ ${t.b} - ${t.a - 1} (B Titular)`, value: "B", min: t.b, max: t.a - 1 },
-      { label: `★ ${t.c} - ${t.b - 1} (C Rotación)`, value: "C", min: t.c, max: t.b - 1 },
-      { label: `★ < ${t.c} (D Reserva)`, value: "D", min: null, max: t.c - 1 },
-      { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
+      { label: "Cualquier media", value: "ALL", tier: null as PlayerTier | null, min: null, max: null },
+      { label: `★ ${t.sPlus}+ (S+ Leyenda)`, value: "S+", tier: "S+" as PlayerTier, min: t.sPlus, max: null },
+      { label: `★ ${t.s} - ${t.sPlus - 1} (S Clase Mundial)`, value: "S", tier: "S" as PlayerTier, min: t.s, max: t.sPlus - 1 },
+      { label: `★ ${t.a} - ${t.s - 1} (A Estrella)`, value: "A", tier: "A" as PlayerTier, min: t.a, max: t.s - 1 },
+      { label: `★ ${t.b} - ${t.a - 1} (B Titular)`, value: "B", tier: "B" as PlayerTier, min: t.b, max: t.a - 1 },
+      { label: `★ ${t.c} - ${t.b - 1} (C Rotación)`, value: "C", tier: "C" as PlayerTier, min: t.c, max: t.b - 1 },
+      { label: `★ < ${t.c} (D Reserva)`, value: "D", tier: "D" as PlayerTier, min: null, max: t.c - 1 },
+      { label: "Personalizado...", value: "CUSTOM", tier: null as PlayerTier | null, min: null, max: null },
     ];
   }, [positionGroupTab]);
+
+  const tierCounts = useMemo(() => {
+    const counts: Record<string, number> = { "S+": 0, "S": 0, "A": 0, "B": 0, "C": 0, "D": 0 };
+    for (const p of players) {
+      if (positionGroupTab !== "all" && getPositionGroup(p.position) !== positionGroupTab) {
+        continue;
+      }
+      const t = getPlayerTier(p).tier;
+      if (counts[t] !== undefined) {
+        counts[t]++;
+      }
+    }
+    return counts;
+  }, [players, positionGroupTab]);
 
   const subPositionOptions = useMemo(() => {
     if (positionGroupTab === "def") {
@@ -177,6 +208,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     nationality !== "ALL" ||
     positionFilter !== "ALL" ||
     teamFilter !== "ALL" ||
+    selectedTier !== "TODOS" ||
     overallPreset !== "ALL" ||
     customMinOverall !== "" ||
     customMaxOverall !== "" ||
@@ -189,6 +221,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     setNationality("ALL");
     setPositionFilter("ALL");
     setTeamFilter("ALL");
+    setSelectedTier("TODOS");
     setOverallPreset("ALL");
     setCustomMinOverall("");
     setCustomMaxOverall("");
@@ -279,13 +312,31 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
         }
       }
 
-      // Overall / Media rating match
-      const ovr = getPlayerEffectiveRating(player);
-      if (minOvr !== null && ovr < minOvr) return false;
-      if (maxOvr !== null && ovr > maxOvr) return false;
+      // Tier filter
+      if (selectedTier !== "TODOS") {
+        const tier = getPlayerTier(player).tier;
+        if (tier !== selectedTier) return false;
+      }
 
-      // Market value match (checks both market_value and transfer_price)
-      const val = player.market_value ?? 0;
+      // Overall / Media rating match
+      if (overallPreset === "CUSTOM") {
+        const ovr = getPlayerEffectiveRating(player);
+        if (minOvr !== null && ovr < minOvr) return false;
+        if (maxOvr !== null && ovr > maxOvr) return false;
+      } else if (overallPreset !== "ALL") {
+        const preset = currentPresets.find((pr) => pr.value === overallPreset);
+        if (preset?.tier) {
+          const tier = getPlayerTier(player).tier;
+          if (tier !== preset.tier) return false;
+        } else if (preset) {
+          const ovr = getPlayerEffectiveRating(player);
+          if (minOvr !== null && ovr < minOvr) return false;
+          if (maxOvr !== null && ovr > maxOvr) return false;
+        }
+      }
+
+      // Market value match (sincronizado con precio fijo por tier)
+      const val = getPlayerFixedPrice(player);
       if (minVal !== null && val < minVal) return false;
       if (maxVal !== null && val > maxVal) return false;
 
@@ -298,10 +349,18 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
       const ovrB = getPlayerEffectiveRating(b);
       if (sortBy === "overall_desc") return ovrB - ovrA;
       if (sortBy === "overall_asc") return ovrA - ovrB;
-      if (sortBy === "value_desc") return (b.market_value ?? 0) - (a.market_value ?? 0);
-      if (sortBy === "value_asc") return (a.market_value ?? 0) - (b.market_value ?? 0);
-      if (sortBy === "price_desc") return (b.transfer_price ?? 0) - (a.transfer_price ?? 0);
-      if (sortBy === "price_asc") return (a.transfer_price ?? 0) - (b.transfer_price ?? 0);
+      if (sortBy === "value_desc") return getPlayerFixedPrice(b) - getPlayerFixedPrice(a);
+      if (sortBy === "value_asc") return getPlayerFixedPrice(a) - getPlayerFixedPrice(b);
+      if (sortBy === "price_desc") {
+        const pB = b.clause_fee != null ? Number(b.clause_fee) : getPlayerFixedPrice(b);
+        const pA = a.clause_fee != null ? Number(a.clause_fee) : getPlayerFixedPrice(a);
+        return pB - pA;
+      }
+      if (sortBy === "price_asc") {
+        const pB = b.clause_fee != null ? Number(b.clause_fee) : getPlayerFixedPrice(b);
+        const pA = a.clause_fee != null ? Number(a.clause_fee) : getPlayerFixedPrice(a);
+        return pA - pB;
+      }
       if (sortBy === "name_asc") return a.name.localeCompare(b.name, "es");
       if (sortBy === "name_desc") return b.name.localeCompare(a.name, "es");
       return 0;
@@ -316,6 +375,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     nationality,
     positionFilter,
     teamFilter,
+    selectedTier,
     overallPreset,
     customMinOverall,
     customMaxOverall,
@@ -654,6 +714,57 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
           </div>
         )}
 
+        {/* TIER QUICK PILLS */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-2 shrink-0 flex items-center gap-1">
+            <SlidersHorizontal className="size-3" /> Tiers ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}):
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedTier("TODOS");
+              setCurrentPage(1);
+            }}
+            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all cursor-pointer ${
+              selectedTier === "TODOS"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            Todos
+          </button>
+          {(["S+", "S", "A", "B", "C", "D"] as const).map((tier) => {
+            const active = selectedTier === tier;
+            const count = tierCounts[tier] ?? 0;
+            return (
+              <button
+                key={tier}
+                type="button"
+                onClick={() => {
+                  setSelectedTier(active ? "TODOS" : tier);
+                  setCurrentPage(1);
+                }}
+                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  active
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <span>Tier {tier}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    active
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : "bg-muted-foreground/20 text-muted-foreground"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* BOTTOM ROW: SORT & ACTIVE FILTER CHIPS */}
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-border/40">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -662,6 +773,19 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
             </span>
 
             {/* Active filter badges */}
+            {selectedTier !== "TODOS" && (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                Tier: {selectedTier}
+                <X
+                  className="size-3 cursor-pointer"
+                  onClick={() => {
+                    setSelectedTier("TODOS");
+                    setCurrentPage(1);
+                  }}
+                />
+              </Badge>
+            )}
+
             {nationality !== "ALL" && (
               <Badge variant="secondary" className="gap-1 text-xs">
                 País: {nationality}

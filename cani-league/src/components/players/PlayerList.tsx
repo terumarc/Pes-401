@@ -16,7 +16,9 @@ import {
   getPositionGroup,
   GROUP_TIER_THRESHOLDS,
   getPlayerContractInfo,
+  getPlayerFixedPrice,
   type PositionGroup,
+  type PlayerTier,
 } from "@/lib/players";
 import {
   Search,
@@ -199,16 +201,28 @@ export function PlayerList({
   }, [players]);
 
   const currentPresets = useMemo(() => {
+    if (positionGroupTab === "all") {
+      return [
+        { label: "Cualquier media / tier", value: "ALL", tier: null as PlayerTier | null, min: null, max: null },
+        { label: "★ Tier S+ (Leyenda)", value: "S+", tier: "S+" as PlayerTier, min: null, max: null },
+        { label: "★ Tier S (Clase Mundial)", value: "S", tier: "S" as PlayerTier, min: null, max: null },
+        { label: "★ Tier A (Estrella)", value: "A", tier: "A" as PlayerTier, min: null, max: null },
+        { label: "★ Tier B (Titular)", value: "B", tier: "B" as PlayerTier, min: null, max: null },
+        { label: "★ Tier C (Rotación)", value: "C", tier: "C" as PlayerTier, min: null, max: null },
+        { label: "★ Tier D (Reserva)", value: "D", tier: "D" as PlayerTier, min: null, max: null },
+        { label: "Personalizado...", value: "CUSTOM", tier: null as PlayerTier | null, min: null, max: null },
+      ];
+    }
     const t = GROUP_TIER_THRESHOLDS[positionGroupTab];
     return [
-      { label: "Cualquier media", value: "ALL", min: null, max: null },
-      { label: `★ ${t.sPlus}+ (S+ Leyenda)`, value: "S+", min: t.sPlus, max: null },
-      { label: `★ ${t.s} - ${t.sPlus - 1} (S Clase Mundial)`, value: "S", min: t.s, max: t.sPlus - 1 },
-      { label: `★ ${t.a} - ${t.s - 1} (A Estrella)`, value: "A", min: t.a, max: t.s - 1 },
-      { label: `★ ${t.b} - ${t.a - 1} (B Titular)`, value: "B", min: t.b, max: t.a - 1 },
-      { label: `★ ${t.c} - ${t.b - 1} (C Rotación)`, value: "C", min: t.c, max: t.b - 1 },
-      { label: `★ < ${t.c} (D Reserva)`, value: "D", min: null, max: t.c - 1 },
-      { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
+      { label: "Cualquier media", value: "ALL", tier: null as PlayerTier | null, min: null, max: null },
+      { label: `★ ${t.sPlus}+ (S+ Leyenda)`, value: "S+", tier: "S+" as PlayerTier, min: t.sPlus, max: null },
+      { label: `★ ${t.s} - ${t.sPlus - 1} (S Clase Mundial)`, value: "S", tier: "S" as PlayerTier, min: t.s, max: t.sPlus - 1 },
+      { label: `★ ${t.a} - ${t.s - 1} (A Estrella)`, value: "A", tier: "A" as PlayerTier, min: t.a, max: t.s - 1 },
+      { label: `★ ${t.b} - ${t.a - 1} (B Titular)`, value: "B", tier: "B" as PlayerTier, min: t.b, max: t.a - 1 },
+      { label: `★ ${t.c} - ${t.b - 1} (C Rotación)`, value: "C", tier: "C" as PlayerTier, min: t.c, max: t.b - 1 },
+      { label: `★ < ${t.c} (D Reserva)`, value: "D", tier: "D" as PlayerTier, min: null, max: t.c - 1 },
+      { label: "Personalizado...", value: "CUSTOM", tier: null as PlayerTier | null, min: null, max: null },
     ];
   }, [positionGroupTab]);
 
@@ -359,12 +373,24 @@ export function PlayerList({
         }
 
         // Overall / Media rating match
-        const ovr = getPlayerEffectiveRating(p);
-        if (minOvr !== null && ovr < minOvr) return false;
-        if (maxOvr !== null && ovr > maxOvr) return false;
+        if (overallPreset === "CUSTOM") {
+          const ovr = getPlayerEffectiveRating(p);
+          if (minOvr !== null && ovr < minOvr) return false;
+          if (maxOvr !== null && ovr > maxOvr) return false;
+        } else if (overallPreset !== "ALL") {
+          const preset = currentPresets.find((pr) => pr.value === overallPreset);
+          if (preset?.tier) {
+            const tier = getPlayerTier(p).tier;
+            if (tier !== preset.tier) return false;
+          } else if (preset) {
+            const ovr = getPlayerEffectiveRating(p);
+            if (minOvr !== null && ovr < minOvr) return false;
+            if (maxOvr !== null && ovr > maxOvr) return false;
+          }
+        }
 
-        // Market value match
-        const val = p.market_value ?? 0;
+        // Market value match (sincronizado con precio fijo de tier)
+        const val = getPlayerFixedPrice(p);
         if (minVal !== null && val < minVal) return false;
         if (maxVal !== null && val > maxVal) return false;
 
@@ -377,9 +403,9 @@ export function PlayerList({
           case "overall_asc":
             return getPlayerEffectiveRating(a) - getPlayerEffectiveRating(b);
           case "value_desc":
-            return (b.market_value ?? 0) - (a.market_value ?? 0);
+            return getPlayerFixedPrice(b) - getPlayerFixedPrice(a);
           case "value_asc":
-            return (a.market_value ?? 0) - (b.market_value ?? 0);
+            return getPlayerFixedPrice(a) - getPlayerFixedPrice(b);
           case "name_asc":
             return a.name.localeCompare(b.name, "es");
           case "speed_desc":
@@ -993,6 +1019,7 @@ export function PlayerList({
                 </th>
                 <th className="px-3 py-3 text-center">Tier</th>
                 <th className="px-3 py-3 text-center hidden sm:table-cell">Contrato</th>
+                <th className="px-3 py-3 text-center hidden lg:table-cell">Renovación</th>
                 {positionGroupTab !== "gk" && (
                   <>
                     <th className="px-3 py-3 text-center hidden md:table-cell">VEL</th>
@@ -1007,7 +1034,7 @@ export function PlayerList({
             <tbody className="divide-y divide-border/40 font-medium">
               {paginatedPlayers.map((player) => {
                 const tierInfo = getPlayerTier(player);
-                const contractInfo = getPlayerContractInfo(tierInfo.tier);
+                const contractInfo = getPlayerContractInfo(player);
                 return (
                   <tr
                     key={player.id}
@@ -1045,6 +1072,13 @@ export function PlayerList({
                         {contractInfo.durationBadge}
                       </span>
                     </td>
+                    <td className="px-3 py-2.5 text-center text-xs hidden lg:table-cell" title={contractInfo.renewalPercent > 0 ? `Coste de renovación: ${contractInfo.renewalPercentLabel} (${contractInfo.renewalCostLabel})` : "Renovación gratuita"}>
+                      {contractInfo.renewalCost > 0 ? (
+                        <span className="text-amber-600 dark:text-amber-400 font-bold">{contractInfo.renewalCostLabel}</span>
+                      ) : (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">Gratis</span>
+                      )}
+                    </td>
                     {positionGroupTab !== "gk" && (
                       <>
                         <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
@@ -1062,7 +1096,7 @@ export function PlayerList({
                       {player.defending ?? "—"}
                     </td>
                     <td className="px-4 py-2.5 text-right font-display text-xs font-semibold">
-                      <BudgetDisplay amount={player.market_value} size="sm" />
+                      <BudgetDisplay amount={contractInfo.price} size="sm" />
                     </td>
                   </tr>
                 );

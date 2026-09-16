@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlayerCard } from "@/components/players/PlayerCard";
 import { PLAYER_POSITIONS } from "@/constants";
 import { formatMoney } from "@/lib/format/money";
+import { getPlayerEffectiveRating, getPlayerFixedPrice } from "@/lib/players";
 import type { Player, Team } from "@/types";
 
 type PlayerWithTeam = Player & { team?: Pick<Team, "id" | "name" | "primary_color"> };
@@ -39,11 +40,12 @@ const OVERALL_PRESETS = [
 
 const VALUE_PRESETS = [
   { label: "Cualquier valor", value: "ALL", min: null, max: null },
-  { label: "< €1.000.000", value: "<1M", min: null, max: 1_000_000 },
-  { label: "€1M - €5M", value: "1M-5M", min: 1_000_000, max: 5_000_000 },
-  { label: "€5M - €15M", value: "5M-15M", min: 5_000_000, max: 15_000_000 },
-  { label: "€15M - €30M", value: "15M-30M", min: 15_000_000, max: 30_000_000 },
-  { label: "> €30M", value: ">30M", min: 30_000_000, max: null },
+  { label: "★ €180M (Tier S+ Leyenda)", value: "180M", min: 180_000_000, max: null },
+  { label: "★ €80M (Tier S Clase Mundial)", value: "80M", min: 80_000_000, max: 80_000_000 },
+  { label: "★ €35M (Tier A Estrella)", value: "35M", min: 35_000_000, max: 35_000_000 },
+  { label: "★ €15M (Tier B Titular)", value: "15M", min: 15_000_000, max: 15_000_000 },
+  { label: "★ €5M (Tier C Rotación)", value: "5M", min: 5_000_000, max: 5_000_000 },
+  { label: "★ €1M (Tier D Reserva)", value: "1M", min: null, max: 1_000_000 },
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
 
@@ -192,12 +194,12 @@ export function PlayerSearchList({ players, teams = [] }: PlayerSearchListProps)
       }
 
       // Overall / Media rating match
-      const ovr = player.overall ?? 0;
+      const ovr = getPlayerEffectiveRating(player);
       if (minOvr !== null && ovr < minOvr) return false;
       if (maxOvr !== null && ovr > maxOvr) return false;
 
-      // Market value match
-      const val = player.market_value ?? 0;
+      // Market value match (sincronizado con precio fijo por tier)
+      const val = getPlayerFixedPrice(player);
       if (minVal !== null && val < minVal) return false;
       if (maxVal !== null && val > maxVal) return false;
 
@@ -206,10 +208,10 @@ export function PlayerSearchList({ players, teams = [] }: PlayerSearchListProps)
 
     // Sorting
     result.sort((a, b) => {
-      if (sortBy === "overall_desc") return (b.overall ?? 0) - (a.overall ?? 0);
-      if (sortBy === "overall_asc") return (a.overall ?? 0) - (b.overall ?? 0);
-      if (sortBy === "value_desc") return (b.market_value ?? 0) - (a.market_value ?? 0);
-      if (sortBy === "value_asc") return (a.market_value ?? 0) - (b.market_value ?? 0);
+      if (sortBy === "overall_desc") return getPlayerEffectiveRating(b) - getPlayerEffectiveRating(a);
+      if (sortBy === "overall_asc") return getPlayerEffectiveRating(a) - getPlayerEffectiveRating(b);
+      if (sortBy === "value_desc") return getPlayerFixedPrice(b) - getPlayerFixedPrice(a);
+      if (sortBy === "value_asc") return getPlayerFixedPrice(a) - getPlayerFixedPrice(b);
       if (sortBy === "name_asc") return a.name.localeCompare(b.name, "es");
       if (sortBy === "name_desc") return b.name.localeCompare(a.name, "es");
       return 0;

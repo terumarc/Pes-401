@@ -26,7 +26,12 @@ import {
   getTeamById,
   getTeamsByLeague,
 } from "@/lib/data/league";
-import { getPlayerEffectiveRating } from "@/lib/players";
+import {
+  getPlayerEffectiveRating,
+  getPlayerTier,
+  getPlayerContractInfo,
+  getPlayerFixedPrice,
+} from "@/lib/players";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +66,7 @@ export default async function TeamDetailPage({ params }: Props) {
     league ? getTeamsByLeague(league.id) : Promise.resolve([]),
   ]);
 
-  const totalValue = players.reduce((sum, p) => sum + (p.market_value || 0), 0);
+  const totalValue = players.reduce((sum, p) => sum + getPlayerFixedPrice(p), 0);
   const ratedPlayers = players.filter((p) => p.overall != null);
   const avgOverall =
     ratedPlayers.length > 0
@@ -231,6 +236,8 @@ export default async function TeamDetailPage({ params }: Props) {
               const posCat = getPositionCategory(player.position);
               const mediaValue = getPlayerEffectiveRating(player);
               const isHighOvr = mediaValue >= 80;
+              const tierInfo = getPlayerTier(player);
+              const contractInfo = getPlayerContractInfo(player);
 
               return (
                 <Card
@@ -249,13 +256,16 @@ export default async function TeamDetailPage({ params }: Props) {
                           <h4 className="truncate font-display text-base font-bold">
                             {player.name}
                           </h4>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <Badge
                               variant="outline"
                               className={cn("h-4 text-[10px] font-extrabold uppercase", posCat.color)}
                             >
                               {player.position}
                             </Badge>
+                            <span className={`text-[10px] uppercase font-bold px-1.5 py-0.2 rounded-full ${tierInfo.bgColor} ${tierInfo.color}`}>
+                              {tierInfo.tier}
+                            </span>
                             {player.age && (
                               <span className="text-xs text-muted-foreground">
                                 {player.age} años
@@ -288,18 +298,22 @@ export default async function TeamDetailPage({ params }: Props) {
                     <div className="mt-3.5 grid grid-cols-2 gap-2 rounded-xl bg-muted/40 p-2 text-xs">
                       <div>
                         <span className="text-[10px] font-semibold text-muted-foreground uppercase">
-                          Valor Mercado
+                          Valor (Tier {tierInfo.tier})
                         </span>
                         <p className="font-display font-bold text-foreground">
-                          <BudgetDisplay amount={player.market_value} size="sm" />
+                          <BudgetDisplay amount={contractInfo.price} size="sm" />
                         </p>
                       </div>
                       <div>
                         <span className="text-[10px] font-semibold text-muted-foreground uppercase">
-                          Precio Fichaje
+                          Renovación ({contractInfo.renewalPercentLabel})
                         </span>
                         <p className="font-display font-bold text-foreground">
-                          <BudgetDisplay amount={player.transfer_price} size="sm" />
+                          {contractInfo.renewalCost > 0 ? (
+                            <span className="text-amber-600 dark:text-amber-400 font-bold">{contractInfo.renewalCostLabel}</span>
+                          ) : (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">Gratis</span>
+                          )}
                         </p>
                       </div>
                     </div>
