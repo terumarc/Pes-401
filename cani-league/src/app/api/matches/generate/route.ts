@@ -127,13 +127,11 @@ export async function POST(request: Request) {
     }
 
     // 5. Invalidar cachés del servidor y tags
-    invalidateMemCache("matches");
-    invalidateMemCache("teams");
-    invalidateMemCache("standing");
+    invalidateMemCache();
     try {
-      revalidateTag("matches", { expire: 0 });
-      revalidateTag("standings", { expire: 0 });
-      revalidateTag("teams", { expire: 0 });
+      revalidateTag("matches", "max");
+      revalidateTag("standings", "max");
+      revalidateTag("teams", "max");
     } catch {}
 
     try {

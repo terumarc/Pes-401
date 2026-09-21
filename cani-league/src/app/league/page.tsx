@@ -1,4 +1,4 @@
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { DashboardBudgetChart } from "@/components/dashboard/DashboardBudgetChart";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -57,13 +57,13 @@ export default async function LeaguePage() {
     getMatchesByLeague(league.id).catch(() => []),
   ]);
 
-  const totalBudget = stats.standings.reduce(
-    (sum, s) => sum + s.team.budget,
+  const totalBudget = stats.teams.reduce(
+    (sum, t) => sum + (t.budget || 0),
     0
   );
   const averageBudget =
-    stats.standings.length > 0
-      ? Math.round(totalBudget / stats.standings.length)
+    stats.teams.length > 0
+      ? Math.round(totalBudget / stats.teams.length)
       : 0;
 
   const playedMatches = rawMatches.filter((m) => m.played).length;
@@ -200,7 +200,7 @@ export default async function LeaguePage() {
             href="/finances"
             cta="Desglose por club"
           >
-            <DashboardBudgetChart standings={stats.standings} />
+            <DashboardBudgetChart teams={stats.teams} standings={stats.standings} />
           </DashboardCard>
 
           {/* Radar del Mercado y Oportunidades por Posición */}

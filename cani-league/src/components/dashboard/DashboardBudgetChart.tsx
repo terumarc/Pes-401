@@ -3,20 +3,23 @@
 import { BudgetComparisonChart } from "@/components/charts/LeagueCharts";
 import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import { ArrowUpRight, TrendingUp, ShieldAlert, Award } from "lucide-react";
-import type { StandingWithTeam } from "@/types";
+import type { StandingWithTeam, Team } from "@/types";
 
 export function DashboardBudgetChart({
+  teams: teamsProp,
   standings,
 }: {
-  standings: StandingWithTeam[];
+  teams?: Team[];
+  standings?: StandingWithTeam[];
 }) {
-  const sortedByBudget = [...standings].sort(
-    (a, b) => b.team.budget - a.team.budget
+  const teams = teamsProp ?? (standings?.map((s) => s.team) || []);
+  const sortedByBudget = [...teams].sort(
+    (a, b) => (b.budget || 0) - (a.budget || 0)
   );
   const highest = sortedByBudget[0];
   const lowest = sortedByBudget[sortedByBudget.length - 1];
-  const total = standings.reduce((sum, s) => sum + s.team.budget, 0);
-  const average = standings.length > 0 ? Math.round(total / standings.length) : 0;
+  const total = teams.reduce((sum, t) => sum + (t.budget || 0), 0);
+  const average = teams.length > 0 ? Math.round(total / teams.length) : 0;
 
   return (
     <div className="space-y-4">
@@ -27,10 +30,10 @@ export function DashboardBudgetChart({
             <Award className="size-3 text-amber-400" /> Mayor Masa
           </span>
           <p className="mt-1 truncate font-semibold text-foreground">
-            {highest ? highest.team.short_name || highest.team.name : "—"}
+            {highest ? highest.short_name || highest.name : "—"}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            {highest ? <BudgetDisplay amount={highest.team.budget} size="sm" /> : null}
+            {highest ? <BudgetDisplay amount={highest.budget} size="sm" /> : null}
           </p>
         </div>
 
@@ -49,10 +52,10 @@ export function DashboardBudgetChart({
             <ShieldAlert className="size-3 text-blue-400" /> Menor Masa
           </span>
           <p className="mt-1 truncate font-semibold text-foreground">
-            {lowest ? lowest.team.short_name || lowest.team.name : "—"}
+            {lowest ? lowest.short_name || lowest.name : "—"}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            {lowest ? <BudgetDisplay amount={lowest.team.budget} size="sm" /> : null}
+            {lowest ? <BudgetDisplay amount={lowest.budget} size="sm" /> : null}
           </p>
         </div>
       </div>
@@ -60,11 +63,11 @@ export function DashboardBudgetChart({
       {/* Chart container */}
       <div className="pt-2">
         <BudgetComparisonChart
-          teams={standings.map((s) => ({
-            name: s.team.name,
-            short_name: s.team.short_name,
-            budget: s.team.budget,
-            color: s.team.primary_color,
+          teams={teams.map((t) => ({
+            name: t.name,
+            short_name: t.short_name,
+            budget: t.budget,
+            color: t.primary_color,
           }))}
         />
       </div>

@@ -1,6 +1,6 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { invalidateMemCache } from "./cache";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import type { Team } from "@/types";
 
 export const DEFAULT_BUDGET = 50_000_000;
@@ -48,6 +48,9 @@ export async function initTeamBudgets(leagueId: string): Promise<void> {
   invalidateMemCache("teams");
   try {
     revalidateTag("teams", "max");
+    revalidatePath("/finances");
+    revalidatePath("/league");
+    revalidatePath("/teams");
   } catch {}
 }
 
@@ -99,6 +102,9 @@ export async function applySeasonMultipliers(
   invalidateMemCache("teams");
   try {
     revalidateTag("teams", "max");
+    revalidatePath("/finances");
+    revalidatePath("/league");
+    revalidatePath("/teams");
   } catch {}
 
   return results;

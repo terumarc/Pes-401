@@ -1,7 +1,8 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { safeCache, invalidateMemCache } from "./cache";
 import { getOrEstimatePesStats } from "@/lib/data/pes_stats";
+import { getPlayerFixedPrice } from "@/lib/players";
 import type {
   League,
   Player,
@@ -13,43 +14,35 @@ import type {
   TeamWithStanding,
 } from "@/types";
 
-export const getPrimaryLeague = safeCache(
-  async (): Promise<League | null> => {
-    const supabase = createStaticClient();
-    const { data, error } = await supabase
-      .from("leagues")
-      .select("*")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
+export async function getPrimaryLeague(): Promise<League | null> {
+  const supabase = createStaticClient();
+  const { data, error } = await supabase
+    .from("leagues")
+    .select("*")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
 
-    if (error) throw error;
-    return data;
-  },
-  ["primary-league"],
-  { revalidate: 3600, tags: ["league"] }
-);
+  if (error) throw error;
+  return data;
+}
 
-export const getTeamsByLeague = safeCache(
-  async (leagueId: string): Promise<Team[]> => {
-    const supabase = createStaticClient();
-    const { data, error } = await supabase
-      .from("teams")
-      .select("*")
-      .eq("league_id", leagueId)
-      .order("name");
+export async function getTeamsByLeague(leagueId: string): Promise<Team[]> {
+  const supabase = createStaticClient();
+  const { data, error } = await supabase
+    .from("teams")
+    .select("*")
+    .eq("league_id", leagueId)
+    .order("name");
 
-    if (error) throw error;
-    // Excluir Agentes Libres y equipos de sistema de la lista de equipos de liga
-    return (data ?? []).filter(
-      (t) =>
-        !t.name.toLowerCase().includes("libre") &&
-        !t.name.toLowerCase().includes("sin equipo")
-    );
-  },
-  ["teams-by-league"],
-  { revalidate: 300, tags: ["teams"] }
-);
+  if (error) throw error;
+  // Excluir Agentes Libres y equipos de sistema de la lista de equipos de liga
+  return (data ?? []).filter(
+    (t) =>
+      !t.name.toLowerCase().includes("libre") &&
+      !t.name.toLowerCase().includes("sin equipo")
+  );
+}
 
 export async function getTeamById(id: string): Promise<Team | null> {
   const supabase = createStaticClient();
@@ -63,89 +56,81 @@ export async function getTeamById(id: string): Promise<Team | null> {
   return data;
 }
 
-export const getStandingsWithTeams = safeCache(
-  async (leagueId: string): Promise<StandingWithTeam[]> => {
-    const supabase = createStaticClient();
-    const { data, error } = await supabase
-      .from("league_standings")
-      .select("*, team:teams(*)")
-      .eq("league_id", leagueId)
-      .order("position", { ascending: true });
+export async function getStandingsWithTeams(leagueId: string): Promise<StandingWithTeam[]> {
+  const supabase = createStaticClient();
+  const { data, error } = await supabase
+    .from("league_standings")
+    .select("*, team:teams(*)")
+    .eq("league_id", leagueId)
+    .order("position", { ascending: true });
 
-    if (error) throw error;
-    return (data ?? []) as StandingWithTeam[];
-  },
-  ["standings-with-teams"],
-  { revalidate: 120, tags: ["standings", "teams"] }
-);
+  if (error) throw error;
+  return (data ?? []) as StandingWithTeam[];
+}
 
-export const getTeamsWithStandings = safeCache(
-  async (leagueId: string): Promise<TeamWithStanding[]> => {
-    const standings = await getStandingsWithTeams(leagueId);
-    const supabase = createStaticClient();
+export async function getTeamsWithStandings(leagueId: string): Promise<TeamWithStanding[]> {
+  const standings = await getStandingsWithTeams(leagueId);
+  const supabase = createStaticClient();
 
-    const standingTeamIds = standings.map((s) => s.team_id);
-    const { data: playersData, error } = await supabase
-      .from("players")
-      .select("team_id, name, overall, market_value")
-      .in("team_id", standingTeamIds);
+  const standingTeamIds = standings.map((s) => s.team_id);
+  const { data: playersData, error } = await supabase
+    .from("players")
+    .select("team_id, name, position, overall, defending, market_value")
+    .in("team_id", standingTeamIds);
 
-    if (error) throw error;
+  if (error) throw error;
 
-    type TeamStats = {
-      count: number;
-      totalOverall: number;
-      overallCount: number;
-      squadValue: number;
-      topPlayer: { name: string; overall: number } | null;
+  type TeamStats = {
+    count: number;
+    totalOverall: number;
+    overallCount: number;
+    squadValue: number;
+    topPlayer: { name: string; overall: number } | null;
+  };
+
+  const teamStatsMap = new Map<string, TeamStats>();
+
+  for (const p of playersData ?? []) {
+    const stat = teamStatsMap.get(p.team_id) ?? {
+      count: 0,
+      totalOverall: 0,
+      overallCount: 0,
+      squadValue: 0,
+      topPlayer: null,
     };
 
-    const teamStatsMap = new Map<string, TeamStats>();
+    stat.count += 1;
+    stat.squadValue += getPlayerFixedPrice(p);
 
-    for (const p of playersData ?? []) {
-      const stat = teamStatsMap.get(p.team_id) ?? {
-        count: 0,
-        totalOverall: 0,
-        overallCount: 0,
-        squadValue: 0,
-        topPlayer: null,
-      };
-
-      stat.count += 1;
-      stat.squadValue += p.market_value || 0;
-
-      if (p.overall != null) {
-        stat.totalOverall += p.overall;
-        stat.overallCount += 1;
-        if (!stat.topPlayer || p.overall > stat.topPlayer.overall) {
-          stat.topPlayer = { name: p.name, overall: p.overall };
-        }
+    if (p.overall != null) {
+      stat.totalOverall += p.overall;
+      stat.overallCount += 1;
+      if (!stat.topPlayer || p.overall > stat.topPlayer.overall) {
+        stat.topPlayer = { name: p.name, overall: p.overall };
       }
-
-      teamStatsMap.set(p.team_id, stat);
     }
 
-    return standings.map((s) => {
-      const stats = teamStatsMap.get(s.team_id);
-      const avgOverall =
-        stats && stats.overallCount > 0
-          ? Math.round(stats.totalOverall / stats.overallCount)
-          : undefined;
+    teamStatsMap.set(p.team_id, stat);
+  }
 
-      return {
-        ...s.team,
-        position: s.position,
-        previous_position: s.previous_position,
-        player_count: stats?.count ?? 0,
-        avg_overall: avgOverall,
-        squad_value: stats?.squadValue ?? 0,
-        top_player: stats?.topPlayer ?? undefined,
-      };
-    });
-  },
-  ["teams-with-standings"],
-  { revalidate: 120, tags: ["teams", "standings", "players"] }
-);
+  return standings.map((s) => {
+    const stats = teamStatsMap.get(s.team_id);
+    const avgOverall =
+      stats && stats.overallCount > 0
+        ? Math.round(stats.totalOverall / stats.overallCount)
+        : undefined;
+
+    return {
+      ...s.team,
+      position: s.position,
+      previous_position: s.previous_position,
+      player_count: stats?.count ?? 0,
+      avg_overall: avgOverall,
+      squad_value: stats?.squadValue ?? 0,
+      top_player: stats?.topPlayer ?? undefined,
+    };
+  });
+}
 
 export async function updateTeam(
   id: string,
@@ -163,6 +148,9 @@ export async function updateTeam(
   invalidateMemCache("team");
   try {
     revalidateTag("teams", "max");
+    revalidatePath("/league");
+    revalidatePath("/teams");
+    revalidatePath("/finances");
   } catch {}
   return data;
 }
@@ -300,6 +288,10 @@ export async function createPlayer(input: PlayerCreateInput): Promise<Player> {
   invalidatePlayersCache();
   try {
     revalidateTag("players", "max");
+    revalidatePath("/players");
+    revalidatePath("/market");
+    revalidatePath("/league");
+    revalidatePath("/teams");
   } catch {}
   return data;
 }
@@ -320,6 +312,10 @@ export async function updatePlayer(
   invalidatePlayersCache();
   try {
     revalidateTag("players", "max");
+    revalidatePath("/players");
+    revalidatePath("/market");
+    revalidatePath("/league");
+    revalidatePath("/teams");
   } catch {}
   return data;
 }
@@ -331,6 +327,10 @@ export async function deletePlayer(id: string): Promise<void> {
   invalidatePlayersCache();
   try {
     revalidateTag("players", "max");
+    revalidatePath("/players");
+    revalidatePath("/market");
+    revalidatePath("/league");
+    revalidatePath("/teams");
   } catch {}
 }
 
@@ -353,7 +353,6 @@ export async function getDashboardStats(leagueId: string) {
     supabase
       .from("players")
       .select("*", { count: "exact", head: true })
-      .in("team_id", teamIds)
       .eq("available_in_market", true),
   ]);
 
@@ -417,5 +416,7 @@ export async function reorderStandings(
   invalidateMemCache("standing");
   try {
     revalidateTag("standings", "max");
+    revalidatePath("/standings");
+    revalidatePath("/league");
   } catch {}
 }

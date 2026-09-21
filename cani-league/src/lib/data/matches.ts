@@ -1,5 +1,5 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { safeCache, invalidateMemCache } from "./cache";
 import type { League, LeagueTableRow, Match, MatchWithTeams, Team } from "@/types";
 
@@ -112,6 +112,8 @@ export async function generateFixtures(
     invalidateMemCache("matches");
     try {
         revalidateTag("matches", "max");
+        revalidatePath("/calendar");
+        revalidatePath("/league");
     } catch {}
     return (data ?? []) as Match[];
 }
@@ -138,9 +140,16 @@ export async function recordMatchResult(
     if (error) throw error;
 
     invalidateMemCache("matches");
+    invalidateMemCache("teams");
+    invalidateMemCache("standing");
     try {
         revalidateTag("matches", "max");
         revalidateTag("standings", "max");
+        revalidateTag("teams", "max");
+        revalidatePath("/calendar");
+        revalidatePath("/standings");
+        revalidatePath("/league");
+        revalidatePath("/teams");
     } catch {}
 
     return data as Match;

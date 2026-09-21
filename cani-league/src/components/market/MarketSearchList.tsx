@@ -395,16 +395,29 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
   return (
     <div className="space-y-6">
       {/* FILTER CONTROL PANEL */}
-      <div className="rounded-2xl border bg-card/60 p-4 shadow-xs backdrop-blur-xs space-y-4">
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 sm:p-5 shadow-xs backdrop-blur-md space-y-4">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
+          aria-hidden="true"
+        />
+
         {/* Selector Principal por Agrupaciones de Posición */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
-          <div className="flex flex-wrap items-center gap-2">
+          <div
+            role="tablist"
+            aria-label="Filtrar mercado por posición"
+            className="flex flex-wrap items-center gap-2"
+          >
             {POSITION_TABS.map((tab) => {
               const active = positionGroupTab === tab.id;
               const count = countsByGroup[tab.id] ?? 0;
               return (
                 <button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={active}
+                  aria-controls="market-player-results"
+                  id={`market-tab-${tab.id}`}
                   type="button"
                   onClick={() => {
                     setPositionGroupTab(tab.id);
@@ -412,13 +425,15 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                     setOverallPreset("ALL");
                     setCurrentPage(1);
                   }}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                  className={`flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     active
                       ? tab.activeClass
                       : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
-                  <span className="text-base leading-none">{tab.icon}</span>
+                  <span className="text-base leading-none" aria-hidden="true">
+                    {tab.icon}
+                  </span>
                   <span>{tab.label}</span>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
@@ -442,7 +457,9 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
         {/* Banner contextual si está en pestaña de porteros */}
         {positionGroupTab === "gk" && (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start sm:items-center gap-2.5">
-            <span className="text-lg shrink-0">🧤</span>
+            <span className="text-lg shrink-0" aria-hidden="true">
+              🧤
+            </span>
             <div className="min-w-0">
               <p className="font-bold text-foreground">Apartado exclusivo de Porteros en el Mercado</p>
               <p className="text-muted-foreground text-[11px]">
@@ -455,8 +472,10 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
         {/* TOP ROW: SEARCH & CONTROLS */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
+              id="market-search-input"
+              aria-label="Buscar futbolistas en el mercado"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -467,7 +486,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   ? "Buscar jugadores en el mercado..."
                   : `Buscar ${POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel.toLowerCase()} en el mercado...`
               }
-              className="pl-9 pr-9"
+              className="pl-9 pr-9 h-10 border-white/[0.08]"
             />
             {search && (
               <button
@@ -476,10 +495,10 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   setSearch("");
                   setCurrentPage(1);
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Limpiar búsqueda"
               >
-                <X className="size-4" />
+                <X className="size-4" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -489,12 +508,14 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
               variant={showAdvanced ? "secondary" : "outline"}
               size="sm"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="gap-1.5"
+              aria-expanded={showAdvanced}
+              aria-controls="market-advanced-filters"
+              className="gap-1.5 h-10 min-h-[40px] px-3.5"
             >
-              <SlidersHorizontal className="size-3.5" />
+              <SlidersHorizontal className="size-3.5" aria-hidden="true" />
               <span>Filtros</span>
               {hasActiveFilters && (
-                <span className="size-2 rounded-full bg-primary" />
+                <span className="size-2 rounded-full bg-primary" aria-label="Filtros activos aplicados" />
               )}
             </Button>
           </div>
@@ -607,7 +628,12 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
         {/* ADVANCED / CUSTOM SLIDERS & INPUTS */}
         {showAdvanced && (
-          <div className="mt-4 pt-4 border-t border-border/60 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            id="market-advanced-filters"
+            role="region"
+            aria-label="Filtros avanzados de búsqueda"
+            className="mt-4 pt-4 border-t border-border/60 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {/* Custom Overall Range */}
             <div className="rounded-xl border bg-muted/30 p-3 space-y-2">
               <span className="text-xs font-semibold text-foreground">
@@ -626,8 +652,9 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                     setCurrentPage(1);
                   }}
                   className="h-8 text-xs"
+                  aria-label="Media mínima"
                 />
-                <span className="text-muted-foreground text-xs">-</span>
+                <span className="text-muted-foreground text-xs" aria-hidden="true">-</span>
                 <Input
                   type="number"
                   placeholder="Max (ej. 99)"
@@ -640,6 +667,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                     setCurrentPage(1);
                   }}
                   className="h-8 text-xs"
+                  aria-label="Media máxima"
                 />
               </div>
             </div>
@@ -662,8 +690,9 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                     setCurrentPage(1);
                   }}
                   className="h-8 text-xs"
+                  aria-label="Valor mínimo en euros"
                 />
-                <span className="text-muted-foreground text-xs">-</span>
+                <span className="text-muted-foreground text-xs" aria-hidden="true">-</span>
                 <Input
                   type="number"
                   placeholder="Max €"
@@ -676,6 +705,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                     setCurrentPage(1);
                   }}
                   className="h-8 text-xs"
+                  aria-label="Valor máximo en euros"
                 />
               </div>
             </div>
@@ -714,17 +744,22 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
         )}
 
         {/* TIER QUICK PILLS */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40">
+        <div
+          role="group"
+          aria-label="Filtro rápido por Tier"
+          className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40"
+        >
           <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-2 shrink-0 flex items-center gap-1">
-            <SlidersHorizontal className="size-3" /> Tiers ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}):
+            <SlidersHorizontal className="size-3" aria-hidden="true" /> Tiers ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}):
           </span>
           <button
             type="button"
+            aria-pressed={selectedTier === "TODOS"}
             onClick={() => {
               setSelectedTier("TODOS");
               setCurrentPage(1);
             }}
-            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`rounded-full px-3 py-1 min-h-[32px] text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               selectedTier === "TODOS"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -739,11 +774,12 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
               <button
                 key={tier}
                 type="button"
+                aria-pressed={active}
                 onClick={() => {
                   setSelectedTier(active ? "TODOS" : tier);
                   setCurrentPage(1);
                 }}
-                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`rounded-full px-3 py-1 min-h-[32px] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   active
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -771,89 +807,119 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
               Disponibles: <strong className="text-foreground">{filteredPlayers.length}</strong> de {players.length} jugadores en el mercado
             </span>
 
-            {/* Active filter badges */}
+            {/* Active filter badges with accessible remove buttons */}
             {selectedTier !== "TODOS" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Tier: {selectedTier}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 text-xs py-1 px-2.5">
+                <span>Tier: {selectedTier}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setSelectedTier("TODOS");
                     setCurrentPage(1);
                   }}
-                />
+                  aria-label={`Eliminar filtro de Tier ${selectedTier}`}
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-foreground/15 focus-visible:ring-1 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {nationality !== "ALL" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                País: {nationality}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 text-xs py-1 px-2.5">
+                <span>País: {nationality}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setNationality("ALL");
                     setCurrentPage(1);
                   }}
-                />
+                  aria-label={`Eliminar filtro de nacionalidad ${nationality}`}
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-foreground/15 focus-visible:ring-1 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {positionFilter !== "ALL" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Posición: {positionFilter}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 text-xs py-1 px-2.5">
+                <span>Posición: {positionFilter}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setPositionFilter("ALL");
                     setCurrentPage(1);
                   }}
-                />
+                  aria-label={`Eliminar filtro de posición ${positionFilter}`}
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-foreground/15 focus-visible:ring-1 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {overallPreset !== "ALL" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Media: {overallPreset === "CUSTOM" ? `${customMinOverall || "0"}-${customMaxOverall || "100"}` : overallPreset}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 text-xs py-1 px-2.5">
+                <span>
+                  Media: {overallPreset === "CUSTOM" ? `${customMinOverall || "0"}-${customMaxOverall || "100"}` : overallPreset}
+                </span>
+                <button
+                  type="button"
                   onClick={() => {
                     setOverallPreset("ALL");
                     setCustomMinOverall("");
                     setCustomMaxOverall("");
                     setCurrentPage(1);
                   }}
-                />
+                  aria-label="Eliminar filtro de media"
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-foreground/15 focus-visible:ring-1 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {valuePreset !== "ALL" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Valor: {valuePreset === "CUSTOM" ? `${customMinValue ? formatMoney(Number(customMinValue)) : "0"} - ${customMaxValue ? formatMoney(Number(customMaxValue)) : "Max"}` : valuePreset}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 text-xs py-1 px-2.5">
+                <span>
+                  Valor: {valuePreset === "CUSTOM" ? `${customMinValue ? formatMoney(Number(customMinValue)) : "0"} - ${customMaxValue ? formatMoney(Number(customMaxValue)) : "Max"}` : valuePreset}
+                </span>
+                <button
+                  type="button"
                   onClick={() => {
                     setValuePreset("ALL");
                     setCustomMinValue("");
                     setCustomMaxValue("");
                     setCurrentPage(1);
                   }}
-                />
+                  aria-label="Eliminar filtro de valor"
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-foreground/15 focus-visible:ring-1 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {teamFilter !== "ALL" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Equipo:{" "}
-                {teamFilter === "SIN_EQUIPO"
-                  ? "Agentes Libres"
-                  : teams.find((t) => t.id === teamFilter)?.name || teamFilter}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 text-xs py-1 px-2.5">
+                <span>
+                  Equipo:{" "}
+                  {teamFilter === "SIN_EQUIPO"
+                    ? "Agentes Libres"
+                    : teams.find((t) => t.id === teamFilter)?.name || teamFilter}
+                </span>
+                <button
+                  type="button"
                   onClick={() => {
                     setTeamFilter("ALL");
                     setCurrentPage(1);
                   }}
-                />
+                  aria-label="Eliminar filtro de equipo"
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-foreground/15 focus-visible:ring-1 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
@@ -862,9 +928,10 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                 variant="ghost"
                 size="xs"
                 onClick={resetFilters}
-                className="gap-1 text-xs text-muted-foreground hover:text-foreground h-6 px-2"
+                className="gap-1 text-xs text-muted-foreground hover:text-foreground h-7 px-2.5 min-h-[28px]"
+                aria-label="Restablecer todos los filtros"
               >
-                <RotateCcw className="size-3" />
+                <RotateCcw className="size-3" aria-hidden="true" />
                 Limpiar todo
               </Button>
             )}
@@ -872,7 +939,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
           {/* SORT DROPDOWN */}
           <div className="flex items-center gap-2 shrink-0">
-            <ArrowUpDown className="size-3.5 text-muted-foreground" />
+            <ArrowUpDown className="size-3.5 text-muted-foreground" aria-hidden="true" />
             <span className="text-xs text-muted-foreground">Ordenar:</span>
             <Select
               value={sortBy}
@@ -900,94 +967,110 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
       </div>
 
       {/* RESULTS GRID */}
-      {filteredPlayers.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line-strong px-5 py-12 text-center text-sm text-ink-muted space-y-3">
-          <Store className="size-8 mx-auto text-muted-foreground/60" />
-          <p className="font-display font-semibold text-foreground">
-            No hay jugadores en el mercado que coincidan
-          </p>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            Ningún futbolista en venta cumple con los filtros activos. Prueba cambiando la búsqueda o restableciendo los filtros.
-          </p>
-          {hasActiveFilters && (
-            <Button variant="outline" size="sm" onClick={resetFilters} className="mt-2 gap-1.5">
-              <RotateCcw className="size-3.5" />
-              Restablecer filtros
-            </Button>
-          )}
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {paginatedPlayers.map((player) => (
-              <MarketCard key={player.id} player={player} teams={teams} />
-            ))}
+      <div id="market-player-results" role="region" aria-label="Resultados de jugadores en el mercado">
+        {filteredPlayers.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border/70 bg-card/20 px-5 py-12 text-center text-sm text-muted-foreground space-y-3">
+            <Store className="size-8 mx-auto text-muted-foreground/60" aria-hidden="true" />
+            <p className="font-display font-semibold text-foreground">
+              No hay jugadores en el mercado que coincidan
+            </p>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              Ningún futbolista en venta cumple con los filtros activos. Prueba cambiando la búsqueda o restableciendo los filtros.
+            </p>
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetFilters}
+                className="mt-2 gap-1.5 min-h-[40px] h-10 px-4"
+              >
+                <RotateCcw className="size-3.5" aria-hidden="true" />
+                Restablecer filtros
+              </Button>
+            )}
           </div>
-
-          {/* Pagination Footer */}
-          {totalPages > 1 && (
-            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-4 text-xs text-muted-foreground">
-              <span>
-                Página <strong className="text-foreground">{safePage}</strong> de{" "}
-                <strong className="text-foreground">{totalPages}</strong> (
-                {filteredPlayers.length} jugadores en el mercado)
-              </span>
-
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="xs"
-                  disabled={safePage <= 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="gap-1"
-                >
-                  <ChevronLeft className="size-3.5" /> Anterior
-                </Button>
-
-                {/* Quick Page Selector */}
-                <div className="flex items-center gap-1 px-2">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pNum: number;
-                    if (totalPages <= 5) {
-                      pNum = i + 1;
-                    } else if (safePage <= 3) {
-                      pNum = i + 1;
-                    } else if (safePage >= totalPages - 2) {
-                      pNum = totalPages - 4 + i;
-                    } else {
-                      pNum = safePage - 2 + i;
-                    }
-                    return (
-                      <button
-                        key={pNum}
-                        type="button"
-                        onClick={() => setCurrentPage(pNum)}
-                        className={`size-7 rounded-md text-xs font-medium transition-colors ${
-                          safePage === pNum
-                            ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {pNum}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="xs"
-                  disabled={safePage >= totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className="gap-1"
-                >
-                  Siguiente <ChevronRight className="size-3.5" />
-                </Button>
-              </div>
+        ) : (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {paginatedPlayers.map((player) => (
+                <MarketCard key={player.id} player={player} teams={teams} />
+              ))}
             </div>
-          )}
-        </>
-      )}
+
+            {/* Pagination Footer */}
+            {totalPages > 1 && (
+              <nav
+                aria-label="Paginación de resultados del mercado"
+                className="flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-4 text-xs text-muted-foreground mt-6"
+              >
+                <span>
+                  Página <strong className="text-foreground">{safePage}</strong> de{" "}
+                  <strong className="text-foreground">{totalPages}</strong> (
+                  {filteredPlayers.length} jugadores en el mercado)
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={safePage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="gap-1 min-h-[36px] h-9 px-3"
+                    aria-label="Ir a la página anterior"
+                  >
+                    <ChevronLeft className="size-3.5" aria-hidden="true" />
+                    <span>Anterior</span>
+                  </Button>
+
+                  {/* Quick Page Selector */}
+                  <div className="flex items-center gap-1 px-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pNum: number;
+                      if (totalPages <= 5) {
+                        pNum = i + 1;
+                      } else if (safePage <= 3) {
+                        pNum = i + 1;
+                      } else if (safePage >= totalPages - 2) {
+                        pNum = totalPages - 4 + i;
+                      } else {
+                        pNum = safePage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={pNum}
+                          type="button"
+                          onClick={() => setCurrentPage(pNum)}
+                          aria-label={`Página ${pNum}`}
+                          aria-current={safePage === pNum ? "page" : undefined}
+                          className={`size-9 min-h-[36px] min-w-[36px] rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                            safePage === pNum
+                              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                              : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {pNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={safePage >= totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className="gap-1 min-h-[36px] h-9 px-3"
+                    aria-label="Ir a la página siguiente"
+                  >
+                    <span>Siguiente</span>
+                    <ChevronRight className="size-3.5" aria-hidden="true" />
+                  </Button>
+                </div>
+              </nav>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

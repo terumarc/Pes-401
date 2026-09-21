@@ -11,6 +11,16 @@ import type {
 } from "@/types";
 
 
+async function triggerServerRevalidate(tag?: string, path?: string) {
+  try {
+    await fetch("/api/revalidate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tag, path }),
+    });
+  } catch {}
+}
+
 export type TransferResult = {
   player: Player;
   buyerBudget: number;
@@ -106,6 +116,8 @@ export async function transferPlayerClient(
     });
   }
 
+  await triggerServerRevalidate();
+
   return {
     player: updatedPlayer,
     buyerBudget: newBuyerBudget,
@@ -126,6 +138,7 @@ export async function updateTeamClient(
     .single();
 
   if (error) throw error;
+  await triggerServerRevalidate("teams");
   return data;
 }
 
@@ -140,6 +153,7 @@ export async function createPlayerClient(
     .single();
 
   if (error) throw error;
+  await triggerServerRevalidate("players");
   return data;
 }
 
@@ -156,6 +170,7 @@ export async function updatePlayerClient(
     .single();
 
   if (error) throw error;
+  await triggerServerRevalidate("players");
   return data;
 }
 
@@ -163,6 +178,7 @@ export async function deletePlayerClient(id: string): Promise<void> {
   const supabase = createClient();
   const { error } = await supabase.from("players").delete().eq("id", id);
   if (error) throw error;
+  await triggerServerRevalidate("players");
 }
 
 export async function setPlayerMarketClient(
@@ -217,6 +233,8 @@ export async function reorderStandingsClient(
 
     if (error) throw error;
   }
+
+  await triggerServerRevalidate("standings");
 }
 
 // ─── Partidos ────────────────────────────────────────────────
@@ -267,6 +285,7 @@ export async function applyMatchRewardsClient(matchId: string): Promise<void> {
   if (awayTeam) {
     await supabase.from("teams").update({ budget: awayTeam.budget + awayReward }).eq("id", awayTeam.id);
   }
+  await triggerServerRevalidate("teams");
 }
 
 export async function recordMatchResultClient(
@@ -302,6 +321,7 @@ export async function recordMatchResultClient(
   
   // Aplicar recompensas automáticamente al registrar el resultado
   await applyMatchRewardsClient(matchId);
+  await triggerServerRevalidate();
 
   return data as Match;
 }
@@ -365,6 +385,7 @@ export async function recordDirectMatchClient(
 
     if (updateErr) throw updateErr;
     await applyMatchRewardsClient(reverseMatch.id);
+    await triggerServerRevalidate();
     return updatedMatch as Match;
   }
 
@@ -387,6 +408,7 @@ export async function recordDirectMatchClient(
 
   if (insertErr) throw insertErr;
   await applyMatchRewardsClient(newMatch.id);
+  await triggerServerRevalidate();
   return newMatch as Match;
 }
 
@@ -399,6 +421,7 @@ export async function resetMatchResultClient(matchId: string): Promise<Match> {
     .select("*")
     .single();
   if (error) throw error;
+  await triggerServerRevalidate("matches");
   return data as Match;
 }
 

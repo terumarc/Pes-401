@@ -1,8 +1,8 @@
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 import { FinancesPanel } from "@/components/finances/FinancesPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
-import { getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { getPrimaryLeague, getTeamsWithStandings } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { BudgetTrendChart } from "@/components/charts/BudgetTrendChart";
 import { SquadValueChart } from "@/components/charts/SquadValueChart";
@@ -17,7 +17,7 @@ export default async function FinancesPage() {
     return <p className="text-ink-muted">No hay liga configurada.</p>;
   }
 
-  const teams = await getTeamsByLeague(league.id);
+  const teams = await getTeamsWithStandings(league.id);
 
   return (
     <div className="animate-fade-up">
@@ -28,8 +28,8 @@ export default async function FinancesPage() {
       />
       <FinancesPanel teams={teams} />
       <div className="mt-8 grid gap-6 md:grid-cols-2">
-        <BudgetTrendChart />
-        <SquadValueChart />
+        <BudgetTrendChart teams={teams} />
+        <SquadValueChart teams={teams} />
       </div>
     </div>
   );

@@ -968,7 +968,7 @@ export function PlayerList({
 
             {overallPreset !== "ALL" && (
               <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
-                <span>Media: {overallPreset === "CUSTOM" ? `${customMinOverall || "0"}-${customMaxOverall || "100"}` : overallPreset}</span>
+                <span>Media: {overallPreset === "CUSTOM" ? (customMinOverall || "0") + " - " + (customMaxOverall || "100") : overallPreset}</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -987,7 +987,7 @@ export function PlayerList({
 
             {valuePreset !== "ALL" && (
               <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
-                <span>Valor: {valuePreset === "CUSTOM" ? `${customMinValue ? formatMoney(Number(customMinValue)) : "0"} - ${customMaxValue ? formatMoney(Number(customMaxValue)) : "Max"}` : valuePreset}</span>
+                <span>Valor: {valuePreset === "CUSTOM" ? (customMinValue ? formatMoney(Number(customMinValue)) : "0") + " - " + (customMaxValue ? formatMoney(Number(customMaxValue)) : "Max") : valuePreset}</span>
                 <button
                   type="button"
                   onClick={() => {

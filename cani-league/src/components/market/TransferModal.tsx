@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, AlertCircle, ArrowRight, Zap, Store, Loader2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -20,7 +20,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
-import { transferPlayerClient } from "@/lib/data/mutations";
+import { PlayerAvatar } from "@/components/players/PlayerCard";
+import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
 import { formatMoney } from "@/lib/format/money";
 import type { Player, Team } from "@/types";
 
@@ -63,6 +64,9 @@ export function TransferModal({
     const selectedBuyer = teams.find((t) => t.id === buyerTeamId);
     const canAfford = selectedBuyer != null && selectedBuyer.budget >= price;
 
+    const tierInfo = getPlayerTier(player);
+    const rating = getPlayerEffectiveRating(player);
+
     async function handleTransfer() {
         if (!buyerTeamId) return;
         setStatus("loading");
@@ -103,72 +107,99 @@ export function TransferModal({
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>
-                        {isClausula ? "Pagar Cláusula de Rescisión" : "Fichar Agente Libre (Mercado)"}
+            <DialogContent className="sm:max-w-md border-white/[0.08] bg-card/95 backdrop-blur-xl shadow-2xl p-6">
+                <DialogHeader className="space-y-1.5 pb-2 border-b border-border/50">
+                    <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-display font-bold">
+                        {isClausula ? (
+                            <span className="flex items-center gap-2 text-amber-500">
+                                <Zap className="size-5 shrink-0" aria-hidden="true" />
+                                Cláusula de Rescisión
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-2 text-primary">
+                                <Store className="size-5 shrink-0" aria-hidden="true" />
+                                Fichar Agente Libre
+                            </span>
+                        )}
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
                         {isClausula
-                            ? `Ejecutar la cláusula para fichar a `
-                            : `Selecciona el equipo que fichará a `}
-                        <span className="font-semibold text-foreground">{player.name}</span>
+                            ? "Ejecuta la cláusula contractual para incorporar al jugador inmediatamente."
+                            : "Ficha a este agente libre para reforzar la plantilla de tu club."}
                     </DialogDescription>
                 </DialogHeader>
 
                 {status === "success" ? (
-                    <div className="flex flex-col items-center gap-3 py-6 text-center">
-                        <CheckCircle2 className="h-12 w-12 text-green-500" />
-                        <p className="font-semibold text-lg">¡Fichaje completado!</p>
-                        <p className="text-sm text-muted-foreground">
-                            {player.name} ahora juega en{" "}
-                            {teams.find((t) => t.id === buyerTeamId)?.name}
+                    <div className="flex flex-col items-center gap-3 py-6 text-center animate-in zoom-in-95 duration-200">
+                        <CheckCircle2 className="size-12 text-emerald-500" aria-hidden="true" />
+                        <h3 className="font-display font-bold text-lg text-foreground">¡Operación Completada!</h3>
+                        <p className="text-sm text-muted-foreground max-w-xs">
+                            <span className="font-semibold text-foreground">{player.name}</span> se ha incorporado con éxito a{" "}
+                            <span className="font-semibold text-foreground">
+                                {teams.find((t) => t.id === buyerTeamId)?.name}
+                            </span>.
                         </p>
                         <Button
-                            className="mt-2"
+                            className="mt-3 min-h-[40px] h-10 px-6 font-semibold"
                             onClick={() => handleClose(false)}
                         >
                             Cerrar
                         </Button>
                     </div>
                 ) : (
-                    <>
+                    <div className="space-y-4 py-2">
                         {/* Resumen del jugador */}
-                        <div className="rounded-lg border bg-muted/40 p-4 space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Jugador</span>
-                                <span className="font-medium">{player.name}</span>
+                        <div className="flex items-center gap-3.5 rounded-xl border border-white/[0.08] bg-muted/40 p-3">
+                            <PlayerAvatar name={player.name} photoUrl={player.photo_url ?? null} size="md" />
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <h4 className="truncate font-display text-sm font-bold text-foreground">
+                                        {player.name}
+                                    </h4>
+                                    <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide">
+                                        {player.position}
+                                    </span>
+                                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-extrabold ${tierInfo.bgColor} ${tierInfo.color}`}>
+                                        T{tierInfo.tier} · {rating}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                    {player.team?.name ? (
+                                        <span className="inline-flex items-center gap-1">
+                                            <Shield className="size-3 shrink-0 opacity-70" aria-hidden="true" />
+                                            {player.team.name}
+                                        </span>
+                                    ) : (
+                                        <span className="text-emerald-500 font-medium">Agente Libre</span>
+                                    )}
+                                </p>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Equipo actual</span>
-                                <span>{player.team?.name || "Sin equipo"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                    {isClausula ? "Precio de Cláusula" : "Precio de Mercado"}
+                            <div className="text-right shrink-0">
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">
+                                    {isClausula ? "Cláusula" : "Precio"}
                                 </span>
-                                <span className="font-semibold text-foreground">
-                                    <BudgetDisplay amount={price} size="sm" />
-                                </span>
+                                <BudgetDisplay amount={price} size="sm" className="font-bold text-foreground" />
                             </div>
                         </div>
 
                         {/* Selector de equipo comprador */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Equipo comprador</label>
+                            <label htmlFor="transfer-buyer-select" className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                                Equipo comprador
+                            </label>
                             <Select value={buyerTeamId} onValueChange={setBuyerTeamId}>
-                                <SelectTrigger id="transfer-buyer-select">
-                                    <SelectValue placeholder="Selecciona un equipo…" />
+                                <SelectTrigger id="transfer-buyer-select" className="w-full h-11 border-white/[0.08] bg-background/50">
+                                    <SelectValue placeholder="Selecciona el club que ficha…" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="max-h-60">
                                     {availableTeams.map((t) => (
                                         <SelectItem key={t.id} value={t.id}>
-                                            <span className="flex items-center justify-between gap-3 w-full">
-                                                <span>{t.name}</span>
-                                                <span className="text-xs text-muted-foreground">
+                                            <div className="flex items-center justify-between gap-4 w-full">
+                                                <span className="font-medium text-foreground">{t.name}</span>
+                                                <span className="text-xs tabular-nums text-muted-foreground font-mono">
                                                     {formatMoney(t.budget)}
                                                 </span>
-                                            </span>
+                                            </div>
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -177,32 +208,40 @@ export function TransferModal({
                             {/* Presupuesto en tiempo real */}
                             {selectedBuyer && (
                                 <div
-                                    className={`rounded-lg border p-3 text-sm space-y-1 ${canAfford
-                                            ? "border-green-500/30 bg-green-500/5"
-                                            : "border-red-500/30 bg-red-500/5"
-                                        }`}
+                                    className={`rounded-xl border p-3.5 text-xs space-y-2 transition-colors ${
+                                        canAfford
+                                            ? "border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20"
+                                            : "border-red-500/20 bg-red-500/5 dark:bg-red-950/20"
+                                    }`}
                                 >
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Presupuesto actual</span>
+                                    <div className="flex justify-between items-center text-muted-foreground">
+                                        <span>Presupuesto actual:</span>
                                         <BudgetDisplay amount={selectedBuyer.budget} size="sm" />
                                     </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-muted-foreground">Tras el fichaje</span>
-                                        <span className="flex items-center gap-1.5">
-                                            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                                    <div className="flex justify-between items-center text-muted-foreground">
+                                        <span>Coste de la operación:</span>
+                                        <span className="font-semibold text-foreground font-mono">
+                                            -{formatMoney(price)}
+                                        </span>
+                                    </div>
+                                    <div className="border-t border-border/40 pt-2 flex justify-between items-center">
+                                        <span className="font-semibold text-foreground">Saldo restante:</span>
+                                        <div className="flex items-center gap-1.5 font-bold font-mono">
+                                            <ArrowRight className="size-3 text-muted-foreground" aria-hidden="true" />
                                             <BudgetDisplay
                                                 amount={selectedBuyer.budget - price}
                                                 size="sm"
                                                 className={
-                                                    canAfford ? "text-green-600" : "text-red-500"
+                                                    canAfford ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"
                                                 }
                                             />
-                                        </span>
+                                        </div>
                                     </div>
                                     {!canAfford && (
-                                        <p className="text-xs text-red-500 font-medium pt-1">
-                                            ⚠ Presupuesto insuficiente
-                                        </p>
+                                        <div className="flex items-center gap-1.5 pt-1 text-red-500 text-xs font-semibold">
+                                            <AlertCircle className="size-3.5 shrink-0" aria-hidden="true" />
+                                            <span>Presupuesto insuficiente para formalizar la operación.</span>
+                                        </div>
                                     )}
                                 </div>
                             )}
@@ -210,26 +249,36 @@ export function TransferModal({
 
                         {/* Error */}
                         {status === "error" && (
-                            <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-600">
-                                <AlertCircle className="h-4 w-4 shrink-0" />
-                                {errorMsg}
+                            <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-600 dark:text-red-400">
+                                <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
+                                <span>{errorMsg}</span>
                             </div>
                         )}
 
-                        <DialogFooter showCloseButton>
+                        <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => handleClose(false)}
+                                className="min-h-[40px] h-10 px-4"
+                            >
+                                Cancelar
+                            </Button>
                             <Button
                                 id="transfer-confirm-btn"
                                 disabled={!buyerTeamId || !canAfford || status === "loading"}
                                 onClick={handleTransfer}
+                                className="min-h-[40px] h-10 px-5 font-semibold gap-2"
                             >
+                                {status === "loading" && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
                                 {status === "loading"
-                                    ? "Procesando…"
+                                    ? "Procesando operación…"
                                     : isClausula
-                                    ? "Pagar cláusula y fichar"
-                                    : "Confirmar fichaje"}
+                                    ? "Pagar Cláusula y Fichar"
+                                    : "Confirmar Fichaje"}
                             </Button>
                         </DialogFooter>
-                    </>
+                    </div>
                 )}
             </DialogContent>
         </Dialog>

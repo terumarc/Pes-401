@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { invalidatePlayersCache } from "@/lib/data/league";
 import { invalidateMemCache } from "@/lib/data/cache";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
   try {
@@ -118,12 +118,15 @@ export async function POST(request: Request) {
 
     // 8. Invalidar cachés
     invalidatePlayersCache();
-    invalidateMemCache("teams");
-    invalidateMemCache("team");
-    invalidateMemCache("player");
+    invalidateMemCache();
     try {
       revalidateTag("players", "max");
       revalidateTag("teams", "max");
+      revalidatePath("/market");
+      revalidatePath("/league");
+      revalidatePath("/finances");
+      revalidatePath("/teams");
+      revalidatePath("/players");
     } catch {}
 
     return NextResponse.json({

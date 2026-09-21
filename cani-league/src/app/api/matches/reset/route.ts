@@ -63,13 +63,11 @@ export async function POST(request: Request) {
     }
 
     // 3. Invalidar cachés
-    invalidateMemCache("matches");
-    invalidateMemCache("teams");
-    invalidateMemCache("standing");
+    invalidateMemCache();
     try {
-      revalidateTag("matches", { expire: 0 });
-      revalidateTag("standings", { expire: 0 });
-      revalidateTag("teams", { expire: 0 });
+      revalidateTag("matches", "max");
+      revalidateTag("standings", "max");
+      revalidateTag("teams", "max");
     } catch {}
 
     try {
@@ -77,6 +75,7 @@ export async function POST(request: Request) {
       revalidatePath("/standings");
       revalidatePath("/league");
       revalidatePath("/teams");
+      revalidatePath("/finances");
     } catch {}
 
     return NextResponse.json({ success: true, mode });

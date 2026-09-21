@@ -124,37 +124,42 @@ export function MarketCard({ player, teams }: MarketCardProps) {
           </dl>
         </CardContent>
 
-        <CardFooter className="gap-2 px-4 sm:px-5 pb-4 pt-0">
+        <CardFooter className="gap-2 px-4 sm:px-5 pb-4 pt-1">
           {isFreeAgent ? (
             <Button
               id={`fichar-mercado-${player.id}`}
-              size="sm"
-              className="flex-1 gap-1.5 font-semibold text-xs shadow-xs bg-emerald-600 hover:bg-emerald-500 text-white transition-all"
+              className="flex-1 min-h-[40px] h-10 gap-2 font-semibold text-xs sm:text-sm shadow-xs bg-emerald-600 hover:bg-emerald-500 text-white transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-400"
               onClick={() => {
                 setPurchaseType("mercado");
                 setModalOpen(true);
               }}
+              aria-label={`Fichar a ${player.name} como Agente Libre`}
             >
-              <Sparkles className="size-3.5" />
+              <Sparkles className="size-4" aria-hidden="true" />
               <span>Fichar (Libre)</span>
             </Button>
           ) : (
             <Button
               id={`fichar-clausula-${player.id}`}
-              size="sm"
-              className="flex-1 gap-1.5 font-semibold text-xs shadow-xs border border-white/[0.1] hover:border-white/[0.2] transition-all"
+              className="flex-1 min-h-[40px] h-10 gap-2 font-semibold text-xs sm:text-sm shadow-xs border border-white/[0.12] bg-white/[0.04] hover:bg-white/[0.09] hover:border-white/[0.24] text-foreground transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => {
                 setPurchaseType("clausula");
                 setModalOpen(true);
               }}
+              aria-label={`Pagar cláusula de rescisión para fichar a ${player.name}`}
             >
               <span>Fichar (Cláusula)</span>
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
           )}
-          <Button asChild variant="outline" size="sm" className="flex-1 gap-1.5 text-xs border-white/[0.1] bg-white/[0.02] hover:bg-white/[0.06] transition-colors">
-            <Link href={`/players/${player.id}`}>
-              <Eye className="size-3.5 text-muted-foreground" /> Ver Ficha
+          <Button
+            asChild
+            variant="outline"
+            className="flex-1 min-h-[40px] h-10 gap-2 text-xs sm:text-sm font-medium border-white/[0.1] bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/[0.2] transition-colors"
+          >
+            <Link href={`/players/${player.id}`} aria-label={`Ver ficha de ${player.name}`}>
+              <Eye className="size-4 text-muted-foreground" aria-hidden="true" />
+              <span>Ver Ficha</span>
             </Link>
           </Button>
         </CardFooter>
