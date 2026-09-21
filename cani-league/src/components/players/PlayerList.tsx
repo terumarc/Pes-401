@@ -469,12 +469,19 @@ export function PlayerList({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" id="players-view-container">
       {/* FILTER & CONTROLS PANEL */}
-      <div className="rounded-2xl border border-border/80 bg-card/60 p-4 shadow-xs backdrop-blur-xs space-y-4">
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/40 p-4 shadow-sm backdrop-blur-md space-y-4">
+        {/* Subtle top edge sheen */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
         {/* Selector Principal por Agrupaciones de Posición */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] pb-3">
+          <div
+            role="tablist"
+            aria-label="Filtrar por demarcación en el campo"
+            className="flex flex-wrap items-center gap-2"
+          >
             {POSITION_TABS.map((tab) => {
               const active = positionGroupTab === tab.id;
               const count = countsByGroup[tab.id] ?? 0;
@@ -482,6 +489,10 @@ export function PlayerList({
                 <button
                   key={tab.id}
                   type="button"
+                  role="tab"
+                  id={`tab-${tab.id}`}
+                  aria-selected={active}
+                  aria-controls="players-results-section"
                   onClick={() => {
                     setPositionGroupTab(tab.id);
                     setSelectedPos("TODAS");
@@ -489,19 +500,19 @@ export function PlayerList({
                     setOverallPreset("ALL");
                     handleFilterChange();
                   }}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                  className={`flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     active
                       ? tab.activeClass
-                      : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "bg-white/[0.04] border border-white/[0.06] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
                   }`}
                 >
-                  <span className="text-base leading-none">{tab.icon}</span>
+                  <span className="text-base leading-none" aria-hidden="true">{tab.icon}</span>
                   <span>{tab.label}</span>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
                       active
                         ? "bg-black/20 text-inherit dark:bg-white/20"
-                        : "bg-muted-foreground/20 text-muted-foreground"
+                        : "bg-white/[0.08] text-muted-foreground"
                     }`}
                   >
                     {count.toLocaleString()}
@@ -518,8 +529,8 @@ export function PlayerList({
 
         {/* Banner informativo contextual si está en pestaña de porteros */}
         {positionGroupTab === "gk" && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start sm:items-center gap-2.5">
-            <span className="text-lg shrink-0">🧤</span>
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200 flex items-start sm:items-center gap-2.5">
+            <span className="text-lg shrink-0" aria-hidden="true">🧤</span>
             <div className="min-w-0">
               <p className="font-bold text-foreground">Apartado exclusivo de Porteros</p>
               <p className="text-muted-foreground text-[11px]">
@@ -533,8 +544,13 @@ export function PlayerList({
         <div className="flex flex-wrap items-center gap-3">
           {/* Search input */}
           <div className="relative flex-1 min-w-[240px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <Input
+              aria-label={
+                positionGroupTab === "all"
+                  ? "Buscar jugador por nombre, posición, país o equipo"
+                  : `Buscar ${POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel.toLowerCase()} por nombre, país o equipo`
+              }
               placeholder={
                 positionGroupTab === "all"
                   ? "Buscar jugador por nombre, posición, país o equipo..."
@@ -545,7 +561,7 @@ export function PlayerList({
                 setSearch(e.target.value);
                 handleFilterChange();
               }}
-              className="pl-9 pr-8 h-10 bg-background shadow-xs border-border/80 focus-visible:ring-primary/20"
+              className="pl-10 pr-10 h-10 min-h-[40px] bg-background/70 border-white/[0.1] focus-visible:ring-primary/40 text-xs sm:text-sm font-medium"
             />
             {search && (
               <button
@@ -554,9 +570,10 @@ export function PlayerList({
                   setSearch("");
                   handleFilterChange();
                 }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                aria-label="Limpiar búsqueda"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors size-8 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:ring-primary outline-none"
               >
-                <X className="size-4" />
+                <X className="size-4" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -564,9 +581,10 @@ export function PlayerList({
           {/* Toggle Advanced / Custom Filters */}
           <Button
             variant={showAdvanced ? "secondary" : "outline"}
-            size="sm"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="gap-1.5 h-10"
+            aria-expanded={showAdvanced}
+            aria-controls="advanced-filters-panel"
+            className="gap-1.5 h-10 min-h-[40px] px-3.5 text-xs sm:text-sm font-medium border-white/[0.1] hover:border-white/[0.2]"
           >
             <SlidersHorizontal className="size-3.5" />
             <span>Filtros avanzados</span>
@@ -579,12 +597,13 @@ export function PlayerList({
           <div className="flex items-center gap-1.5">
             <ArrowUpDown className="size-4 text-muted-foreground shrink-0 hidden sm:inline" />
             <select
+              aria-label="Criterio de ordenación"
               value={sortBy}
               onChange={(e) => {
                 setSortBy(e.target.value as SortOption);
                 handleFilterChange();
               }}
-              className="h-10 rounded-lg border border-border/80 bg-background px-3 text-xs sm:text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-10 min-h-[40px] rounded-lg border border-white/[0.1] bg-background/80 px-3 text-xs sm:text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
             >
               <option value="overall_desc">Mayor Media (OVR ↓)</option>
               <option value="overall_asc">Menor Media (OVR ↑)</option>
@@ -602,31 +621,37 @@ export function PlayerList({
           </div>
 
           {/* View Toggle */}
-          <div className="flex items-center rounded-lg border border-border/80 bg-background p-1 shadow-xs">
+          <div
+            role="group"
+            aria-label="Modo de visualización"
+            className="flex items-center rounded-lg border border-white/[0.1] bg-background/60 p-1 shadow-xs"
+          >
             <button
               type="button"
+              aria-pressed={viewMode === "grid"}
+              aria-label="Ver en cuadrícula de tarjetas"
               onClick={() => setViewMode("grid")}
-              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 min-h-[32px] text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "grid"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title="Vista Cuadrícula"
             >
-              <LayoutGrid className="size-3.5" />
+              <LayoutGrid className="size-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Tarjetas</span>
             </button>
             <button
               type="button"
+              aria-pressed={viewMode === "table"}
+              aria-label="Ver en tabla detallada"
               onClick={() => setViewMode("table")}
-              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 min-h-[32px] text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "table"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title="Vista Tabla"
             >
-              <List className="size-3.5" />
+              <List className="size-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Tabla</span>
             </button>
           </div>
@@ -824,20 +849,26 @@ export function PlayerList({
         )}
 
         {/* TIER QUICK PILLS (Calculados para la agrupación activa) */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-2 shrink-0 flex items-center gap-1">
-            <SlidersHorizontal className="size-3" /> Tiers ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}):
+        <div
+          role="group"
+          aria-label="Filtro rápido por Tier"
+          className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-white/[0.06]"
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1 shrink-0 flex items-center gap-1.5">
+            <SlidersHorizontal className="size-3 text-primary" aria-hidden="true" />
+            Tiers ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}):
           </span>
           <button
             type="button"
+            aria-pressed={selectedTier === "TODOS"}
             onClick={() => {
               setSelectedTier("TODOS");
               handleFilterChange();
             }}
-            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`rounded-full px-3 py-1 min-h-[32px] text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               selectedTier === "TODOS"
                 ? "bg-primary text-primary-foreground shadow-xs"
-                : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                : "bg-white/[0.05] border border-white/[0.08] text-muted-foreground hover:bg-white/[0.09] hover:text-foreground"
             }`}
           >
             Todos
@@ -849,22 +880,23 @@ export function PlayerList({
               <button
                 key={tier}
                 type="button"
+                aria-pressed={active}
                 onClick={() => {
                   setSelectedTier(active ? "TODOS" : tier);
                   handleFilterChange();
                 }}
-                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`rounded-full px-3 py-1 min-h-[32px] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   active
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                    : "bg-white/[0.05] border border-white/[0.08] text-muted-foreground hover:bg-white/[0.09] hover:text-foreground"
                 }`}
               >
                 <span>Tier {tier}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-extrabold ${
                     active
                       ? "bg-primary-foreground/20 text-primary-foreground"
-                      : "bg-muted-foreground/20 text-muted-foreground"
+                      : "bg-white/[0.08] text-muted-foreground"
                   }`}
                 >
                   {count}
@@ -875,7 +907,7 @@ export function PlayerList({
         </div>
 
         {/* ACTIVE FILTERS & INFO BAR */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2.5 border-t border-white/[0.06] text-xs">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-muted-foreground font-medium mr-1">
               Mostrando <strong className="text-foreground">{filteredAndSorted.length.toLocaleString()}</strong> de{" "}
@@ -884,84 +916,108 @@ export function PlayerList({
 
             {/* Active filter badges */}
             {selectedNationality !== "TODAS" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                País: {selectedNationality}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+                <span>País: {selectedNationality}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setSelectedNationality("TODAS");
                     handleFilterChange();
                   }}
-                />
+                  aria-label={`Eliminar filtro de nacionalidad ${selectedNationality}`}
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {selectedPos !== "TODAS" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Posición: {selectedPos}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+                <span>Posición: {selectedPos}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setSelectedPos("TODAS");
                     handleFilterChange();
                   }}
-                />
+                  aria-label={`Eliminar filtro de posición ${selectedPos}`}
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {selectedTier !== "TODOS" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Tier: {selectedTier}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+                <span>Tier: {selectedTier}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setSelectedTier("TODOS");
                     handleFilterChange();
                   }}
-                />
+                  aria-label={`Eliminar filtro de Tier ${selectedTier}`}
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {overallPreset !== "ALL" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Media: {overallPreset === "CUSTOM" ? `${customMinOverall || "0"}-${customMaxOverall || "100"}` : overallPreset}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+                <span>Media: {overallPreset === "CUSTOM" ? `${customMinOverall || "0"}-${customMaxOverall || "100"}` : overallPreset}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setOverallPreset("ALL");
                     setCustomMinOverall("");
                     setCustomMaxOverall("");
                     handleFilterChange();
                   }}
-                />
+                  aria-label="Eliminar filtro de media"
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {valuePreset !== "ALL" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Valor: {valuePreset === "CUSTOM" ? `${customMinValue ? formatMoney(Number(customMinValue)) : "0"} - ${customMaxValue ? formatMoney(Number(customMaxValue)) : "Max"}` : valuePreset}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+                <span>Valor: {valuePreset === "CUSTOM" ? `${customMinValue ? formatMoney(Number(customMinValue)) : "0"} - ${customMaxValue ? formatMoney(Number(customMaxValue)) : "Max"}` : valuePreset}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setValuePreset("ALL");
                     setCustomMinValue("");
                     setCustomMaxValue("");
                     handleFilterChange();
                   }}
-                />
+                  aria-label="Eliminar filtro de valor económico"
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
 
             {selectedTeam !== "TODOS" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                Equipo: {teams.find((t) => t.id === selectedTeam)?.name || selectedTeam}
-                <X
-                  className="size-3 cursor-pointer"
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+                <span>Equipo: {teams.find((t) => t.id === selectedTeam)?.name || selectedTeam}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     setSelectedTeam("TODOS");
                     handleFilterChange();
                   }}
-                />
+                  aria-label="Eliminar filtro de club"
+                  className="inline-flex size-4 items-center justify-center rounded-full hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-primary outline-none transition-colors"
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" aria-hidden="true" />
+                </button>
               </Badge>
             )}
           </div>
@@ -969,11 +1025,10 @@ export function PlayerList({
           {hasActiveFilters && (
             <Button
               variant="ghost"
-              size="xs"
               onClick={clearFilters}
-              className="text-xs text-muted-foreground hover:text-destructive gap-1 h-6 px-2"
+              className="text-xs font-semibold text-muted-foreground hover:text-destructive gap-1.5 h-8 min-h-[32px] px-3 rounded-lg hover:bg-destructive/10 transition-colors"
             >
-              <RotateCcw className="size-3" /> Limpiar filtros
+              <RotateCcw className="size-3.5" /> Limpiar filtros
             </Button>
           )}
         </div>
@@ -981,20 +1036,24 @@ export function PlayerList({
 
       {/* Main Content View */}
       {filteredAndSorted.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed">
-          <div className="size-12 rounded-full bg-muted flex items-center justify-center mb-3">
-            <Search className="size-6 text-muted-foreground" />
+        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed border-white/[0.12] bg-card/40 backdrop-blur-md rounded-2xl">
+          <div className="size-12 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center mb-3">
+            <Search className="size-6 text-muted-foreground" aria-hidden="true" />
           </div>
-          <h3 className="font-display font-semibold text-base">No hay resultados</h3>
+          <h3 className="font-display font-semibold text-base text-foreground">No hay resultados</h3>
           <p className="text-sm text-muted-foreground mt-1 max-w-sm">
             No se encontraron jugadores con los filtros seleccionados. Intenta cambiar los criterios de nacionalidad, posición, media o valor.
           </p>
-          <Button variant="outline" size="sm" onClick={clearFilters} className="mt-4 gap-1.5">
-            <RotateCcw className="size-3.5" /> Limpiar todos los filtros
+          <Button
+            variant="outline"
+            onClick={clearFilters}
+            className="mt-4 gap-1.5 min-h-[40px] px-4 font-semibold border-white/[0.1] hover:border-white/[0.2]"
+          >
+            <RotateCcw className="size-3.5" aria-hidden="true" /> Limpiar todos los filtros
           </Button>
         </Card>
       ) : viewMode === "grid" ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <section id="players-results-section" aria-label="Resultados de búsqueda de jugadores" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {paginatedPlayers.map((player) => (
             <PlayerCard
               key={player.id}
@@ -1002,53 +1061,53 @@ export function PlayerList({
               href={`/players/${player.id}`}
             />
           ))}
-        </div>
+        </section>
       ) : (
         /* Scouting Table View */
-        <div className="overflow-x-auto rounded-xl border border-border/80 bg-card shadow-xs">
+        <div id="players-results-section" className="overflow-x-auto rounded-xl border border-white/[0.08] bg-card/40 backdrop-blur-md shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-border/80 bg-muted/50 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <thead className="border-b border-white/[0.06] bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               <tr>
-                <th className="px-4 py-3">Jugador</th>
-                <th className="px-3 py-3">Pos</th>
-                <th className="px-3 py-3">País</th>
-                <th className="px-3 py-3">Equipo</th>
-                <th className="px-3 py-3 text-center">
+                <th scope="col" className="px-4 py-3">Jugador</th>
+                <th scope="col" className="px-3 py-3">Pos</th>
+                <th scope="col" className="px-3 py-3">País</th>
+                <th scope="col" className="px-3 py-3">Equipo</th>
+                <th scope="col" className="px-3 py-3 text-center">
                   {positionGroupTab === "gk" ? "Media (DEF+GK)" : "Media OVR"}
                 </th>
-                <th className="px-3 py-3 text-center">Tier</th>
-                <th className="px-3 py-3 text-center hidden sm:table-cell">Contrato</th>
-                <th className="px-3 py-3 text-center hidden lg:table-cell">Renovación</th>
+                <th scope="col" className="px-3 py-3 text-center">Tier</th>
+                <th scope="col" className="px-3 py-3 text-center hidden sm:table-cell">Contrato</th>
+                <th scope="col" className="px-3 py-3 text-center hidden lg:table-cell">Renovación</th>
                 {positionGroupTab !== "gk" && (
                   <>
-                    <th className="px-3 py-3 text-center hidden md:table-cell">VEL</th>
-                    <th className="px-3 py-3 text-center hidden md:table-cell">TIR</th>
-                    <th className="px-3 py-3 text-center hidden md:table-cell">PAS</th>
+                    <th scope="col" className="px-3 py-3 text-center hidden md:table-cell">VEL</th>
+                    <th scope="col" className="px-3 py-3 text-center hidden md:table-cell">TIR</th>
+                    <th scope="col" className="px-3 py-3 text-center hidden md:table-cell">PAS</th>
                   </>
                 )}
-                <th className="px-3 py-3 text-center hidden md:table-cell">DEF</th>
-                <th className="px-4 py-3 text-right">Valor</th>
+                <th scope="col" className="px-3 py-3 text-center hidden md:table-cell">DEF</th>
+                <th scope="col" className="px-4 py-3 text-right">Valor</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/40 font-medium">
+            <tbody className="divide-y divide-white/[0.04] font-medium">
               {paginatedPlayers.map((player) => {
                 const tierInfo = getPlayerTier(player);
                 const contractInfo = getPlayerContractInfo(player);
                 return (
                   <tr
                     key={player.id}
-                    className="group transition-colors hover:bg-muted/40"
+                    className="group transition-colors hover:bg-white/[0.04]"
                   >
                     <td className="px-4 py-2.5">
                       <Link
                         href={`/players/${player.id}`}
-                        className="font-semibold text-foreground group-hover:text-primary transition-colors block truncate max-w-[200px]"
+                        className="font-semibold text-foreground group-hover:text-primary transition-colors block truncate max-w-[200px] outline-none focus-visible:underline focus-visible:text-primary"
                       >
                         {player.name}
                       </Link>
                     </td>
                     <td className="px-3 py-2.5">
-                      <span className="rounded px-1.5 py-0.5 text-[11px] font-bold bg-muted text-foreground/80">
+                      <span className="rounded px-1.5 py-0.5 text-[11px] font-bold bg-white/[0.06] border border-white/[0.08] text-foreground/80">
                         {player.position}
                       </span>
                     </td>
@@ -1067,15 +1126,15 @@ export function PlayerList({
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-center hidden sm:table-cell">
-                      <span className="inline-flex items-center text-[11px] font-semibold text-muted-foreground bg-muted/70 px-2 py-0.5 rounded-md">
+                      <span className="inline-flex items-center text-[11px] font-semibold text-muted-foreground bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-md">
                         {contractInfo.durationBadge}
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-center text-xs hidden lg:table-cell" title={contractInfo.renewalPercent > 0 ? `Coste de renovación: ${contractInfo.renewalPercentLabel} (${contractInfo.renewalCostLabel})` : "Renovación gratuita"}>
                       {contractInfo.renewalCost > 0 ? (
-                        <span className="text-amber-600 dark:text-amber-400 font-bold">{contractInfo.renewalCostLabel}</span>
+                        <span className="text-amber-400 font-bold">{contractInfo.renewalCostLabel}</span>
                       ) : (
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">Gratis</span>
+                        <span className="text-emerald-400 font-bold">Gratis</span>
                       )}
                     </td>
                     {positionGroupTab !== "gk" && (
@@ -1094,7 +1153,7 @@ export function PlayerList({
                     <td className="px-3 py-2.5 text-center text-xs tabular-nums text-muted-foreground hidden md:table-cell">
                       {player.defending ?? "—"}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-display text-xs font-semibold">
+                    <td className="px-4 py-2.5 text-right font-display text-xs font-semibold tabular-nums">
                       <BudgetDisplay amount={contractInfo.price} size="sm" />
                     </td>
                   </tr>
@@ -1107,7 +1166,10 @@ export function PlayerList({
 
       {/* Pagination Footer */}
       {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-4 text-xs text-muted-foreground">
+        <nav
+          aria-label="Paginación de jugadores"
+          className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.08] pt-4 text-xs text-muted-foreground"
+        >
           <span>
             Página <strong className="text-foreground">{safePage}</strong> de{" "}
             <strong className="text-foreground">{totalPages}</strong>
@@ -1116,16 +1178,17 @@ export function PlayerList({
           <div className="flex items-center gap-1.5">
             <Button
               variant="outline"
-              size="xs"
               disabled={safePage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="gap-1"
+              aria-label="Página anterior"
+              className="h-9 min-h-[36px] px-3 gap-1.5 text-xs font-semibold border-white/[0.1] hover:border-white/[0.2] transition-colors"
             >
-              <ChevronLeft className="size-3.5" /> Anterior
+              <ChevronLeft className="size-3.5" aria-hidden="true" />
+              <span>Anterior</span>
             </Button>
 
             {/* Quick Page Selector */}
-            <div className="flex items-center gap-1 px-2">
+            <div className="flex items-center gap-1 px-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pNum: number;
                 if (totalPages <= 5) {
@@ -1137,15 +1200,18 @@ export function PlayerList({
                 } else {
                   pNum = safePage - 2 + i;
                 }
+                const isCurrent = safePage === pNum;
                 return (
                   <button
                     key={pNum}
                     type="button"
+                    aria-current={isCurrent ? "page" : undefined}
+                    aria-label={`Página ${pNum}`}
                     onClick={() => setCurrentPage(pNum)}
-                    className={`size-7 rounded-md text-xs font-medium transition-colors ${
-                      safePage === pNum
-                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                        : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                    className={`size-9 min-w-[36px] min-h-[36px] rounded-lg text-xs font-bold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      isCurrent
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "bg-white/[0.04] border border-white/[0.06] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
                     }`}
                   >
                     {pNum}
@@ -1156,15 +1222,16 @@ export function PlayerList({
 
             <Button
               variant="outline"
-              size="xs"
               disabled={safePage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="gap-1"
+              aria-label="Página siguiente"
+              className="h-9 min-h-[36px] px-3 gap-1.5 text-xs font-semibold border-white/[0.1] hover:border-white/[0.2] transition-colors"
             >
-              Siguiente <ChevronRight className="size-3.5" />
+              <span>Siguiente</span>
+              <ChevronRight className="size-3.5" aria-hidden="true" />
             </Button>
           </div>
-        </div>
+        </nav>
       )}
     </div>
   );

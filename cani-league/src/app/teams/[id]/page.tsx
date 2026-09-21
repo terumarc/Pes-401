@@ -242,21 +242,28 @@ export default async function TeamDetailPage({ params }: Props) {
               return (
                 <Card
                   key={player.id}
-                  className="group relative overflow-hidden border-border/80 bg-card transition-all duration-200 hover:border-foreground/30 hover:shadow-md"
+                  className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.45)]"
                 >
+                  {/* Stripe top-edge sheen */}
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
+
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <PlayerAvatar
                           name={player.name}
                           photoUrl={player.photo_url}
                           size="md"
+                          isElite={mediaValue >= 88}
                         />
                         <div className="min-w-0">
-                          <h4 className="truncate font-display text-base font-bold">
+                          <Link
+                            href={`/players/${player.id}`}
+                            className="truncate font-display text-base font-bold text-foreground group-hover:text-primary transition-colors block outline-none focus-visible:underline"
+                          >
                             {player.name}
-                          </h4>
-                          <div className="flex items-center gap-1.5 flex-wrap">
+                          </Link>
+                          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
                             <Badge
                               variant="outline"
                               className={cn("h-4 text-[10px] font-extrabold uppercase", posCat.color)}
@@ -278,13 +285,13 @@ export default async function TeamDetailPage({ params }: Props) {
                       {player.overall != null && (
                         <div
                           className={cn(
-                            "flex flex-col items-center justify-center rounded-xl px-2.5 py-1 font-display font-black shadow-xs",
+                            "flex flex-col items-center justify-center rounded-xl px-2.5 py-1 font-display font-black shadow-xs shrink-0",
                             isHighOvr
                               ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-foreground",
+                              : "bg-white/[0.06] border border-white/[0.08] text-foreground",
                           )}
                         >
-                          <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/80">
+                          <span className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground">
                             MEDIA
                           </span>
                           <span className="text-base font-extrabold tabular-nums">
@@ -295,12 +302,12 @@ export default async function TeamDetailPage({ params }: Props) {
                     </div>
 
                     {/* PRECIOS Y VALORES */}
-                    <div className="mt-3.5 grid grid-cols-2 gap-2 rounded-xl bg-muted/40 p-2 text-xs">
+                    <div className="mt-3.5 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] border border-white/[0.06] p-2.5 text-xs">
                       <div>
                         <span className="text-[10px] font-semibold text-muted-foreground uppercase">
                           Valor (Tier {tierInfo.tier})
                         </span>
-                        <p className="font-display font-bold text-foreground">
+                        <p className="font-display font-bold text-foreground tabular-nums">
                           <BudgetDisplay amount={contractInfo.price} size="sm" />
                         </p>
                       </div>
@@ -308,28 +315,28 @@ export default async function TeamDetailPage({ params }: Props) {
                         <span className="text-[10px] font-semibold text-muted-foreground uppercase">
                           Renovación ({contractInfo.renewalPercentLabel})
                         </span>
-                        <p className="font-display font-bold text-foreground">
+                        <p className="font-display font-bold text-foreground tabular-nums">
                           {contractInfo.renewalCost > 0 ? (
-                            <span className="text-amber-600 dark:text-amber-400 font-bold">{contractInfo.renewalCostLabel}</span>
+                            <span className="text-amber-400 font-bold">{contractInfo.renewalCostLabel}</span>
                           ) : (
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">Gratis</span>
+                            <span className="text-emerald-400 font-bold">Gratis</span>
                           )}
                         </p>
                       </div>
                     </div>
 
                     {/* MERCADO FLAG Y ACCIONES */}
-                    <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-2.5">
+                    <div className="mt-3.5 flex items-center justify-between border-t border-white/[0.06] pt-3 gap-2">
                       {player.available_in_market ? (
                         <Badge
                           variant="outline"
-                          className="gap-1 border-emerald-500/40 bg-emerald-500/10 text-[10px] font-bold text-emerald-600 dark:text-emerald-400"
+                          className="gap-1 border-emerald-500/40 bg-emerald-500/10 text-[10px] font-bold text-emerald-400 shrink-0"
                         >
                           <Store className="size-3" />
                           En Mercado
                         </Badge>
                       ) : (
-                        <span className="text-[11px] text-muted-foreground">Intransferible</span>
+                        <span className="text-[11px] text-muted-foreground shrink-0">Intransferible</span>
                       )}
 
                       <PlayerActions
@@ -338,6 +345,7 @@ export default async function TeamDetailPage({ params }: Props) {
                         teams={teams}
                         currentTeamId={player.team_id}
                         player={player}
+                        variant="compact"
                       />
                     </div>
                   </CardContent>

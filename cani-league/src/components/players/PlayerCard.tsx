@@ -121,7 +121,11 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
 
   if (href) {
     return (
-      <Link href={href} className="block outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+      <Link
+        href={href}
+        className="block outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl transition-all duration-200 active:scale-[0.99]"
+        aria-label={`Ver ficha de ${player.name}, posición ${player.position}, media ${mediaValue}, Tier ${tierInfo.tier}${player.team?.name ? `, equipo ${player.team.name}` : ""}`}
+      >
         {content}
       </Link>
     );
@@ -150,10 +154,10 @@ export function PlayerAvatar({
 
   return (
     <div
-      className={`${sizeClass} flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white/[0.1] via-white/[0.04] to-black/40 font-display text-foreground border border-white/[0.12] shadow-inner select-none ${
-        isElite ? "ring-2 ring-amber-500/40 shadow-[0_0_16px_rgba(245,158,11,0.15)]" : ""
+      className={`${sizeClass} flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white/[0.12] via-white/[0.05] to-black/50 font-display text-foreground border border-white/[0.12] shadow-inner select-none ${
+        isElite ? "ring-2 ring-amber-500/50 shadow-[0_0_18px_rgba(245,158,11,0.2)]" : ""
       }`}
-      aria-hidden
+      aria-hidden="true"
     >
       {name.slice(0, 1).toUpperCase()}
     </div>
