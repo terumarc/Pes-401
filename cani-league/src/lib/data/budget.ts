@@ -5,21 +5,20 @@ import type { Team } from "@/types";
 
 export const DEFAULT_BUDGET = 50_000_000;
 
-export const BASE_POSITION_REWARD = 25_000_000;
-export const POSITION_INCREMENT = 5_000_000;
+import {
+  BASE_POSITION_REWARD,
+  POSITION_INCREMENT,
+  calculatePositionReward,
+} from "@/lib/economy";
+
+export {
+  BASE_POSITION_REWARD,
+  POSITION_INCREMENT,
+  calculatePositionReward,
+};
 
 export const MULTIPLIER_TOP = 0.25;
 export const MULTIPLIER_BOTTOM = 0.55;
-
-/**
- * Calcula la inyección de dinero según la posición en la tabla de la liga:
- * 1º posición (líder) = 25.000.000 €
- * Cada puesto posterior suma +5.000.000 € (2º = 30M, 3º = 35M, ..., último = 25M + (n-1)*5M)
- */
-export function calculatePositionReward(position: number): number {
-  const clampedPos = Math.max(1, position);
-  return BASE_POSITION_REWARD + (clampedPos - 1) * POSITION_INCREMENT;
-}
 
 /**
  * @deprecated Función heredada de compatibilidad.

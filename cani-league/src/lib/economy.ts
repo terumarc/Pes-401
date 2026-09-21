@@ -13,8 +13,27 @@ export const ECONOMY_CONFIG = {
     WIN: 3_000_000,
     DRAW: 1_000_000,
     LOSS: 500_000,
-  }
+  },
+
+  // Inyecciones por posición en la liga (Ida y Vuelta)
+  POSITION_REWARDS: {
+    BASE: 25_000_000,
+    INCREMENT: 5_000_000,
+  },
 };
+
+export const BASE_POSITION_REWARD = ECONOMY_CONFIG.POSITION_REWARDS.BASE;
+export const POSITION_INCREMENT = ECONOMY_CONFIG.POSITION_REWARDS.INCREMENT;
+
+/**
+ * Calcula la inyección de dinero según la posición en la tabla de la liga:
+ * 1º posición (líder) = 25.000.000 €
+ * Cada puesto posterior suma +5.000.000 € (2º = 30M, 3º = 35M, ..., último = 25M + (n-1)*5M)
+ */
+export function calculatePositionReward(position: number): number {
+  const clampedPos = Math.max(1, position);
+  return BASE_POSITION_REWARD + (clampedPos - 1) * POSITION_INCREMENT;
+}
 
 /**
  * Devuelve la recompensa financiera plana tras un partido.

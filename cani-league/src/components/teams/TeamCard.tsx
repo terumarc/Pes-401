@@ -184,11 +184,11 @@ export function TeamCard({ team }: TeamCardProps) {
         {/* BOTÓN DE ACCIÓN */}
         <Button
           asChild
-          className="w-full justify-between font-display font-semibold transition-all group-hover:border-white/[0.2] group-hover:bg-primary group-hover:text-primary-foreground h-10"
+          className="w-full justify-between font-display font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 transition-all duration-200 h-10 px-4 rounded-xl cursor-pointer"
         >
-          <Link href={`/teams/${team.id}`}>
-            <span>Ver Plantilla Completa</span>
-            <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+          <Link href={`/teams/${team.id}`} className="flex items-center justify-between w-full text-white">
+            <span className="text-white font-bold">Ver Plantilla Completa</span>
+            <ArrowRight className="size-4 text-white transition-transform duration-200 group-hover:translate-x-1" />
           </Link>
         </Button>
       </CardContent>

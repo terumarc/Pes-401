@@ -18,7 +18,7 @@ export function BudgetDisplay({
   size = "md",
 }: BudgetDisplayProps) {
   return (
-    <span className={`tabular-nums text-ink ${sizeClass[size]} ${className}`}>
+    <span className={`tabular-nums text-foreground ${sizeClass[size]} ${className}`}>
       {formatMoney(amount)}
     </span>
   );

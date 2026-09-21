@@ -183,10 +183,17 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
           </p>
         </div>
 
-        <Button asChild size="sm" className="gap-1.5 font-display font-semibold self-start sm:self-auto">
-          <Link href={`/players?new=1&team=${team.id}`}>
-            <UserPlus className="size-4" />
-            <span>Añadir Jugador</span>
+        <Button
+          asChild
+          size="sm"
+          className="gap-1.5 font-display font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 transition-all duration-200 h-9 px-3.5 rounded-xl cursor-pointer self-start sm:self-auto"
+        >
+          <Link
+            href={`/players?new=1&team=${team.id}`}
+            className="flex items-center gap-1.5 text-white"
+          >
+            <UserPlus className="size-4 text-white" />
+            <span className="text-white font-bold">Añadir Jugador</span>
           </Link>
         </Button>
       </div>
@@ -197,9 +204,9 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
           type="button"
           onClick={() => setActiveTab("all")}
           className={cn(
-            "flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            "flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-emerald-400",
             activeTab === "all"
-              ? "bg-primary text-primary-foreground shadow-xs"
+              ? "bg-emerald-600 text-white shadow-xs"
               : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-white/[0.06]"
           )}
         >
@@ -207,7 +214,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
           <span
             className={cn(
               "rounded-full px-1.5 py-0.2 text-[10px] tabular-nums font-extrabold",
-              activeTab === "all" ? "bg-black/20 text-white" : "bg-white/[0.08] text-foreground"
+              activeTab === "all" ? "bg-black/25 text-white" : "bg-white/[0.08] text-foreground"
             )}
           >
             {counts.all}

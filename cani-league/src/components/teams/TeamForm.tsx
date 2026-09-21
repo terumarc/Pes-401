@@ -324,17 +324,17 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
           type="submit"
           disabled={pending}
           size="lg"
-          className="w-full gap-2 font-display font-semibold transition-all shadow-sm cursor-pointer"
+          className="w-full gap-2 font-display font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 transition-all duration-200 cursor-pointer rounded-xl"
         >
           {pending ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
-              <span>Guardando cambios…</span>
+              <Loader2 className="size-4 animate-spin text-white" />
+              <span className="text-white font-bold">Guardando cambios…</span>
             </>
           ) : (
             <>
-              <Check className="size-4" />
-              <span>Guardar Información del Club</span>
+              <Check className="size-4 text-white" />
+              <span className="text-white font-bold">Guardar Información del Club</span>
             </>
           )}
         </Button>

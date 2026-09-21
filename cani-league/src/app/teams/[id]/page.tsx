@@ -133,10 +133,16 @@ export default async function TeamDetailPage({ params }: Props) {
 
             {/* ACCIONES DEL CLUB */}
             <div className="flex items-center gap-2.5 self-start sm:self-auto">
-              <Button asChild className="gap-1.5 font-display font-semibold shadow-sm h-10 px-4">
-                <Link href={`/players?new=1&team=${team.id}`}>
-                  <UserPlus className="size-4" />
-                  <span>Añadir Jugador</span>
+              <Button
+                asChild
+                className="gap-1.5 font-display font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 transition-all duration-200 h-10 px-4 rounded-xl cursor-pointer"
+              >
+                <Link
+                  href={`/players?new=1&team=${team.id}`}
+                  className="flex items-center gap-1.5 text-white"
+                >
+                  <UserPlus className="size-4 text-white" />
+                  <span className="text-white font-bold">Añadir Jugador</span>
                 </Link>
               </Button>
               <EditTeamButton team={team} />
