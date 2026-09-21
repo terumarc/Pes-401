@@ -124,48 +124,63 @@ export default async function LeaguePage() {
           >
             {nextMatches.length > 0 ? (
               <div className="space-y-2.5">
-                {nextMatches.map((match) => (
-                  <div
-                    key={match.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-xs transition-colors hover:bg-white/[0.04]"
-                  >
-                    {/* Home Team */}
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <TeamLogo
-                        name={match.home_team.name}
-                        logoUrl={match.home_team.logo_url}
-                        color={match.home_team.primary_color}
-                        size="sm"
+                {nextMatches.map((match) => {
+                  const homeColor = match.home_team.primary_color || "#3b82f6";
+                  const awayColor = match.away_team.primary_color || "#ef4444";
+                  return (
+                    <Link
+                      key={match.id}
+                      href="/calendar"
+                      className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-white/[0.08] bg-black/40 p-3 text-xs transition-all duration-200 hover:border-white/[0.2] hover:bg-black/60 hover:shadow-md"
+                    >
+                      {/* Dual club ambient lighting */}
+                      <div
+                        className="pointer-events-none absolute -left-8 -top-8 h-20 w-20 rounded-full blur-xl opacity-20 transition-opacity group-hover:opacity-30"
+                        style={{ backgroundColor: homeColor }}
                       />
-                      <span className="truncate font-semibold text-foreground">
-                        {match.home_team.name}
-                      </span>
-                    </div>
-
-                    {/* Matchday Badge & VS */}
-                    <div className="flex flex-col items-center shrink-0 px-2">
-                      <span className="rounded-md border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Jornada {match.matchday}
-                      </span>
-                      <span className="mt-0.5 text-[11px] font-extrabold text-muted-foreground/60">
-                        VS
-                      </span>
-                    </div>
-
-                    {/* Away Team */}
-                    <div className="flex items-center justify-end gap-2.5 min-w-0 flex-1 text-right">
-                      <span className="truncate font-semibold text-foreground">
-                        {match.away_team.name}
-                      </span>
-                      <TeamLogo
-                        name={match.away_team.name}
-                        logoUrl={match.away_team.logo_url}
-                        color={match.away_team.primary_color}
-                        size="sm"
+                      <div
+                        className="pointer-events-none absolute -right-8 -bottom-8 h-20 w-20 rounded-full blur-xl opacity-20 transition-opacity group-hover:opacity-30"
+                        style={{ backgroundColor: awayColor }}
                       />
-                    </div>
-                  </div>
-                ))}
+
+                      {/* Home Team */}
+                      <div className="relative z-10 flex items-center gap-2.5 min-w-0 flex-1">
+                        <TeamLogo
+                          name={match.home_team.name}
+                          logoUrl={match.home_team.logo_url}
+                          color={match.home_team.primary_color}
+                          size="sm"
+                        />
+                        <span className="truncate font-bold text-foreground group-hover:text-primary transition-colors">
+                          {match.home_team.short_name || match.home_team.name}
+                        </span>
+                      </div>
+
+                      {/* Matchday Badge & VS */}
+                      <div className="relative z-10 flex flex-col items-center shrink-0 px-2">
+                        <span className="rounded-md border border-white/[0.1] bg-white/[0.04] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          J.{match.matchday}
+                        </span>
+                        <span className="mt-0.5 font-display text-[11px] font-black text-primary drop-shadow-[0_0_6px_rgba(59,130,246,0.4)]">
+                          VS
+                        </span>
+                      </div>
+
+                      {/* Away Team */}
+                      <div className="relative z-10 flex items-center justify-end gap-2.5 min-w-0 flex-1 text-right">
+                        <span className="truncate font-bold text-foreground group-hover:text-primary transition-colors">
+                          {match.away_team.short_name || match.away_team.name}
+                        </span>
+                        <TeamLogo
+                          name={match.away_team.name}
+                          logoUrl={match.away_team.logo_url}
+                          color={match.away_team.primary_color}
+                          size="sm"
+                        />
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl border border-dashed border-white/[0.1] bg-white/[0.01]">

@@ -297,11 +297,11 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
             </Button>
           </div>
         ) : (
-          <ul className="space-y-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredTeams.map((team) => (
               <FinanceRow key={team.id} team={team} maxBudget={maxBudget} />
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
@@ -345,13 +345,13 @@ function FinanceRow({
   }
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-sm transition-all duration-200 hover:border-white/20 hover:shadow-md">
-      <CardHeader className="flex-row items-center justify-between gap-3 space-y-0 px-4 py-4 sm:px-5">
-        <div className="flex min-w-0 items-center gap-3.5">
+    <Card className="flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-sm transition-all duration-200 hover:border-white/20 hover:shadow-md h-full">
+      <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 p-4 pb-3">
+        <div className="flex min-w-0 items-center gap-3">
           {/* Position in league badge */}
           {team.position != null && (
             <span
-              className={`size-7 sm:size-8 shrink-0 flex items-center justify-center rounded-xl text-xs font-black font-mono tracking-tight ${
+              className={`size-7 shrink-0 flex items-center justify-center rounded-xl text-xs font-black font-mono tracking-tight ${
                 team.position === 1
                   ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                   : team.position <= 3
@@ -371,7 +371,7 @@ function FinanceRow({
             size="md"
           />
 
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <Link
               href={`/teams/${team.id}`}
               className="truncate font-display text-sm sm:text-base font-bold tracking-tight text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:underline block"
@@ -380,14 +380,14 @@ function FinanceRow({
               {team.name}
             </Link>
             {!editing && (
-              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 <BudgetDisplay
                   amount={team.budget}
                   size="md"
-                  className="font-bold text-foreground"
+                  className="font-bold text-foreground text-sm"
                 />
-                <span className="text-[11px] text-muted-foreground font-mono">
-                  ({pct}% del mayor)
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  ({pct}%)
                 </span>
               </div>
             )}
@@ -400,55 +400,55 @@ function FinanceRow({
             type="button"
             variant="outline"
             size="sm"
-            className="min-h-[36px] h-9 px-3.5 gap-1.5 border-white/[0.1] bg-white/[0.02] text-xs font-semibold hover:bg-white/[0.06] transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+            className="shrink-0 min-h-[36px] h-8 px-3 gap-1.5 border-white/[0.1] bg-white/[0.02] text-xs font-semibold hover:bg-white/[0.06] transition-colors focus-visible:ring-2 focus-visible:ring-primary"
             onClick={() => {
               setBudget(team.budget || 0);
               setEditing(true);
             }}
             aria-label={`Editar presupuesto de ${team.name}`}
           >
-            <Pencil className="size-3.5 text-muted-foreground" aria-hidden="true" />
+            <Pencil className="size-3 text-muted-foreground" aria-hidden="true" />
             <span>Editar</span>
           </Button>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="min-h-[36px] h-9 px-3 gap-1 text-xs text-muted-foreground hover:text-foreground"
+              className="min-h-[36px] h-8 px-2.5 gap-1 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => setEditing(false)}
             >
               <X className="size-3.5" aria-hidden="true" />
-              <span>Cancelar</span>
+              <span className="hidden sm:inline">Cancelar</span>
             </Button>
             <Button
               type="button"
               size="sm"
               disabled={pending}
               onClick={save}
-              className="min-h-[36px] h-9 px-4 gap-1.5 text-xs font-semibold"
+              className="min-h-[36px] h-8 px-3 gap-1.5 text-xs font-semibold"
             >
               {pending ? (
                 <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
               ) : (
                 <Check className="size-3.5" aria-hidden="true" />
               )}
-              <span>{pending ? "Guardando…" : "Guardar"}</span>
+              <span>{pending ? "…" : "Guardar"}</span>
             </Button>
           </div>
         )}
       </CardHeader>
 
-      <CardContent className="px-4 pb-4 pt-0 sm:px-5">
+      <CardContent className="p-4 pt-0 space-y-3 flex-1 flex flex-col justify-end">
         {editing ? (
           <div className="space-y-3 pt-2 border-t border-border/50">
             {/* Quick Adjustment Chips */}
             <div className="space-y-1.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
-                Ajuste Rápido de Presupuesto
+                Ajuste Rápido
               </span>
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1">
                 {[
                   { label: "+€10M", delta: 10_000_000, positive: true },
                   { label: "+€5M", delta: 5_000_000, positive: true },
@@ -461,7 +461,7 @@ function FinanceRow({
                     key={chip.label}
                     type="button"
                     onClick={() => adjustBudget(chip.delta)}
-                    className={`min-h-[32px] px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all border ${
+                    className={`min-h-[28px] px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-all border ${
                       chip.positive
                         ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
                         : "border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20"
@@ -473,21 +473,21 @@ function FinanceRow({
                 <button
                   type="button"
                   onClick={() => setBudget(50_000_000)}
-                  className="min-h-[32px] px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all border border-white/[0.1] bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="min-h-[28px] px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-all border border-white/[0.1] bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
                   title="Restablecer al presupuesto base oficial de la liga"
                 >
-                  Base (€50M)
+                  €50M
                 </button>
               </div>
             </div>
 
             {/* Direct Number Input */}
-            <div className="max-w-md">
+            <div>
               <label
                 htmlFor={`team-budget-input-${team.id}`}
                 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1"
               >
-                Cantidad exacta en euros
+                Cantidad exacta (€)
               </label>
               <MoneyInput
                 id={`team-budget-input-${team.id}`}
@@ -503,23 +503,23 @@ function FinanceRow({
             </div>
           </div>
         ) : (
-          <div className="space-y-3 pt-1">
+          <div className="space-y-2.5 pt-1">
             {/* Visual Budget Progress Bar */}
             <div className="space-y-1">
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>Capacidad presupuestaria relativa</span>
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                <span>Capacidad vs. líder</span>
                 <span className="font-mono font-semibold text-foreground tabular-nums">{pct}%</span>
               </div>
               <Progress value={pct} className="h-1.5 bg-white/[0.06]" />
             </div>
 
             {/* Economic Context Metrics Strip */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 border-t border-border/40 text-xs">
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-xs">
               <div className="flex items-center gap-2">
                 <Coins className="size-3.5 text-muted-foreground/70 shrink-0" aria-hidden="true" />
                 <div className="min-w-0">
                   <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                    Valor Plantilla
+                    Plantilla
                   </span>
                   <span className="font-mono font-semibold text-foreground tabular-nums truncate block">
                     {formatMoney(squadValue)}
@@ -531,30 +531,25 @@ function FinanceRow({
                 <TrendingUp className="size-3.5 text-muted-foreground/70 shrink-0" aria-hidden="true" />
                 <div className="min-w-0">
                   <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                    Ratio Presupuesto/Valor
+                    Ratio Solvencia
                   </span>
                   <span className="font-mono font-semibold text-foreground tabular-nums truncate block">
                     {ratio}%
                   </span>
                 </div>
               </div>
+            </div>
 
-              <div className="col-span-2 sm:col-span-1 flex items-center gap-2">
-                <Shield className="size-3.5 text-muted-foreground/70 shrink-0" aria-hidden="true" />
-                <div className="min-w-0">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                    Plantilla
-                  </span>
-                  <span className="font-mono text-muted-foreground truncate block">
-                    <strong className="text-foreground">{team.player_count ?? 0}</strong> futbolistas{" "}
-                    {team.avg_overall != null && (
-                      <span className="text-muted-foreground font-normal">
-                        (Media: <strong className="text-foreground">{team.avg_overall}</strong>)
-                      </span>
-                    )}
-                  </span>
-                </div>
-              </div>
+            <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <Shield className="size-3 shrink-0 text-muted-foreground/70" aria-hidden="true" />
+                <span>{team.player_count ?? 0} jugadores</span>
+              </span>
+              {team.avg_overall != null && (
+                <span className="font-medium text-foreground">
+                  Media: <strong className="font-mono">{team.avg_overall}</strong>
+                </span>
+              )}
             </div>
           </div>
         )}
