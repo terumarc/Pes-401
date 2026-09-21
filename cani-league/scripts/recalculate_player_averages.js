@@ -85,7 +85,7 @@ const GROUP_TIER_THRESHOLDS = {
 };
 
 const TIER_FIXED_PRICES = {
-  'S+': 180_000_000,
+  'S+': 80_000_000,
   'S':   80_000_000,
   'A':   35_000_000,
   'B':   15_000_000,

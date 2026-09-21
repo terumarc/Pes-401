@@ -262,7 +262,7 @@ export function getPlayerTier(
 export type TierName = "S+" | "S" | "A" | "B" | "C" | "D";
 
 export const TIER_FIXED_PRICES: Record<TierName, number> = {
-  "S+": 180_000_000,
+  "S+": 80_000_000,
   "S":   80_000_000,
   "A":   35_000_000,
   "B":   15_000_000,

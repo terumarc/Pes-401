@@ -47,8 +47,7 @@ const OUTFIELD_CATEGORIES = [
 
 const VALUE_PRESETS = [
   { label: "Cualquier valor", value: "ALL", min: null, max: null },
-  { label: "★ €180M (Tier S+ Leyenda)", value: "180M", min: 180_000_000, max: null },
-  { label: "★ €80M (Tier S Clase Mundial)", value: "80M", min: 80_000_000, max: 80_000_000 },
+  { label: "★ €80M (Tier S+ / S)", value: "80M", min: 80_000_000, max: 80_000_000 },
   { label: "★ €35M (Tier A Estrella)", value: "35M", min: 35_000_000, max: 35_000_000 },
   { label: "★ €15M (Tier B Titular)", value: "15M", min: 15_000_000, max: 15_000_000 },
   { label: "★ €5M (Tier C Rotación)", value: "5M", min: 5_000_000, max: 5_000_000 },
