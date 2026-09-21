@@ -44,8 +44,14 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
                   className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-white/[0.03] text-muted-foreground border border-white/[0.08] flex items-center gap-1"
                   title={`Contrato: ${contractInfo.durationLabel}`}
                 >
-                  <span className="opacity-70">⏳</span>
-                  <span>{contractInfo.duration} {contractInfo.duration === 1 ? "Temp." : "Temps."}</span>
+                  {contractInfo.duration > 0 ? (
+                    <>
+                      <span className="opacity-70">⏳</span>
+                      <span>{contractInfo.duration} {contractInfo.duration === 1 ? "Temp." : "Temps."}</span>
+                    </>
+                  ) : (
+                    <span>Sin contrato</span>
+                  )}
                 </span>
               </div>
 

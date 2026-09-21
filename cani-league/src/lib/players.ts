@@ -274,9 +274,9 @@ export const TIER_CONTRACT_DURATIONS: Record<TierName, number> = {
   "S+": 1,
   "S":   2,
   "A":   3,
-  "B":   3,
-  "C":   4,
-  "D":   4,
+  "B":   4,
+  "C":   0,
+  "D":   0,
 };
 
 export const TIER_RENEWAL_PERCENTAGES: Record<TierName, number> = {
@@ -302,7 +302,7 @@ export function getPlayerFixedPrice(playerOrTier: any): number {
 
 export function getPlayerContractDuration(playerOrTier: any): number {
   const tier = getPlayerTierName(playerOrTier);
-  return TIER_CONTRACT_DURATIONS[tier] ?? 4;
+  return TIER_CONTRACT_DURATIONS[tier] ?? 0;
 }
 
 export function getPlayerRenewalCost(playerOrTier: any): number {
@@ -327,7 +327,7 @@ export interface PlayerContractInfo {
 export function getPlayerContractInfo(playerOrTier: any): PlayerContractInfo {
   const tier = getPlayerTierName(playerOrTier);
   const price = TIER_FIXED_PRICES[tier] ?? 1_000_000;
-  const duration = TIER_CONTRACT_DURATIONS[tier] ?? 4;
+  const duration = TIER_CONTRACT_DURATIONS[tier] ?? 0;
   const renewalPercent = TIER_RENEWAL_PERCENTAGES[tier] ?? 0;
   const renewalCost = Math.round(price * renewalPercent);
 
@@ -335,8 +335,8 @@ export function getPlayerContractInfo(playerOrTier: any): PlayerContractInfo {
     tier,
     price,
     duration,
-    durationLabel: duration === 1 ? "1 Temporada" : `${duration} Temporadas`,
-    durationBadge: `⏳ ${duration} ${duration === 1 ? "Temp." : "Temps."}`,
+    durationLabel: duration > 0 ? (duration === 1 ? "1 Temporada" : `${duration} Temporadas`) : "Sin contrato",
+    durationBadge: duration > 0 ? `⏳ ${duration} ${duration === 1 ? "Temp." : "Temps."}` : "Sin contrato",
     renewalPercent,
     renewalPercentLabel: renewalPercent > 0 ? `${Math.round(renewalPercent * 100)}%` : "Gratis",
     renewalCost,
