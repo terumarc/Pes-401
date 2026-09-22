@@ -5,7 +5,7 @@ import type { League, LeagueTableRow, Match, MatchWithTeams, Team } from "@/type
 
 // ─── Queries ────────────────────────────────────────────────
 
-export async function getMatchesByLeague(
+async function fetchMatchesByLeague(
     leagueId: string,
     options?: { matchday?: number; round?: number },
 ): Promise<MatchWithTeams[]> {
@@ -27,6 +27,12 @@ export async function getMatchesByLeague(
     if (error) throw error;
     return (data ?? []) as MatchWithTeams[];
 }
+
+export const getMatchesByLeague = safeCache(
+    fetchMatchesByLeague,
+    ["matches", "by_league"],
+    { revalidate: 120, tags: ["matches"] }
+);
 
 export async function getMatchById(id: string): Promise<MatchWithTeams | null> {
     const supabase = await createClient();

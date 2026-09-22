@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, ChevronRight } from "lucide-react";
+import { HeaderAssistantButton } from "@/components/assistant/header-assistant-button";
 
 const ROUTE_LABELS: Record<string, { title: string; parent?: string }> = {
   "/league": { title: "Dashboard" },
@@ -51,10 +52,11 @@ export function SiteHeader() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <HeaderAssistantButton />
           <Badge
             variant="outline"
-            className="border-white/[0.1] bg-white/[0.03] text-[11px] font-medium tracking-wide text-muted-foreground hover:bg-white/[0.06] transition-colors"
+            className="border-white/[0.1] bg-white/[0.03] text-[11px] font-medium tracking-wide text-muted-foreground hover:bg-white/[0.06] transition-colors hidden sm:inline-flex"
           >
             Temporada 2026
           </Badge>

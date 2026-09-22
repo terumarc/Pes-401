@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import {
   Search,
   X,
@@ -90,14 +90,35 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPending, startTransition] = useTransition();
 
   // Show extended filter panel
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  // Pre-enrich players with tier, effective rating, and prices to avoid expensive repeat evaluations
+  const enrichedPlayers = useMemo(() => {
+    return players.map((player) => {
+      const positionGroup = getPositionGroup(player.position);
+      const tierInfo = getPlayerTier(player);
+      const effectiveRating = getPlayerEffectiveRating(player);
+      const fixedPrice = getPlayerFixedPrice(player);
+      const clauseFee = (player as any).clause_fee != null ? Number((player as any).clause_fee) : fixedPrice;
+      return {
+        ...player,
+        _positionGroup: positionGroup,
+        _tierInfo: tierInfo,
+        _tier: tierInfo.tier,
+        _effectiveRating: effectiveRating,
+        _fixedPrice: fixedPrice,
+        _clauseFee: clauseFee,
+      };
+    });
+  }, [players]);
+
   // Extract unique nationalities with counts
   const nationalities = useMemo(() => {
     const map = new Map<string, number>();
-    for (const p of players) {
+    for (const p of enrichedPlayers) {
       if (p.nationality && p.nationality.trim()) {
         const nat = p.nationality.trim();
         map.set(nat, (map.get(nat) || 0) + 1);
@@ -106,22 +127,21 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
     return Array.from(map.entries())
       .sort((a, b) => a[0].localeCompare(b[0], "es"))
       .map(([name, count]) => ({ name, count }));
-  }, [players]);
+  }, [enrichedPlayers]);
 
   const countsByGroup = useMemo(() => {
     let def = 0;
     let mid = 0;
     let att = 0;
     let gk = 0;
-    for (const p of players) {
-      const grp = getPositionGroup(p.position);
-      if (grp === "def") def++;
-      else if (grp === "mid") mid++;
-      else if (grp === "att") att++;
-      else if (grp === "gk") gk++;
+    for (const p of enrichedPlayers) {
+      if (p._positionGroup === "def") def++;
+      else if (p._positionGroup === "mid") mid++;
+      else if (p._positionGroup === "att") att++;
+      else if (p._positionGroup === "gk") gk++;
     }
-    return { all: players.length, def, mid, att, gk };
-  }, [players]);
+    return { all: enrichedPlayers.length, def, mid, att, gk };
+  }, [enrichedPlayers]);
 
   const currentPresets = useMemo(() => {
     if (positionGroupTab === "all") {
@@ -151,17 +171,17 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
   const tierCounts = useMemo(() => {
     const counts: Record<string, number> = { "S+": 0, "S": 0, "A": 0, "B": 0, "C": 0, "D": 0 };
-    for (const p of players) {
-      if (positionGroupTab !== "all" && getPositionGroup(p.position) !== positionGroupTab) {
+    for (const p of enrichedPlayers) {
+      if (positionGroupTab !== "all" && p._positionGroup !== positionGroupTab) {
         continue;
       }
-      const t = getPlayerTier(p).tier;
+      const t = p._tier;
       if (counts[t] !== undefined) {
         counts[t]++;
       }
     }
     return counts;
-  }, [players, positionGroupTab]);
+  }, [enrichedPlayers, positionGroupTab]);
 
   const subPositionOptions = useMemo(() => {
     if (positionGroupTab === "def") {
@@ -265,10 +285,10 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
       }
     }
 
-    const result = players.filter((player) => {
+    const result = enrichedPlayers.filter((player) => {
       // Position group filter (Todos, Defensas, Medios, Delanteros, Porteros)
       if (positionGroupTab !== "all") {
-        if (getPositionGroup(player.position) !== positionGroupTab) return false;
+        if (player._positionGroup !== positionGroupTab) return false;
       }
 
       // Search text match
@@ -313,29 +333,27 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
       // Tier filter
       if (selectedTier !== "TODOS") {
-        const tier = getPlayerTier(player).tier;
-        if (tier !== selectedTier) return false;
+        if (player._tier !== selectedTier) return false;
       }
 
       // Overall / Media rating match
       if (overallPreset === "CUSTOM") {
-        const ovr = getPlayerEffectiveRating(player);
+        const ovr = player._effectiveRating;
         if (minOvr !== null && ovr < minOvr) return false;
         if (maxOvr !== null && ovr > maxOvr) return false;
       } else if (overallPreset !== "ALL") {
         const preset = currentPresets.find((pr) => pr.value === overallPreset);
         if (preset?.tier) {
-          const tier = getPlayerTier(player).tier;
-          if (tier !== preset.tier) return false;
+          if (player._tier !== preset.tier) return false;
         } else if (preset) {
-          const ovr = getPlayerEffectiveRating(player);
+          const ovr = player._effectiveRating;
           if (minOvr !== null && ovr < minOvr) return false;
           if (maxOvr !== null && ovr > maxOvr) return false;
         }
       }
 
       // Market value match (sincronizado con precio fijo por tier)
-      const val = getPlayerFixedPrice(player);
+      const val = player._fixedPrice;
       if (minVal !== null && val < minVal) return false;
       if (maxVal !== null && val > maxVal) return false;
 
@@ -344,30 +362,20 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
     // Sorting
     result.sort((a, b) => {
-      const ovrA = getPlayerEffectiveRating(a);
-      const ovrB = getPlayerEffectiveRating(b);
-      if (sortBy === "overall_desc") return ovrB - ovrA;
-      if (sortBy === "overall_asc") return ovrA - ovrB;
-      if (sortBy === "value_desc") return getPlayerFixedPrice(b) - getPlayerFixedPrice(a);
-      if (sortBy === "value_asc") return getPlayerFixedPrice(a) - getPlayerFixedPrice(b);
-      if (sortBy === "price_desc") {
-        const pB = b.clause_fee != null ? Number(b.clause_fee) : getPlayerFixedPrice(b);
-        const pA = a.clause_fee != null ? Number(a.clause_fee) : getPlayerFixedPrice(a);
-        return pB - pA;
-      }
-      if (sortBy === "price_asc") {
-        const pB = b.clause_fee != null ? Number(b.clause_fee) : getPlayerFixedPrice(b);
-        const pA = a.clause_fee != null ? Number(a.clause_fee) : getPlayerFixedPrice(a);
-        return pA - pB;
-      }
-      if (sortBy === "name_asc") return a.name.localeCompare(b.name, "es");
-      if (sortBy === "name_desc") return b.name.localeCompare(a.name, "es");
+      if (sortBy === "overall_desc") return b._effectiveRating - a._effectiveRating;
+      if (sortBy === "overall_asc") return a._effectiveRating - b._effectiveRating;
+      if (sortBy === "value_desc") return b._fixedPrice - a._fixedPrice;
+      if (sortBy === "value_asc") return a._fixedPrice - b._fixedPrice;
+      if (sortBy === "price_desc") return b._clauseFee - a._clauseFee;
+      if (sortBy === "price_asc") return a._clauseFee - b._clauseFee;
+      if (sortBy === "name_asc") return (a.name || "").localeCompare(b.name || "", "es");
+      if (sortBy === "name_desc") return (b.name || "").localeCompare(a.name || "", "es");
       return 0;
     });
 
     return result;
   }, [
-    players,
+    enrichedPlayers,
     positionGroupTab,
     currentPresets,
     search,
@@ -420,10 +428,12 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   id={`market-tab-${tab.id}`}
                   type="button"
                   onClick={() => {
-                    setPositionGroupTab(tab.id);
-                    setPositionFilter("ALL");
-                    setOverallPreset("ALL");
-                    setCurrentPage(1);
+                    startTransition(() => {
+                      setPositionGroupTab(tab.id);
+                      setPositionFilter("ALL");
+                      setOverallPreset("ALL");
+                      setCurrentPage(1);
+                    });
                   }}
                   className={`flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     active

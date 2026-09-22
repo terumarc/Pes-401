@@ -38,6 +38,13 @@ export function safeCache<T extends (...args: any[]) => Promise<any>>(
   const cacheKey = keyParts ? keyParts.join(":") : fn.name || "cache_fn";
   const ttl = typeof options?.revalidate === "number" ? options.revalidate : 60;
 
+  let nextCached: T | null = null;
+  try {
+    nextCached = unstable_cache(fn, keyParts, options) as T;
+  } catch {
+    nextCached = null;
+  }
+
   return (async (...args: Parameters<T>) => {
     const fullKey = `${cacheKey}:${JSON.stringify(args)}`;
     const mem = getFromMemCache<Awaited<ReturnType<T>>>(fullKey);
@@ -45,15 +52,18 @@ export function safeCache<T extends (...args: any[]) => Promise<any>>(
       return mem;
     }
 
-    try {
-      const cached = unstable_cache(fn, keyParts, options);
-      const res = await cached(...args);
-      setInMemCache(fullKey, res, ttl);
-      return res;
-    } catch {
-      const res = await fn(...args);
-      setInMemCache(fullKey, res, ttl);
-      return res;
+    let res: Awaited<ReturnType<T>>;
+    if (nextCached) {
+      try {
+        res = await nextCached(...args);
+      } catch {
+        res = await fn(...args);
+      }
+    } else {
+      res = await fn(...args);
     }
+
+    setInMemCache(fullKey, res, ttl);
+    return res;
   }) as T;
 }

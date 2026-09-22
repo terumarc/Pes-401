@@ -36,17 +36,19 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
     return Array.from(new Set(matches.map((m) => m.matchday))).sort((a, b) => a - b);
   }, [matches]);
 
-  // Mapa de partidos de ida/vuelta invertidos para pasar a MatchRow
+  // Mapa de partidos de ida/vuelta invertidos para pasar a MatchRow en O(N)
   const reverseMatchMap = useMemo(() => {
+    const round1Lookup = new Map<string, MatchWithTeams>();
+    for (const m of matches) {
+      if (m.round === 1) {
+        round1Lookup.set(`${m.home_team_id}_${m.away_team_id}`, m);
+      }
+    }
+
     const map = new Map<string, MatchWithTeams>();
     for (const m of matches) {
       if (m.round === 2) {
-        const idaMatch = matches.find(
-          (o) =>
-            o.round === 1 &&
-            o.home_team_id === m.away_team_id &&
-            o.away_team_id === m.home_team_id,
-        );
+        const idaMatch = round1Lookup.get(`${m.away_team_id}_${m.home_team_id}`);
         if (idaMatch) map.set(m.id, idaMatch);
       }
     }

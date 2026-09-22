@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -169,11 +169,30 @@ export function PlayerList({
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPending, startTransition] = useTransition();
+
+  // Pre-enrich players with tier, effective rating, and fixed price to avoid repeated expensive evaluations
+  const enrichedPlayers = useMemo(() => {
+    return players.map((p) => {
+      const positionGroup = getPositionGroup(p.position);
+      const tierInfo = getPlayerTier(p);
+      const effectiveRating = getPlayerEffectiveRating(p);
+      const fixedPrice = getPlayerFixedPrice(p);
+      return {
+        ...p,
+        _positionGroup: positionGroup,
+        _tierInfo: tierInfo,
+        _tier: tierInfo.tier,
+        _effectiveRating: effectiveRating,
+        _fixedPrice: fixedPrice,
+      };
+    });
+  }, [players]);
 
   // Extract unique nationalities with counts
   const nationalities = useMemo(() => {
     const map = new Map<string, number>();
-    for (const p of players) {
+    for (const p of enrichedPlayers) {
       if (p.nationality && p.nationality.trim()) {
         const nat = p.nationality.trim();
         map.set(nat, (map.get(nat) || 0) + 1);
@@ -182,22 +201,21 @@ export function PlayerList({
     return Array.from(map.entries())
       .sort((a, b) => a[0].localeCompare(b[0], "es"))
       .map(([name, count]) => ({ name, count }));
-  }, [players]);
+  }, [enrichedPlayers]);
 
   const countsByGroup = useMemo(() => {
     let def = 0;
     let mid = 0;
     let att = 0;
     let gk = 0;
-    for (const p of players) {
-      const grp = getPositionGroup(p.position);
-      if (grp === "def") def++;
-      else if (grp === "mid") mid++;
-      else if (grp === "att") att++;
-      else if (grp === "gk") gk++;
+    for (const p of enrichedPlayers) {
+      if (p._positionGroup === "def") def++;
+      else if (p._positionGroup === "mid") mid++;
+      else if (p._positionGroup === "att") att++;
+      else if (p._positionGroup === "gk") gk++;
     }
-    return { all: players.length, def, mid, att, gk };
-  }, [players]);
+    return { all: enrichedPlayers.length, def, mid, att, gk };
+  }, [enrichedPlayers]);
 
   const currentPresets = useMemo(() => {
     if (positionGroupTab === "all") {
@@ -227,17 +245,17 @@ export function PlayerList({
 
   const tierCounts = useMemo(() => {
     const counts: Record<string, number> = { "S+": 0, "S": 0, "A": 0, "B": 0, "C": 0, "D": 0 };
-    for (const p of players) {
-      if (positionGroupTab !== "all" && getPositionGroup(p.position) !== positionGroupTab) {
+    for (const p of enrichedPlayers) {
+      if (positionGroupTab !== "all" && p._positionGroup !== positionGroupTab) {
         continue;
       }
-      const t = getPlayerTier(p).tier;
+      const t = p._tier;
       if (counts[t] !== undefined) {
         counts[t]++;
       }
     }
     return counts;
-  }, [players, positionGroupTab]);
+  }, [enrichedPlayers, positionGroupTab]);
 
   const subPositionOptions = useMemo(() => {
     if (positionGroupTab === "def") {
@@ -318,11 +336,11 @@ export function PlayerList({
       }
     }
 
-    return players
+    return enrichedPlayers
       .filter((p) => {
         // Position group tab filter (Todos, Defensas, Medios, Delanteros, Porteros)
         if (positionGroupTab !== "all") {
-          if (getPositionGroup(p.position) !== positionGroupTab) return false;
+          if (p._positionGroup !== positionGroupTab) return false;
         }
 
         // Search term
@@ -354,8 +372,7 @@ export function PlayerList({
 
         // Tier filter (calculado según el estándar de la posición del jugador)
         if (selectedTier !== "TODOS") {
-          const tier = getPlayerTier(p).tier;
-          if (tier !== selectedTier) return false;
+          if (p._tier !== selectedTier) return false;
         }
 
         // Team filter
@@ -373,23 +390,22 @@ export function PlayerList({
 
         // Overall / Media rating match
         if (overallPreset === "CUSTOM") {
-          const ovr = getPlayerEffectiveRating(p);
+          const ovr = p._effectiveRating;
           if (minOvr !== null && ovr < minOvr) return false;
           if (maxOvr !== null && ovr > maxOvr) return false;
         } else if (overallPreset !== "ALL") {
           const preset = currentPresets.find((pr) => pr.value === overallPreset);
           if (preset?.tier) {
-            const tier = getPlayerTier(p).tier;
-            if (tier !== preset.tier) return false;
+            if (p._tier !== preset.tier) return false;
           } else if (preset) {
-            const ovr = getPlayerEffectiveRating(p);
+            const ovr = p._effectiveRating;
             if (minOvr !== null && ovr < minOvr) return false;
             if (maxOvr !== null && ovr > maxOvr) return false;
           }
         }
 
         // Market value match (sincronizado con precio fijo de tier)
-        const val = getPlayerFixedPrice(p);
+        const val = p._fixedPrice;
         if (minVal !== null && val < minVal) return false;
         if (maxVal !== null && val > maxVal) return false;
 
@@ -398,13 +414,13 @@ export function PlayerList({
       .sort((a, b) => {
         switch (sortBy) {
           case "overall_desc":
-            return getPlayerEffectiveRating(b) - getPlayerEffectiveRating(a);
+            return b._effectiveRating - a._effectiveRating;
           case "overall_asc":
-            return getPlayerEffectiveRating(a) - getPlayerEffectiveRating(b);
+            return a._effectiveRating - b._effectiveRating;
           case "value_desc":
-            return getPlayerFixedPrice(b) - getPlayerFixedPrice(a);
+            return b._fixedPrice - a._fixedPrice;
           case "value_asc":
-            return getPlayerFixedPrice(a) - getPlayerFixedPrice(b);
+            return a._fixedPrice - b._fixedPrice;
           case "name_asc":
             return a.name.localeCompare(b.name, "es");
           case "speed_desc":
@@ -494,11 +510,13 @@ export function PlayerList({
                   aria-selected={active}
                   aria-controls="players-results-section"
                   onClick={() => {
-                    setPositionGroupTab(tab.id);
-                    setSelectedPos("TODAS");
-                    setSelectedTier("TODOS");
-                    setOverallPreset("ALL");
-                    handleFilterChange();
+                    startTransition(() => {
+                      setPositionGroupTab(tab.id);
+                      setSelectedPos("TODAS");
+                      setSelectedTier("TODOS");
+                      setOverallPreset("ALL");
+                      handleFilterChange();
+                    });
                   }}
                   className={`flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     active

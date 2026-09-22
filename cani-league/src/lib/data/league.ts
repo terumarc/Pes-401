@@ -14,7 +14,7 @@ import type {
   TeamWithStanding,
 } from "@/types";
 
-export async function getPrimaryLeague(): Promise<League | null> {
+async function fetchPrimaryLeague(): Promise<League | null> {
   const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("leagues")
@@ -27,7 +27,13 @@ export async function getPrimaryLeague(): Promise<League | null> {
   return data;
 }
 
-export async function getTeamsByLeague(leagueId: string): Promise<Team[]> {
+export const getPrimaryLeague = safeCache(
+  fetchPrimaryLeague,
+  ["league", "primary"],
+  { revalidate: 300, tags: ["leagues"] }
+);
+
+async function fetchTeamsByLeague(leagueId: string): Promise<Team[]> {
   const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("teams")
@@ -44,7 +50,13 @@ export async function getTeamsByLeague(leagueId: string): Promise<Team[]> {
   );
 }
 
-export async function getTeamById(id: string): Promise<Team | null> {
+export const getTeamsByLeague = safeCache(
+  fetchTeamsByLeague,
+  ["teams", "by_league"],
+  { revalidate: 120, tags: ["teams"] }
+);
+
+async function fetchTeamById(id: string): Promise<Team | null> {
   const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("teams")
@@ -56,7 +68,13 @@ export async function getTeamById(id: string): Promise<Team | null> {
   return data;
 }
 
-export async function getStandingsWithTeams(leagueId: string): Promise<StandingWithTeam[]> {
+export const getTeamById = safeCache(
+  fetchTeamById,
+  ["teams", "by_id"],
+  { revalidate: 120, tags: ["teams"] }
+);
+
+async function fetchStandingsWithTeams(leagueId: string): Promise<StandingWithTeam[]> {
   const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("league_standings")
@@ -68,7 +86,13 @@ export async function getStandingsWithTeams(leagueId: string): Promise<StandingW
   return (data ?? []) as StandingWithTeam[];
 }
 
-export async function getTeamsWithStandings(leagueId: string): Promise<TeamWithStanding[]> {
+export const getStandingsWithTeams = safeCache(
+  fetchStandingsWithTeams,
+  ["standings", "with_teams"],
+  { revalidate: 120, tags: ["standings"] }
+);
+
+async function fetchTeamsWithStandings(leagueId: string): Promise<TeamWithStanding[]> {
   const standings = await getStandingsWithTeams(leagueId);
   const supabase = createStaticClient();
 
@@ -132,6 +156,12 @@ export async function getTeamsWithStandings(leagueId: string): Promise<TeamWithS
   });
 }
 
+export const getTeamsWithStandings = safeCache(
+  fetchTeamsWithStandings,
+  ["teams", "with_standings"],
+  { revalidate: 120, tags: ["teams", "standings"] }
+);
+
 export async function updateTeam(
   id: string,
   input: TeamUpdateInput,
@@ -146,6 +176,7 @@ export async function updateTeam(
 
   if (error) throw error;
   invalidateMemCache("team");
+  invalidateMemCache("dashboard");
   try {
     revalidateTag("teams", "max");
     revalidatePath("/league");
@@ -207,6 +238,8 @@ export function invalidatePlayersCache() {
   memoryAllPlayers = null;
   memoryMarketPlayers = null;
   invalidateMemCache("player");
+  invalidateMemCache("dashboard");
+  invalidateMemCache("teams");
 }
 
 export function invalidateTierCache() {
@@ -219,7 +252,7 @@ async function getCachedAllPlayers(): Promise<(Player & { team: Team })[]> {
     return memoryAllPlayers.data;
   }
   const data = await fetchAllPlayersInParallel(false);
-  memoryAllPlayers = { data, expires: now + 60_000 };
+  memoryAllPlayers = { data, expires: now + 300_000 };
   return data;
 }
 
@@ -229,7 +262,7 @@ async function getCachedMarketPlayers(): Promise<(Player & { team: Team })[]> {
     return memoryMarketPlayers.data;
   }
   const data = await fetchAllPlayersInParallel(true);
-  memoryMarketPlayers = { data, expires: now + 60_000 };
+  memoryMarketPlayers = { data, expires: now + 300_000 };
   return data;
 }
 
@@ -334,7 +367,7 @@ export async function deletePlayer(id: string): Promise<void> {
   } catch {}
 }
 
-export async function getDashboardStats(leagueId: string) {
+async function fetchDashboardStats(leagueId: string) {
   // 1. Fetch teams and standings in parallel
   const [teams, standings] = await Promise.all([
     getTeamsByLeague(leagueId),
@@ -364,6 +397,12 @@ export async function getDashboardStats(leagueId: string) {
     standings,
   };
 }
+
+export const getDashboardStats = safeCache(
+  fetchDashboardStats,
+  ["dashboard", "stats"],
+  { revalidate: 60, tags: ["dashboard", "teams", "standings"] }
+);
 
 export async function reorderStandings(
   leagueId: string,
@@ -414,6 +453,8 @@ export async function reorderStandings(
   }
 
   invalidateMemCache("standing");
+  invalidateMemCache("dashboard");
+  invalidateMemCache("teams");
   try {
     revalidateTag("standings", "max");
     revalidatePath("/standings");
