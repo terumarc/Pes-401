@@ -198,7 +198,22 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div
+            className="flex h-full w-full flex-col"
+            onClick={(e) => {
+              const target = e.target as HTMLElement | null;
+              const anchor = target?.closest("a");
+              if (
+                anchor &&
+                anchor.getAttribute("href") &&
+                !anchor.getAttribute("target")?.includes("_blank")
+              ) {
+                setOpenMobile(false);
+              }
+            }}
+          >
+            {children}
+          </div>
         </SheetContent>
       </Sheet>
     )

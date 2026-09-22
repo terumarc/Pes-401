@@ -6,6 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,8 @@ export function NavMain({
     isActive?: boolean;
   }[];
 }) {
+  const { setOpenMobile } = useSidebar();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-1 px-1">
@@ -37,7 +40,12 @@ export function NavMain({
                     : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
                 )}
               >
-                <Link href={item.url} className="flex items-center gap-2.5">
+                <Link
+                  href={item.url}
+                  prefetch={true}
+                  onClick={() => setOpenMobile(false)}
+                  className="flex items-center gap-2.5"
+                >
                   <span className={cn("shrink-0 transition-colors", item.isActive ? "text-primary" : "text-muted-foreground")}>
                     {item.icon}
                   </span>
