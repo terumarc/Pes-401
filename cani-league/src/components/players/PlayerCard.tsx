@@ -136,7 +136,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
 
 export function PlayerAvatar({
   name,
-  photoUrl: _photoUrl,
+  photoUrl,
   size = "md",
   isElite = false,
 }: {
@@ -151,6 +151,23 @@ export function PlayerAvatar({
       : size === "lg"
         ? "size-16 text-lg font-bold"
         : "size-11 text-sm font-semibold";
+
+  if (photoUrl) {
+    return (
+      <div
+        className={`${sizeClass} relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.12] bg-muted/40 shadow-inner select-none ${
+          isElite ? "ring-2 ring-amber-500/50 shadow-[0_0_18px_rgba(245,158,11,0.2)]" : ""
+        }`}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photoUrl}
+          alt={name}
+          className="size-full object-cover"
+        />
+      </div>
+    );
+  }
 
   return (
     <div

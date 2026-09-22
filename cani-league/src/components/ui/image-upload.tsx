@@ -78,8 +78,9 @@ export function ImageUpload({
   const [urlDraft, setUrlDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  const [isDragging, setIsDragging] = useState(false);
+
+  async function processFile(file: File) {
     if (!file) return;
 
     setError(null);
@@ -122,7 +123,34 @@ export function ImageUpload({
       setError("No se pudo procesar la imagen seleccionada.");
     } finally {
       setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  }
+
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      processFile(file);
+    }
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
   }
 
   function handleUrlSubmit() {
@@ -140,23 +168,27 @@ export function ImageUpload({
         </Label>
       )}
 
-      {/* INPUT FILE NATIVO (Fototeca / Cámara en móvil) */}
+      {/* INPUT FILE NATIVO (Selector de archivos de PC y móvil) */}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/png,image/jpeg,image/webp,image/gif"
         onChange={handleFileSelected}
         className="hidden"
       />
 
       <div className="flex items-center gap-3">
-        {/* PREVIEW CONTAINER */}
+        {/* PREVIEW CONTAINER CON DRAG & DROP */}
         <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
           className={cn(
-            "relative flex size-20 shrink-0 items-center justify-center overflow-hidden border-2 bg-muted/50 transition-all",
+            "relative flex size-20 shrink-0 items-center justify-center overflow-hidden border-2 bg-muted/50 transition-all cursor-pointer group",
             shape === "circle" ? "rounded-full" : "rounded-2xl",
-            value ? "border-primary/40 shadow-xs" : "border-dashed border-border",
+            isDragging ? "border-primary ring-4 ring-primary/20 scale-105" : "",
+            value ? "border-primary/40 shadow-xs" : "border-dashed border-border hover:border-primary/60",
           )}
         >
           {value ? (
@@ -169,15 +201,21 @@ export function ImageUpload({
               />
               <button
                 type="button"
-                onClick={() => onChange("")}
-                className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity hover:opacity-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange("");
+                }}
+                className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100"
                 title="Eliminar imagen"
               >
                 <X className="size-5 text-white" />
               </button>
             </>
           ) : (
-            <ImageIcon className="size-8 text-muted-foreground/50" />
+            <div className="flex flex-col items-center justify-center gap-1 text-muted-foreground/60 group-hover:text-primary transition-colors">
+              <Upload className="size-6" />
+              <span className="text-[9px] font-medium uppercase tracking-tight">Subir</span>
+            </div>
           )}
 
           {uploading && (
@@ -198,8 +236,8 @@ export function ImageUpload({
               disabled={uploading}
               className="gap-1.5 font-display font-semibold"
             >
-              <Camera className="size-4" />
-              <span>{value ? "Cambiar foto" : "Subir de la fototeca"}</span>
+              <Upload className="size-4" />
+              <span>{value ? "Cambiar foto" : "Subir desde PC"}</span>
             </Button>
 
             <Button
@@ -227,7 +265,7 @@ export function ImageUpload({
           </div>
 
           <p className="text-[11px] text-muted-foreground">
-            Elige una foto desde tu móvil (cámara o galería) o pega un enlace.
+            Elige una foto desde tu PC, arrástrala directamente al recuadro o pega un enlace.
           </p>
         </div>
       </div>

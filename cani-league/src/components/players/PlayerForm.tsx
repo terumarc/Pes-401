@@ -19,6 +19,7 @@ import {
   createPlayerClient,
   updatePlayerClient,
 } from "@/lib/data/mutations";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { playerSchema } from "@/lib/validations";
 import type { Player, Team } from "@/types";
 
@@ -86,7 +87,7 @@ export function PlayerForm({
       position: form.position,
       age: parseOptionalInt(form.age),
       nationality: form.nationality.trim() || null,
-      photo_url: null,
+      photo_url: form.photo_url.trim() || null,
       overall: parseOptionalInt(form.overall),
       speed: parseOptionalInt(form.speed),
       acceleration: parseOptionalInt(form.acceleration),
@@ -125,6 +126,16 @@ export function PlayerForm({
       <h2 className="font-display text-xl font-semibold tracking-tight">
         {player ? "Editar jugador" : "Nuevo jugador"}
       </h2>
+
+      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5">
+        <ImageUpload
+          label="Foto del Jugador"
+          value={form.photo_url}
+          onChange={(photo_url) => setForm((f) => ({ ...f, photo_url }))}
+          shape="circle"
+          bucketName="players"
+        />
+      </div>
 
       <Field label="Nombre">
         <Input

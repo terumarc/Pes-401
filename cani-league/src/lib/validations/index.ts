@@ -14,8 +14,12 @@ export const teamSchema = z.object({
     .nullable()
     .optional()
     .refine(
-      (v) => !v || v === "" || /^https?:\/\//i.test(v),
-      "URL de logo no válida",
+      (v) =>
+        !v ||
+        v === "" ||
+        /^https?:\/\//i.test(v) ||
+        v.startsWith("data:image/"),
+      "URL de logo o imagen no válida",
     ),
   primary_color: z.string().min(1),
   secondary_color: z.string().min(1),
@@ -31,7 +35,19 @@ export const playerSchema = z.object({
     .union([z.number().int().min(15, "Edad mínima 15").max(50, "Edad máxima 50"), z.null()])
     .optional(),
   nationality: z.string().trim().nullable().optional(),
-  photo_url: z.string().trim().nullable().optional(),
+  photo_url: z
+    .string()
+    .trim()
+    .nullable()
+    .optional()
+    .refine(
+      (v) =>
+        !v ||
+        v === "" ||
+        /^https?:\/\//i.test(v) ||
+        v.startsWith("data:image/"),
+      "URL de foto no válida",
+    ),
   overall: optionalStat,
   speed: optionalStat,
   acceleration: optionalStat,

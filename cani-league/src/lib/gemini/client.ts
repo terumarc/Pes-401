@@ -48,108 +48,96 @@ export async function* runDavidVillaAssistant(
     return;
   }
 
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const modelName = process.env.GEMINI_MODEL || "gemini-3.6-flash";
   const ai = new GoogleGenAI({ apiKey });
 
-  // Convertir mensajes al formato de contents de Gemini
-  const contents: any[] = messages.map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
-
   try {
+    // Tomamos el último mensaje del usuario
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content || "";
+
+    // Convertir historial anterior para el chat
+    const previousHistory = messages.slice(0, -1).map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    }));
+
+    const chat = ai.chats.create({
+      model: modelName,
+      history: previousHistory,
+      config: {
+        systemInstruction: DAVID_VILLA_SYSTEM_PROMPT,
+        temperature: 0.7,
+        tools: [{ functionDeclarations: toolDeclarations }],
+      },
+    });
+
+    let currentResponse = await chat.sendMessage({ message: lastUserMessage });
     let turns = 0;
     const maxTurns = 5;
 
     while (turns < maxTurns) {
       turns++;
+      const functionCalls = currentResponse.functionCalls;
 
-      // Llamada para evaluar si se requieren tools
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents,
-        config: {
-          systemInstruction: DAVID_VILLA_SYSTEM_PROMPT,
-          temperature: 0.7,
-          tools: [{ functionDeclarations: toolDeclarations }],
-        },
-      });
-
-      const candidate = response.candidates?.[0];
-      const functionCalls = response.functionCalls;
-
-      // Si el modelo solicita ejecutar una o más herramientas
-      if (functionCalls && functionCalls.length > 0) {
-        // Agregar la respuesta del modelo (con sus tool calls) al historial de contents
-        if (candidate?.content) {
-          contents.push(candidate.content);
-        }
-
-        const toolResponsesParts: any[] = [];
-
-        for (const call of functionCalls) {
-          if (!call.name) continue;
-          const toolName = call.name;
-          const desc =
-            TOOL_DESCRIPTIONS[toolName] || `Ejecutando ${toolName}...`;
-          yield { type: "tool_start", tool: toolName, description: desc };
-
-          const result = await executeTool(toolName, (call.args as Record<string, any>) || {});
-          
-          let resultCount: number | undefined;
-          if (result?.players?.length != null) resultCount = result.players.length;
-          else if (result?.teams?.length != null) resultCount = result.teams.length;
-          else if (result?.standings?.length != null) resultCount = result.standings.length;
-          else if (result?.matches?.length != null) resultCount = result.matches.length;
-
-          yield { type: "tool_end", tool: toolName, resultCount };
-
-          toolResponsesParts.push({
-            functionResponse: {
-              name: toolName,
-              response: { result },
-            },
-          });
-        }
-
-        // Agregar las respuestas de las tools como turno de usuario/tool
-        contents.push({
-          role: "user",
-          parts: toolResponsesParts,
-        });
-
-        // Continuamos el bucle para que el modelo procese los datos obtenidos
-        continue;
-      }
-
-      // Si no hay más llamadas a herramientas, transmitimos en streaming la respuesta final
-      const stream = await ai.models.generateContentStream({
-        model: modelName,
-        contents,
-        config: {
-          systemInstruction: DAVID_VILLA_SYSTEM_PROMPT,
-          temperature: 0.7,
-        },
-      });
-
-      for await (const chunk of stream) {
-        const text = chunk.text;
+      if (!functionCalls || functionCalls.length === 0) {
+        // No hay más llamadas a tools; devolvemos el texto generado
+        const text = currentResponse.text;
         if (text) {
-          yield { type: "delta", text };
+          // Simulamos streaming suave del texto devuelto
+          const words = text.split(" ");
+          for (let i = 0; i < words.length; i += 3) {
+            const chunk = words.slice(i, i + 3).join(" ") + (i + 3 < words.length ? " " : "");
+            yield { type: "delta", text: chunk };
+            await new Promise((r) => setTimeout(r, 15));
+          }
         }
+        yield { type: "done" };
+        return;
       }
 
-      yield { type: "done" };
-      return;
+      // Procesar cada llamada a herramienta
+      const toolResponseParts: any[] = [];
+      for (const call of functionCalls) {
+        const callName = call.name || "";
+        if (!callName) continue;
+
+        const desc = TOOL_DESCRIPTIONS[callName] || `Ejecutando ${callName}...`;
+        yield { type: "tool_start", tool: callName, description: desc };
+
+        const result = await executeTool(callName, (call.args as Record<string, any>) || {});
+
+        let resultCount: number | undefined;
+        if (result?.players?.length != null) resultCount = result.players.length;
+        else if (result?.teams?.length != null) resultCount = result.teams.length;
+        else if (result?.standings?.length != null) resultCount = result.standings.length;
+        else if (result?.matches?.length != null) resultCount = result.matches.length;
+
+        yield { type: "tool_end", tool: callName, resultCount };
+
+        toolResponseParts.push({
+          functionResponse: {
+            name: callName,
+            response: { result },
+          },
+        });
+      }
+
+      // Enviar resultados de vuelta al modelo
+      currentResponse = await chat.sendMessage({ message: toolResponseParts });
     }
 
     yield { type: "done" };
   } catch (err: any) {
     console.error("Error en asistente David Villa:", err);
+    let errMsg = err?.message || "Ocurrió un error inesperado al consultar con David Villa.";
+
+    if (errMsg.includes("SERVICE_DISABLED") || errMsg.includes("has not been used in project") || errMsg.includes("it is disabled")) {
+      errMsg = "La API de Gemini está desactivada en tu proyecto de Google Cloud. Por favor, actívala pulsando en: https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=287149788478 y espera un minuto.";
+    }
+
     yield {
       type: "error",
-      message:
-        err?.message || "Ocurrió un error inesperado al consultar con David Villa.",
+      message: errMsg,
     };
   }
 }
