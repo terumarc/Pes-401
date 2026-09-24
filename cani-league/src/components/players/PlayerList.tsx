@@ -83,7 +83,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Todos",
     icon: "🌐",
     activeClass: "bg-primary text-primary-foreground shadow-xs",
-    description: "Todos los futbolistas de la liga · Tiers globales (S+ ≥ 90 · S 87-89 · A 85-86)",
+    description: "Todos los futbolistas de la liga · Tiers globales (S+ ≥ 90 · S 87-89 · A 85-86 · B 78-84 · D < 78)",
   },
   {
     id: "def",
@@ -91,7 +91,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Defensas",
     icon: "🛡️",
     activeClass: "bg-blue-600 text-white shadow-xs",
-    description: "Centrales y laterales · Tiers para defensores (S+ ≥ 88 · S 85-87 · A 83-84 · B 80-82)",
+    description: "Centrales y laterales · Tiers para defensores (S+ ≥ 88 · S 85-87 · A 83-84 · B 76-82 · D < 76)",
   },
   {
     id: "mid",
@@ -99,7 +99,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Medios",
     icon: "🎯",
     activeClass: "bg-emerald-600 text-white shadow-xs",
-    description: "Pivotes, organizadores y mediapuntas · Tiers para medios (S+ ≥ 90 · S 88-89 · A 85-87 · B 82-84)",
+    description: "Pivotes, organizadores y mediapuntas · Tiers para medios (S+ ≥ 90 · S 88-89 · A 85-87 · B 78-84 · D < 78)",
   },
   {
     id: "att",
@@ -107,7 +107,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Delanteros",
     icon: "⚡",
     activeClass: "bg-rose-600 text-white shadow-xs",
-    description: "Extremos, segundos delanteros y arietes · Tiers para atacantes (S+ ≥ 91 · S 88-90 · A 86-87 · B 83-85)",
+    description: "Extremos, segundos delanteros y arietes · Tiers para atacantes (S+ ≥ 91 · S 88-90 · A 86-87 · B 79-85 · D < 79)",
   },
   {
     id: "gk",
@@ -115,7 +115,7 @@ export const POSITION_TABS: Array<{
     shortLabel: "Porteros",
     icon: "🧤",
     activeClass: "bg-amber-600 text-white shadow-xs",
-    description: "Guardametas · Media por Portería + Defensa · Tiers de porteros (S+ ≥ 96 · S 91-95 · A 86-90)",
+    description: "Guardametas · Media por Portería + Defensa · Tiers de porteros (S+ ≥ 96 · S 91-95 · A 86-90 · B 75-85 · D < 75)",
   },
 ];
 
@@ -124,7 +124,6 @@ const VALUE_PRESETS = [
   { label: "★ €80M (Tier S+ / S)", value: "80M", min: 80_000_000, max: 80_000_000 },
   { label: "★ €35M (Tier A Estrella)", value: "35M", min: 35_000_000, max: 35_000_000 },
   { label: "★ €15M (Tier B Titular)", value: "15M", min: 15_000_000, max: 15_000_000 },
-  { label: "★ €5M (Tier C Rotación)", value: "5M", min: 5_000_000, max: 5_000_000 },
   { label: "★ €1M (Tier D Reserva)", value: "1M", min: null, max: 1_000_000 },
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
@@ -217,32 +216,6 @@ export function PlayerList({
     return { all: enrichedPlayers.length, def, mid, att, gk };
   }, [enrichedPlayers]);
 
-  const currentPresets = useMemo(() => {
-    if (positionGroupTab === "all") {
-      return [
-        { label: "Cualquier media / tier", value: "ALL", tier: null as PlayerTier | null, min: null, max: null },
-        { label: "★ Tier S+ (Leyenda)", value: "S+", tier: "S+" as PlayerTier, min: null, max: null },
-        { label: "★ Tier S (Clase Mundial)", value: "S", tier: "S" as PlayerTier, min: null, max: null },
-        { label: "★ Tier A (Estrella)", value: "A", tier: "A" as PlayerTier, min: null, max: null },
-        { label: "★ Tier B (Titular)", value: "B", tier: "B" as PlayerTier, min: null, max: null },
-        { label: "★ Tier C (Rotación)", value: "C", tier: "C" as PlayerTier, min: null, max: null },
-        { label: "★ Tier D (Reserva)", value: "D", tier: "D" as PlayerTier, min: null, max: null },
-        { label: "Personalizado...", value: "CUSTOM", tier: null as PlayerTier | null, min: null, max: null },
-      ];
-    }
-    const t = GROUP_TIER_THRESHOLDS[positionGroupTab];
-    return [
-      { label: "Cualquier media", value: "ALL", tier: null as PlayerTier | null, min: null, max: null },
-      { label: `★ ${t.sPlus}+ (S+ Leyenda)`, value: "S+", tier: "S+" as PlayerTier, min: t.sPlus, max: null },
-      { label: `★ ${t.s} - ${t.sPlus - 1} (S Clase Mundial)`, value: "S", tier: "S" as PlayerTier, min: t.s, max: t.sPlus - 1 },
-      { label: `★ ${t.a} - ${t.s - 1} (A Estrella)`, value: "A", tier: "A" as PlayerTier, min: t.a, max: t.s - 1 },
-      { label: `★ ${t.b} - ${t.a - 1} (B Titular)`, value: "B", tier: "B" as PlayerTier, min: t.b, max: t.a - 1 },
-      { label: `★ ${t.c} - ${t.b - 1} (C Rotación)`, value: "C", tier: "C" as PlayerTier, min: t.c, max: t.b - 1 },
-      { label: `★ < ${t.c} (D Reserva)`, value: "D", tier: "D" as PlayerTier, min: null, max: t.c - 1 },
-      { label: "Personalizado...", value: "CUSTOM", tier: null as PlayerTier | null, min: null, max: null },
-    ];
-  }, [positionGroupTab]);
-
   const tierCounts = useMemo(() => {
     const counts: Record<string, number> = { "S+": 0, "S": 0, "A": 0, "B": 0, "C": 0, "D": 0 };
     for (const p of enrichedPlayers) {
@@ -256,6 +229,42 @@ export function PlayerList({
     }
     return counts;
   }, [enrichedPlayers, positionGroupTab]);
+
+  const currentPresets = useMemo(() => {
+    if (positionGroupTab === "all") {
+      const presets = [
+        { label: "Cualquier media / tier", value: "ALL", tier: null as PlayerTier | null, min: null, max: null },
+        { label: "★ Tier S+ (Leyenda)", value: "S+", tier: "S+" as PlayerTier, min: null, max: null },
+        { label: "★ Tier S (Clase Mundial)", value: "S", tier: "S" as PlayerTier, min: null, max: null },
+        { label: "★ Tier A (Estrella)", value: "A", tier: "A" as PlayerTier, min: null, max: null },
+        { label: "★ Tier B (Titular)", value: "B", tier: "B" as PlayerTier, min: null, max: null },
+      ];
+      if ((tierCounts["C"] ?? 0) > 0) {
+        presets.push({ label: "★ Tier C (Rotación)", value: "C", tier: "C" as PlayerTier, min: null, max: null });
+      }
+      presets.push(
+        { label: "★ Tier D (Reserva)", value: "D", tier: "D" as PlayerTier, min: null, max: null },
+        { label: "Personalizado...", value: "CUSTOM", tier: null as PlayerTier | null, min: null, max: null },
+      );
+      return presets;
+    }
+    const t = GROUP_TIER_THRESHOLDS[positionGroupTab];
+    const presets: Array<{ label: string; value: string; tier: PlayerTier | null; min: number | null; max: number | null }> = [
+      { label: "Cualquier media", value: "ALL", tier: null as PlayerTier | null, min: null, max: null },
+      { label: `★ ${t.sPlus}+ (S+ Leyenda)`, value: "S+", tier: "S+" as PlayerTier, min: t.sPlus, max: null },
+      { label: `★ ${t.s} - ${t.sPlus - 1} (S Clase Mundial)`, value: "S", tier: "S" as PlayerTier, min: t.s, max: t.sPlus - 1 },
+      { label: `★ ${t.a} - ${t.s - 1} (A Estrella)`, value: "A", tier: "A" as PlayerTier, min: t.a, max: t.s - 1 },
+      { label: `★ ${t.b} - ${t.a - 1} (B Titular)`, value: "B", tier: "B" as PlayerTier, min: t.b, max: t.a - 1 },
+    ];
+    if (t.b > t.c && (tierCounts["C"] ?? 0) > 0) {
+      presets.push({ label: `★ ${t.c} - ${t.b - 1} (C Rotación)`, value: "C", tier: "C" as PlayerTier, min: t.c, max: t.b - 1 });
+    }
+    presets.push(
+      { label: `★ < ${t.b} (D Reserva)`, value: "D", tier: "D" as PlayerTier, min: null, max: t.b - 1 },
+      { label: "Personalizado...", value: "CUSTOM", tier: null as PlayerTier | null, min: null, max: null },
+    );
+    return presets;
+  }, [positionGroupTab, tierCounts]);
 
   const subPositionOptions = useMemo(() => {
     if (positionGroupTab === "def") {
@@ -891,7 +900,9 @@ export function PlayerList({
           >
             Todos
           </button>
-          {(["S+", "S", "A", "B", "C", "D"] as const).map((tier) => {
+          {(["S+", "S", "A", "B", "C", "D"] as const)
+            .filter((tier) => tier !== "C" || (tierCounts["C"] ?? 0) > 0 || selectedTier === "C")
+            .map((tier) => {
             const active = selectedTier === tier;
             const count = tierCounts[tier] ?? 0;
             return (

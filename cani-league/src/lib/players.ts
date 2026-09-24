@@ -27,11 +27,11 @@ export function getPositionGroup(position?: string | null): PositionGroup {
 }
 
 export const GROUP_TIER_THRESHOLDS: Record<PositionGroup, TierThresholds> = {
-  def: { sPlus: 88, s: 85, a: 83, b: 80, c: 76 },
-  mid: { sPlus: 90, s: 88, a: 85, b: 82, c: 78 },
-  att: { sPlus: 91, s: 88, a: 86, b: 83, c: 79 },
-  gk:  { sPlus: 96, s: 91, a: 86, b: 81, c: 75 },
-  all: { sPlus: 90, s: 87, a: 85, b: 82, c: 78 },
+  def: { sPlus: 88, s: 85, a: 83, b: 76, c: 76 },
+  mid: { sPlus: 90, s: 88, a: 85, b: 78, c: 78 },
+  att: { sPlus: 91, s: 88, a: 86, b: 79, c: 79 },
+  gk:  { sPlus: 96, s: 91, a: 86, b: 75, c: 75 },
+  all: { sPlus: 90, s: 87, a: 85, b: 78, c: 78 },
 };
 
 export const DEFAULT_OUTFIELD_THRESHOLDS: TierThresholds = GROUP_TIER_THRESHOLDS.all;
@@ -147,15 +147,15 @@ export function calcTierThresholds(
       sPlus: outfieldAvg + 9, // ej: 80 + 9 = 89 (Leyendas Top)
       s: outfieldAvg + 5,     // ej: 80 + 5 = 85 (Clase Mundial)
       a: outfieldAvg + 2,     // ej: 80 + 2 = 82 (Estrellas)
-      b: outfieldAvg - 2,     // ej: 80 - 2 = 78 (Titulares)
-      c: outfieldAvg - 6,     // ej: 80 - 6 = 74 (Rotación)
+      b: outfieldAvg - 6,     // ej: 80 - 6 = 74 (Titulares y Rotación: Tier B incluye Tier C)
+      c: outfieldAvg - 6,     // Unificado con Tier B
     },
     gk: {
       sPlus: gkAvg + 10,      // ej: 85 + 10 = 95
       s: gkAvg + 5,           // ej: 85 + 5 = 90
       a: gkAvg,               // ej: 85
-      b: gkAvg - 5,           // ej: 85 - 5 = 80
-      c: gkAvg - 15,          // ej: 85 - 15 = 70
+      b: gkAvg - 15,          // ej: 85 - 15 = 70 (Titulares y Rotación: Tier B incluye Tier C)
+      c: gkAvg - 15,          // Unificado con Tier B
     },
   };
 }

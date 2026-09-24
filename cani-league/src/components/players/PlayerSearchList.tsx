@@ -32,8 +32,7 @@ const OVERALL_PRESETS = [
   { label: "★ 90+ (S+ Leyenda)", value: "90+", min: 90, max: null },
   { label: "★ 87 - 89 (S Clase Mundial)", value: "87-89", min: 87, max: 89 },
   { label: "★ 85 - 86 (A Estrella)", value: "85-86", min: 85, max: 86 },
-  { label: "★ 82 - 84 (B Titular)", value: "82-84", min: 82, max: 84 },
-  { label: "★ 78 - 81 (C Rotación)", value: "78-81", min: 78, max: 81 },
+  { label: "★ 78 - 84 (B Titular)", value: "78-84", min: 78, max: 84 },
   { label: "★ < 78 (D Reserva)", value: "<78", min: null, max: 77 },
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
@@ -43,7 +42,6 @@ const VALUE_PRESETS = [
   { label: "★ €80M (Tier S+ / S)", value: "80M", min: 80_000_000, max: 80_000_000 },
   { label: "★ €35M (Tier A Estrella)", value: "35M", min: 35_000_000, max: 35_000_000 },
   { label: "★ €15M (Tier B Titular)", value: "15M", min: 15_000_000, max: 15_000_000 },
-  { label: "★ €5M (Tier C Rotación)", value: "5M", min: 5_000_000, max: 5_000_000 },
   { label: "★ €1M (Tier D Reserva)", value: "1M", min: null, max: 1_000_000 },
   { label: "Personalizado...", value: "CUSTOM", min: null, max: null },
 ];
