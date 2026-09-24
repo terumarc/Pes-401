@@ -89,14 +89,18 @@ async function fetchStandingsWithTeams(leagueId: string): Promise<StandingWithTe
 export const getStandingsWithTeams = safeCache(
   fetchStandingsWithTeams,
   ["standings", "with_teams"],
-  { revalidate: 120, tags: ["standings"] }
+  { revalidate: 120, tags: ["standings", "teams"] }
 );
 
 async function fetchTeamsWithStandings(leagueId: string): Promise<TeamWithStanding[]> {
-  const standings = await getStandingsWithTeams(leagueId);
+  const [standings, leagueTeams] = await Promise.all([
+    getStandingsWithTeams(leagueId),
+    fetchTeamsByLeague(leagueId),
+  ]);
   const supabase = createStaticClient();
 
-  const standingTeamIds = standings.map((s) => s.team_id);
+  const standingsMap = new Map(standings.map((s) => [s.team_id, s]));
+  const standingTeamIds = leagueTeams.map((t) => t.id);
   const { data: playersData, error } = await supabase
     .from("players")
     .select("team_id, name, position, overall, defending, market_value")
@@ -137,23 +141,26 @@ async function fetchTeamsWithStandings(leagueId: string): Promise<TeamWithStandi
     teamStatsMap.set(p.team_id, stat);
   }
 
-  return standings.map((s) => {
-    const stats = teamStatsMap.get(s.team_id);
+  const result: TeamWithStanding[] = leagueTeams.map((team, idx) => {
+    const s = standingsMap.get(team.id);
+    const stats = teamStatsMap.get(team.id);
     const avgOverall =
       stats && stats.overallCount > 0
         ? Math.round(stats.totalOverall / stats.overallCount)
         : undefined;
 
     return {
-      ...s.team,
-      position: s.position,
-      previous_position: s.previous_position,
+      ...team,
+      position: s?.position ?? idx + 1,
+      previous_position: s?.previous_position ?? null,
       player_count: stats?.count ?? 0,
       avg_overall: avgOverall,
       squad_value: stats?.squadValue ?? 0,
       top_player: stats?.topPlayer ?? undefined,
     };
   });
+
+  return result.sort((a, b) => a.position - b.position);
 }
 
 export const getTeamsWithStandings = safeCache(
@@ -175,13 +182,18 @@ export async function updateTeam(
     .single();
 
   if (error) throw error;
-  invalidateMemCache("team");
-  invalidateMemCache("dashboard");
+  invalidateMemCache();
+  invalidatePlayersCache();
   try {
     revalidateTag("teams", "max");
-    revalidatePath("/league");
-    revalidatePath("/teams");
-    revalidatePath("/finances");
+    revalidateTag("standings", "max");
+    revalidateTag("dashboard", "max");
+    revalidatePath("/", "layout");
+    revalidatePath("/teams", "layout");
+    revalidatePath("/teams", "page");
+    revalidatePath(`/teams/${id}`, "page");
+    revalidatePath("/league", "page");
+    revalidatePath("/finances", "page");
   } catch {}
   return data;
 }

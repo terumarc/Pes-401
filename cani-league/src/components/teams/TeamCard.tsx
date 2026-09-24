@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Users, Star, ArrowRight, User, Wallet, TrendingUp, TrendingDown, Minus, Coins } from "lucide-react";
 import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
+import { EditTeamButton } from "@/components/teams/EditTeamButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -181,16 +182,19 @@ export function TeamCard({ team }: TeamCardProps) {
           )}
         </div>
 
-        {/* BOTÓN DE ACCIÓN */}
-        <Button
-          asChild
-          className="w-full justify-between font-display font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 transition-all duration-200 h-10 px-4 rounded-xl cursor-pointer"
-        >
-          <Link href={`/teams/${team.id}`} className="flex items-center justify-between w-full text-white">
-            <span className="text-white font-bold">Ver Plantilla Completa</span>
-            <ArrowRight className="size-4 text-white transition-transform duration-200 group-hover:translate-x-1" />
-          </Link>
-        </Button>
+        {/* BOTONES DE ACCIÓN */}
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            className="flex-1 justify-between font-display font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 transition-all duration-200 h-10 px-4 rounded-xl cursor-pointer"
+          >
+            <Link href={`/teams/${team.id}`} className="flex items-center justify-between w-full text-white">
+              <span className="text-white font-bold">Ver Plantilla</span>
+              <ArrowRight className="size-4 text-white transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
+          </Button>
+          <EditTeamButton team={team} variant="icon" />
+        </div>
       </CardContent>
     </Card>
   );

@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { TeamLogo } from "@/components/teams/TeamCard";
-import { updateTeamClient } from "@/lib/data/mutations";
+import { updateTeamAction } from "@/app/actions/teams";
 import { teamSchema } from "@/lib/validations";
 import { cn } from "@/lib/utils";
 import type { Team } from "@/types";
@@ -70,7 +70,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
     }
 
     try {
-      await updateTeamClient(team.id, {
+      await updateTeamAction(team.id, {
         name: parsed.data.name,
         short_name: parsed.data.short_name,
         owner_name: parsed.data.owner_name ?? null,

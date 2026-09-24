@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import { TeamCard, TeamLogo } from "@/components/teams/TeamCard";
+import { EditTeamButton } from "@/components/teams/EditTeamButton";
 import { padPosition } from "@/lib/format/stats";
 import { cn } from "@/lib/utils";
 import type { TeamWithStanding } from "@/types";
@@ -385,17 +386,24 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
 
                       {/* ACCIÓN */}
                       <td className="px-4 py-3 text-right whitespace-nowrap">
-                        <Button
-                          asChild
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-white/[0.06]"
-                        >
-                          <Link href={`/teams/${team.id}`}>
-                            <span>Plantilla</span>
-                            <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                          </Link>
-                        </Button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <EditTeamButton
+                            team={team}
+                            variant="icon"
+                            className="size-8 rounded-lg"
+                          />
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-white/[0.06]"
+                          >
+                            <Link href={`/teams/${team.id}`}>
+                              <span>Plantilla</span>
+                              <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                            </Link>
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );

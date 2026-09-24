@@ -19,7 +19,7 @@ export function setInMemCache<T>(key: string, data: T, ttlSeconds = 60): T {
 }
 
 export function invalidateMemCache(tagOrPattern?: string): void {
-  if (!tagOrPattern) {
+  if (!tagOrPattern || tagOrPattern === "all" || tagOrPattern === "teams") {
     memoryCache.clear();
     return;
   }

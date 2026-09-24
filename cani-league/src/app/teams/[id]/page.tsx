@@ -76,7 +76,7 @@ export default async function TeamDetailPage({ params }: Props) {
           size="sm"
           className="gap-1.5 text-muted-foreground hover:text-foreground border border-white/[0.08] bg-card/40 backdrop-blur-md shadow-xs h-9 px-3"
         >
-          <Link href="/teams">
+          <Link href="/teams" prefetch={false}>
             <ChevronLeft className="size-4" />
             <span>Volver a Equipos</span>
           </Link>

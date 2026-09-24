@@ -10,13 +10,18 @@ export async function POST(request: Request) {
     const path = body?.path as string | undefined;
 
     // 1. Limpiar toda la caché en memoria del servidor
-    invalidateMemCache(tag);
+    invalidateMemCache();
     invalidatePlayersCache();
 
     // 2. Invalidar tags de Next.js
-    const tagsToInvalidate = tag
-      ? [tag]
-      : ["teams", "standings", "players", "matches", "league"];
+    let tagsToInvalidate: string[];
+    if (tag === "teams") {
+      tagsToInvalidate = ["teams", "standings", "dashboard", "league", "matches"];
+    } else if (tag) {
+      tagsToInvalidate = [tag];
+    } else {
+      tagsToInvalidate = ["teams", "standings", "players", "matches", "league", "dashboard"];
+    }
 
     for (const t of tagsToInvalidate) {
       try {
@@ -24,26 +29,28 @@ export async function POST(request: Request) {
       } catch {}
     }
 
-    // 3. Invalidar rutas de Next.js
-    const pathsToInvalidate = path
-      ? [path]
-      : [
-          "/league",
-          "/finances",
-          "/teams",
-          "/standings",
-          "/calendar",
-          "/market",
-          "/players",
-        ];
+    // 3. Invalidar layouts y rutas de Next.js
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/teams", "layout");
+      revalidatePath("/teams", "page");
+      revalidatePath("/dashboard", "page");
+      revalidatePath("/league", "page");
+      revalidatePath("/finances", "page");
+      revalidatePath("/standings", "page");
+      revalidatePath("/calendar", "page");
+      revalidatePath("/market", "page");
+      revalidatePath("/players", "page");
+      if (path) {
+        revalidatePath(path, "page");
+        revalidatePath(path, "layout");
+      }
+    } catch {}
 
-    for (const p of pathsToInvalidate) {
-      try {
-        revalidatePath(p, "page");
-      } catch {}
-    }
-
-    return NextResponse.json({ success: true, invalidated: { tags: tagsToInvalidate, paths: pathsToInvalidate } });
+    return NextResponse.json({
+      success: true,
+      invalidated: { tags: tagsToInvalidate },
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error durante la revalidación";
     return NextResponse.json({ error: message }, { status: 500 });

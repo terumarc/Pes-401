@@ -129,17 +129,22 @@ export async function updateTeamClient(
   id: string,
   input: TeamUpdateInput,
 ): Promise<Team> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("teams")
-    .update(input)
-    .eq("id", id)
-    .select("*")
-    .single();
+  try {
+    const { updateTeamAction } = await import("@/app/actions/teams");
+    return await updateTeamAction(id, input);
+  } catch {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("teams")
+      .update(input)
+      .eq("id", id)
+      .select("*")
+      .single();
 
-  if (error) throw error;
-  await triggerServerRevalidate("teams");
-  return data;
+    if (error) throw error;
+    await triggerServerRevalidate("teams");
+    return data;
+  }
 }
 
 export async function createPlayerClient(
