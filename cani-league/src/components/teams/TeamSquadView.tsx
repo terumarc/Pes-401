@@ -433,7 +433,28 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
       </div>
 
       {/* RESULTADOS O ESTADO VACÍO */}
-      {filteredPlayers.length === 0 ? (
+      {players.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-white/[0.12] bg-card/30 p-12 text-center backdrop-blur-xs">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-white/[0.05] border border-white/[0.08] shadow-inner">
+            <Users className="size-7 text-muted-foreground" />
+          </div>
+          <h3 className="mt-4 font-display text-lg font-bold text-foreground">
+            Plantilla sin futbolistas
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
+            Este club no tiene jugadores en plantilla en este momento. Puedes incorporar futbolistas como agentes libres directamente desde el mercado.
+          </p>
+          <Button
+            asChild
+            className="mt-5 gap-2 font-semibold text-xs border border-white/10 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+          >
+            <Link href="/market">
+              <Store className="size-4" />
+              <span>Explorar Mercado de Fichajes</span>
+            </Link>
+          </Button>
+        </div>
+      ) : filteredPlayers.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-white/[0.12] bg-card/30 p-12 text-center backdrop-blur-xs">
           <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white/[0.05] border border-white/[0.08]">
             <Users className="size-6 text-muted-foreground" />
