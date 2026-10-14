@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Award, Crown, Medal, Minus, Pencil, Plus, Star, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Minus, Pencil, Plus } from "lucide-react";
 import { TeamLogo } from "@/components/teams/TeamCard";
 import { TrophyArt } from "@/components/trophies/TrophyArt";
 import { changeTeamTrophyAction, setTrophyPrizeAction } from "@/app/actions/trophies";
@@ -11,15 +10,26 @@ import { TROPHIES } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { TeamTrophyCabinet, TrophyCounts, TrophyType } from "@/types";
 
-const EMBLEM: Record<
-  TrophyType,
-  { Icon: typeof Crown; ring: string; glow: string; text: string }
-> = {
-  league: { Icon: Crown, ring: "#e8b53e", glow: "rgba(232,181,62,0.45)", text: "text-amber-200" },
-  champions: { Icon: Star, ring: "#9fb4d6", glow: "rgba(150,180,230,0.45)", text: "text-sky-100" },
-  cup: { Icon: Award, ring: "#e2475a", glow: "rgba(226,71,90,0.4)", text: "text-rose-100" },
-  conference: { Icon: Medal, ring: "#4fd39a", glow: "rgba(79,211,154,0.4)", text: "text-emerald-100" },
+/* ------------------------------------------------------------------ */
+/* Estética de menú PES 6: azul marino brillante, barras inclinadas,   */
+/* cursiva gruesa en mayúsculas y selección amarilla-naranja.          */
+/* ------------------------------------------------------------------ */
+
+const ACCENT: Record<TrophyType, { stripe: string; glow: string }> = {
+  league: { stripe: "#f5c542", glow: "rgba(245,197,66,0.55)" },
+  champions: { stripe: "#9cc7ff", glow: "rgba(120,180,255,0.55)" },
+  cup: { stripe: "#ff4d5e", glow: "rgba(255,77,94,0.5)" },
+  conference: { stripe: "#3ee6a0", glow: "rgba(62,230,160,0.5)" },
 };
+
+const PANEL_BG =
+  "linear-gradient(180deg,#123073 0%,#0a1f52 38%,#061538 100%)";
+const SCANLINES =
+  "repeating-linear-gradient(0deg,rgba(255,255,255,0.035) 0 1px,transparent 1px 3px)";
+const SELECT_BG = "linear-gradient(180deg,#fff27a 0%,#ffd12e 45%,#f59a00 100%)";
+const TITLE_BG = "linear-gradient(180deg,#3d7be0 0%,#1d4fae 50%,#123a8a 51%,#0d2c6e 100%)";
+const NUM_SHADOW =
+  "0 2px 0 #0a1a44, 0 0 10px rgba(80,170,255,0.75), 0 0 2px #000";
 
 function sortCabinets(list: TeamTrophyCabinet[]) {
   return [...list].sort(
@@ -40,6 +50,92 @@ function compactMoney(value: number) {
   return `${value} €`;
 }
 
+/** Panel con biselado y brillo, como las ventanas del menú. */
+function PesPanel({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("relative overflow-hidden rounded-[3px] border border-[#3b72d6]", className)}
+      style={{
+        background: PANEL_BG,
+        boxShadow:
+          "inset 0 1px 0 rgba(170,210,255,0.45), inset 0 0 0 1px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.55)",
+      }}
+    >
+      <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: SCANLINES }} />
+      <div className="relative">{children}</div>
+    </div>
+  );
+}
+
+/** Barra de título inclinada con brillo de cristal en la mitad superior. */
+function PesTitle({
+  children,
+  right,
+}: {
+  children: React.ReactNode;
+  right?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-stretch justify-between gap-2 border-b border-black/40">
+      <div
+        className="-ml-2 flex items-center py-1.5 pl-5 pr-7"
+        style={{
+          background: TITLE_BG,
+          clipPath: "polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)",
+        }}
+      >
+        <span className="font-display text-sm font-black uppercase italic tracking-wide text-white drop-shadow-[0_1px_0_#06143a] sm:text-base">
+          {children}
+        </span>
+      </div>
+      {right && <div className="flex items-center pr-3">{right}</div>}
+    </div>
+  );
+}
+
+function PesButton({
+  children,
+  onClick,
+  active,
+  disabled,
+  label,
+  className,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  active?: boolean;
+  disabled?: boolean;
+  label?: string;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "inline-flex -skew-x-12 items-center justify-center gap-1.5 border px-3 py-1.5 font-display text-xs font-black uppercase italic tracking-wide transition-[filter] hover:brightness-110 disabled:opacity-35 disabled:hover:brightness-100",
+        active ? "border-[#ffe680] text-[#0a1430]" : "border-[#5d93ef] text-white",
+        className,
+      )}
+      style={{
+        background: active ? SELECT_BG : TITLE_BG,
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 0 rgba(0,0,0,0.5)",
+      }}
+    >
+      <span className="flex skew-x-12 items-center gap-1.5">{children}</span>
+    </button>
+  );
+}
+
 export function TrophyRoom({
   leagueId,
   initialCabinets,
@@ -55,7 +151,6 @@ export function TrophyRoom({
   const [selectedId, setSelectedId] = useState(
     () => sortCabinets(initialCabinets)[0]?.team.id ?? null,
   );
-  const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -117,10 +212,10 @@ export function TrophyRoom({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Selector de vitrina */}
-      <div className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-        <div className="flex gap-2">
+    <div className="space-y-5">
+      {/* Selector de club */}
+      <div className="-mx-4 overflow-x-auto px-5 py-1 sm:mx-0 sm:px-1">
+        <div className="flex gap-2.5">
           {ranking.map((c) => {
             const active = c.team.id === selected.team.id;
             return (
@@ -129,26 +224,37 @@ export function TrophyRoom({
                 type="button"
                 onClick={() => setSelectedId(c.team.id)}
                 className={cn(
-                  "flex shrink-0 items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-sm transition-colors",
-                  active
-                    ? "border-amber-400/50 bg-amber-400/10 text-foreground"
-                    : "border-white/[0.08] bg-card/50 text-muted-foreground hover:text-foreground",
+                  "flex shrink-0 -skew-x-12 items-center border transition-[filter] hover:brightness-110",
+                  active ? "border-[#ffe680]" : "border-[#2f5fb8]",
                 )}
+                style={{
+                  background: active ? SELECT_BG : PANEL_BG,
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 0 rgba(0,0,0,0.5)",
+                }}
               >
-                <TeamLogo
-                  name={c.team.name}
-                  logoUrl={c.team.logo_url}
-                  color={c.team.primary_color}
-                  size="sm"
-                />
-                <span className="font-medium">{c.team.short_name || c.team.name}</span>
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 text-[11px] font-bold tabular-nums",
-                    active ? "bg-amber-400/20 text-amber-200" : "bg-white/[0.06]",
-                  )}
-                >
-                  {c.total}
+                <span className="flex skew-x-12 items-center gap-2 py-1 pl-2 pr-3">
+                  <TeamLogo
+                    name={c.team.name}
+                    logoUrl={c.team.logo_url}
+                    color={c.team.primary_color}
+                    size="sm"
+                  />
+                  <span
+                    className={cn(
+                      "font-display text-sm font-black uppercase italic",
+                      active ? "text-[#0a1430]" : "text-white",
+                    )}
+                  >
+                    {c.team.short_name || c.team.name}
+                  </span>
+                  <span
+                    className={cn(
+                      "min-w-6 px-1 text-center font-display text-xs font-black italic tabular-nums",
+                      active ? "bg-[#0a1430] text-[#ffd12e]" : "bg-black/40 text-[#8fc4ff]",
+                    )}
+                  >
+                    {c.total}
+                  </span>
                 </span>
               </button>
             );
@@ -156,280 +262,308 @@ export function TrophyRoom({
         </div>
       </div>
 
-      {/* Hornacina */}
-      <section
-        aria-label={`Vitrina de ${selected.team.name}`}
-        className="relative overflow-hidden rounded-2xl border border-[#5a4127]/60 shadow-2xl"
-        style={{
-          background:
-            "radial-gradient(120% 70% at 50% 0%, #4a3725 0%, #2a1e14 55%, #160f09 100%)",
-        }}
-      >
-        {/* Arco */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-[-10%] top-0 h-16 sm:h-24"
-          style={{
-            background: "linear-gradient(180deg,#6b5236,#3b2b1c)",
-            borderBottomLeftRadius: "50% 100%",
-            borderBottomRightRadius: "50% 100%",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
-          }}
-        />
-        {/* Ladrillos */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.18]"
-          style={{
-            backgroundImage:
-              "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)",
-            backgroundSize: "56px 28px, 56px 56px",
-            backgroundPosition: "0 0, 28px 28px",
-          }}
-        />
+      {/* Vitrina */}
+      <PesPanel>
+        <PesTitle
+          right={
+            <span className="flex items-center gap-2">
+              <span className="hidden font-display text-[11px] font-bold uppercase italic tracking-wider text-[#8fc4ff] sm:inline">
+                Títulos
+              </span>
+              <span
+                className="-skew-x-12 border border-[#ffe680] px-2.5 py-0.5"
+                style={{ background: SELECT_BG }}
+              >
+                <span className="block skew-x-12 font-display text-base font-black italic tabular-nums text-[#0a1430]">
+                  {selected.total}
+                </span>
+              </span>
+            </span>
+          }
+        >
+          Sala de trofeos
+        </PesTitle>
 
-        <div className="relative px-3 pb-0 pt-24 sm:px-8 sm:pt-32">
-          {/* Placa del club */}
-          <div className="absolute left-1/2 top-3 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 items-center gap-2 rounded-full border border-amber-300/30 bg-black/40 px-3 py-1.5 backdrop-blur-sm sm:top-6">
-            <TeamLogo
-              name={selected.team.name}
-              logoUrl={selected.team.logo_url}
-              color={selected.team.primary_color}
-              size="sm"
-            />
-            <span className="max-w-[52vw] truncate font-display text-sm font-semibold text-amber-50 sm:max-w-none sm:text-base">
+        {/* Ficha del club */}
+        <div className="flex items-center gap-3 border-b border-[#2a5bb5]/60 bg-black/20 px-3 py-2.5 sm:px-4">
+          <TeamLogo
+            name={selected.team.name}
+            logoUrl={selected.team.logo_url}
+            color={selected.team.primary_color}
+            size="md"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-lg font-black uppercase italic leading-tight text-white drop-shadow-[0_2px_0_#06143a] sm:text-xl">
               {selected.team.name}
-            </span>
-            <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-400/20 px-2 py-0.5 text-xs font-bold tabular-nums text-amber-200">
-              {selected.total} {selected.total === 1 ? "título" : "títulos"}
-            </span>
-          </div>
-          <p className="absolute left-1/2 top-[3.6rem] -translate-x-1/2 whitespace-nowrap text-[11px] font-medium text-amber-100/70 sm:top-[4.6rem]">
-            Presupuesto · {formatMoney(selected.team.budget)}
-          </p>
-
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4 sm:gap-x-6">
-            {TROPHIES.map((t) => (
-              <TrophyNiche
-                key={t.key}
-                type={t.key}
-                label={t.short}
-                count={selected.trophies[t.key]}
-                prize={prizes[t.key]}
-                editing={editing}
-                disabled={pending}
-                onChange={(delta) => changeCount(t.key, delta)}
-              />
-            ))}
+            </p>
+            <p className="font-display text-[11px] font-bold uppercase italic tracking-wider text-[#8fc4ff]">
+              Presupuesto <span className="text-[#ffd12e] tabular-nums">{formatMoney(selected.team.budget)}</span>
+            </p>
           </div>
         </div>
 
-        {/* Repisa */}
+        {/* Expositores */}
         <div
-          aria-hidden
-          className="relative h-5 sm:h-7"
+          className="relative grid grid-cols-2 gap-x-2 gap-y-4 px-2 pb-4 pt-5 sm:grid-cols-4 sm:gap-x-4 sm:px-5 sm:pt-7"
           style={{
-            background: "linear-gradient(180deg,#8a6a45 0%,#5e4529 40%,#2a1d11 100%)",
-            boxShadow: "0 -6px 18px rgba(0,0,0,0.5)",
+            background:
+              "radial-gradient(90% 60% at 50% 100%, rgba(40,110,230,0.35), transparent 70%)",
           }}
-        />
-      </section>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">
-          {editing
-            ? "Usa + y − en cada placa. Cada título suma su premio al presupuesto (y lo descuenta si lo quitas)."
-            : "Elige un club arriba para ver su vitrina."}
-          {pending && <span className="ml-2 text-amber-300">Guardando…</span>}
-        </p>
-        <Button
-          variant={editing ? "default" : "outline"}
-          size="sm"
-          onClick={() => setEditing((v) => !v)}
         >
-          {editing ? <Check className="size-4" /> : <Pencil className="size-4" />}
-          {editing ? "Hecho" : "Editar vitrina"}
-        </Button>
+          {TROPHIES.map((t) => (
+            <TrophyStand
+              key={t.key}
+              type={t.key}
+              label={t.short}
+              count={selected.trophies[t.key]}
+              prize={prizes[t.key]}
+            />
+          ))}
+        </div>
+
+        {/* Barra inferior */}
+        <div
+          className="flex flex-wrap items-center justify-between gap-2 border-t border-black/40 px-3 py-2"
+          style={{ background: "linear-gradient(180deg,#0b2154,#071637)" }}
+        >
+          <p className="font-display text-[11px] font-bold uppercase italic tracking-wide text-[#8fc4ff]">
+            {pending ? "Guardando…" : "Elige un club para ver su vitrina"}
+          </p>
+          <PesButton
+            onClick={() =>
+              document.getElementById("gestion-titulos")?.scrollIntoView({ behavior: "smooth" })
+            }
+          >
+            <Pencil className="size-3.5" />
+            Gestionar títulos
+          </PesButton>
+        </div>
+      </PesPanel>
+
+      {/* Gestión manual */}
+      <div id="gestion-titulos" className="scroll-mt-20">
+        <PesPanel>
+          <PesTitle>Gestión de títulos</PesTitle>
+
+          <div className="space-y-3 p-3 sm:p-4">
+            <label className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+              <span className="font-display text-[11px] font-black uppercase italic tracking-wider text-[#8fc4ff]">
+                Club
+              </span>
+              <select
+                value={selected.team.id}
+                onChange={(e) => setSelectedId(e.target.value)}
+                className="h-10 flex-1 border border-[#3b72d6] bg-[#04102c] px-3 font-display text-sm font-black uppercase italic text-white outline-none focus:border-[#ffd12e]"
+              >
+                {ranking.map((c) => (
+                  <option key={c.team.id} value={c.team.id}>
+                    {c.team.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <ul className="divide-y divide-[#2a5bb5]/40 border border-[#2a5bb5]/60 bg-black/20">
+              {TROPHIES.map((t) => (
+                <TitleRow
+                  key={t.key}
+                  type={t.key}
+                  label={t.label}
+                  count={selected.trophies[t.key]}
+                  prize={prizes[t.key]}
+                  disabled={pending}
+                  onChange={(delta) => changeCount(t.key, delta)}
+                />
+              ))}
+            </ul>
+
+            {notice && (
+              <div className="-skew-x-6 border border-[#3ee6a0]/60 bg-[#06331f]/80 px-3 py-2">
+                <p className="skew-x-6 font-display text-xs font-bold uppercase italic text-[#7dffc4]">
+                  {notice}
+                </p>
+              </div>
+            )}
+            {error && (
+              <div className="-skew-x-6 border border-[#ff4d5e]/60 bg-[#3a0710]/80 px-3 py-2">
+                <p className="skew-x-6 text-xs font-semibold text-[#ffb3bb]">{error}</p>
+              </div>
+            )}
+            <p className="text-[11px] text-[#b9d6ff]/80">
+              Al sumar un título, su valor se añade al presupuesto del club. Si lo
+              quitas, se descuenta.
+            </p>
+          </div>
+
+          <PrizeEditor prizes={prizes} onSave={savePrize} />
+        </PesPanel>
       </div>
 
-      {notice && (
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300">
-          {notice}
-        </div>
-      )}
-
-      {editing && <PrizeEditor prizes={prizes} onSave={savePrize} />}
-
-      {error && (
-        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
-          {error}
-        </div>
-      )}
-
       {/* Palmarés */}
-      <section className="space-y-3">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Palmarés</h2>
-        <ul className="space-y-2">
-          {ranking.map((c, idx) => (
-            <li key={c.team.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedId(c.team.id);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-xl border bg-card/60 p-3 text-left transition-colors hover:bg-card/90",
-                  c.team.id === selected.team.id
-                    ? "border-amber-400/40"
-                    : "border-white/[0.08]",
-                )}
-              >
-                <span className="w-5 text-center font-display text-sm tabular-nums text-muted-foreground">
-                  {idx + 1}
-                </span>
-                <TeamLogo
-                  name={c.team.name}
-                  logoUrl={c.team.logo_url}
-                  color={c.team.primary_color}
-                  size="sm"
-                />
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                  {c.team.name}
-                </span>
-                <span className="flex items-center gap-2 sm:gap-3">
+      <PesPanel>
+        <PesTitle>Palmarés</PesTitle>
+        <div className="grid grid-cols-[1.75rem_1fr_repeat(4,2.1rem)_2.4rem] items-center gap-x-1 border-b border-[#2a5bb5]/60 bg-black/25 px-2 py-1.5 font-display text-[10px] font-bold uppercase italic tracking-wider text-[#8fc4ff] sm:grid-cols-[2.5rem_1fr_repeat(4,3.5rem)_3.5rem] sm:px-3">
+          <span>Pos</span>
+          <span>Club</span>
+          {TROPHIES.map((t) => (
+            <span key={t.key} className="flex justify-center" title={t.label}>
+              <TrophyArt type={t.key} className="h-5 w-4" />
+            </span>
+          ))}
+          <span className="text-right">Tot</span>
+        </div>
+        <ul>
+          {ranking.map((c, idx) => {
+            const active = c.team.id === selected.team.id;
+            return (
+              <li key={c.team.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedId(c.team.id);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className={cn(
+                    "grid w-full grid-cols-[1.75rem_1fr_repeat(4,2.1rem)_2.4rem] items-center gap-x-1 px-2 py-1.5 text-left sm:grid-cols-[2.5rem_1fr_repeat(4,3.5rem)_3.5rem] sm:px-3",
+                    active ? "text-[#0a1430]" : idx % 2 ? "bg-white/[0.035] text-white" : "text-white",
+                  )}
+                  style={active ? { background: SELECT_BG } : undefined}
+                >
+                  <span className="font-display text-base font-black italic tabular-nums">
+                    {idx + 1}
+                  </span>
+                  <span className="flex min-w-0 items-center gap-2">
+                    <TeamLogo
+                      name={c.team.name}
+                      logoUrl={c.team.logo_url}
+                      color={c.team.primary_color}
+                      size="sm"
+                    />
+                    <span className="truncate font-display text-sm font-bold uppercase italic">
+                      {c.team.name}
+                    </span>
+                  </span>
                   {TROPHIES.map((t) => (
                     <span
                       key={t.key}
-                      title={t.label}
                       className={cn(
-                        "flex items-center gap-0.5 text-xs tabular-nums",
-                        c.trophies[t.key] ? "text-foreground" : "text-muted-foreground/40",
+                        "text-center font-display text-sm font-black italic tabular-nums",
+                        !c.trophies[t.key] && (active ? "text-[#0a1430]/40" : "text-white/25"),
                       )}
                     >
-                      <TrophyArt
-                        type={t.key}
-                        dimmed={!c.trophies[t.key]}
-                        className="h-5 w-4"
-                      />
                       {c.trophies[t.key]}
                     </span>
                   ))}
-                </span>
-              </button>
-            </li>
-          ))}
+                  <span
+                    className={cn(
+                      "text-right font-display text-base font-black italic tabular-nums",
+                      !active && "text-[#ffd12e]",
+                    )}
+                  >
+                    {c.total}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
-      </section>
+      </PesPanel>
     </div>
   );
 }
 
-function TrophyNiche({
+function TrophyStand({
   type,
   label,
   count,
   prize,
-  editing,
-  disabled,
-  onChange,
 }: {
   type: TrophyType;
   label: string;
   count: number;
   prize: number;
-  editing: boolean;
-  disabled: boolean;
-  onChange: (delta: number) => void;
 }) {
-  const emblem = EMBLEM[type];
+  const accent = ACCENT[type];
   const won = count > 0;
 
   return (
-    <div className="relative flex flex-col items-center">
-      {/* Foco */}
+    <div className="flex flex-col items-center">
+      {/* Pestaña con el nombre */}
       <div
-        aria-hidden
-        className="pointer-events-none absolute -top-16 h-56 w-32 sm:-top-24 sm:h-72 sm:w-44"
+        className="mb-1 w-full max-w-[10rem] -skew-x-12 border-l-4 py-1"
         style={{
-          background: won
-            ? "radial-gradient(50% 60% at 50% 30%, rgba(255,214,150,0.32), transparent 70%)"
-            : "radial-gradient(50% 60% at 50% 30%, rgba(255,214,150,0.08), transparent 70%)",
-        }}
-      />
-
-      {/* Medallón */}
-      <div
-        className="relative flex size-14 items-center justify-center rounded-full sm:size-20"
-        style={{
-          background: "radial-gradient(circle at 35% 30%, #2c3b63, #121a33)",
-          boxShadow: won
-            ? `0 0 0 3px ${emblem.ring}, 0 0 0 5px rgba(0,0,0,0.45), 0 0 22px ${emblem.glow}`
-            : "0 0 0 3px #5b4a36, 0 0 0 5px rgba(0,0,0,0.45)",
-          opacity: won ? 1 : 0.55,
+          borderColor: accent.stripe,
+          background: "linear-gradient(90deg,rgba(10,26,68,0.95),rgba(29,79,174,0.75))",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25)",
         }}
       >
-        <div className="absolute inset-1.5 rounded-full border border-dashed border-white/20" />
-        <emblem.Icon className={cn("size-6 sm:size-8", emblem.text)} />
+        <p className="skew-x-12 text-center font-display text-[11px] font-black uppercase italic tracking-wider text-white sm:text-xs">
+          {label}
+        </p>
       </div>
 
-      {/* Trofeo */}
-      <TrophyArt
-        type={type}
-        dimmed={!won}
-        className="relative -mt-1 h-28 w-20 sm:h-40 sm:w-28"
-      />
-
-      {/* Pedestal + placa */}
-      <div className="relative w-full max-w-[9rem]">
+      {/* Trofeo + plataforma + reflejo */}
+      <div className="relative flex h-40 w-full flex-col items-center justify-end sm:h-52">
+        {/* haz de luz */}
         <div
-          className="mx-auto h-2 w-3/4 rounded-t-sm"
-          style={{ background: "linear-gradient(180deg,#e9dcc4,#b9a684)" }}
-        />
-        <div
-          className="flex flex-col items-center rounded-md px-2 pb-2 pt-1.5"
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 bottom-6"
           style={{
-            background: "linear-gradient(180deg,#d8c8a8,#9e8a66)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5), 0 6px 14px rgba(0,0,0,0.45)",
+            background: won
+              ? `radial-gradient(40% 70% at 50% 70%, ${accent.glow}, transparent 75%)`
+              : "radial-gradient(40% 70% at 50% 70%, rgba(80,120,200,0.12), transparent 75%)",
           }}
-        >
-          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#3d2c17] sm:text-[11px]">
-            {label}
-          </span>
-          {editing ? (
-            <div className="mt-1 flex items-center gap-1.5">
-              <button
-                type="button"
-                aria-label={`Quitar un título de ${label}`}
-                onClick={() => onChange(-1)}
-                disabled={disabled || count === 0}
-                className="flex size-7 items-center justify-center rounded-full bg-[#3d2c17] text-amber-50 disabled:opacity-30"
-              >
-                <Minus className="size-3.5" />
-              </button>
-              <span className="w-7 text-center font-display text-xl font-bold tabular-nums text-[#2a1d0e]">
-                {count}
-              </span>
-              <button
-                type="button"
-                aria-label={`Añadir un título de ${label}`}
-                onClick={() => onChange(1)}
-                disabled={disabled}
-                className="flex size-7 items-center justify-center rounded-full bg-[#3d2c17] text-amber-50 disabled:opacity-30"
-              >
-                <Plus className="size-3.5" />
-              </button>
-            </div>
-          ) : (
-            <span className="font-display text-2xl font-black tabular-nums leading-tight text-[#2a1d0e]">
-              ×{count}
-            </span>
-          )}
-          <span className="mt-0.5 text-[10px] font-semibold tabular-nums text-[#4a3519]/80">
-            {prize > 0 ? `Premio ${compactMoney(prize)}` : "Sin premio"}
-          </span>
-        </div>
+        />
+        <TrophyArt
+          type={type}
+          dimmed={!won}
+          className="relative z-10 h-32 w-24 sm:h-44 sm:w-32"
+        />
+        {/* plataforma */}
+        <div
+          aria-hidden
+          className="relative -mt-3 h-5 w-28 rounded-[50%] sm:w-36"
+          style={{
+            background: won
+              ? `radial-gradient(50% 50% at 50% 50%, #ffffff 0%, ${accent.stripe} 25%, #1d4fae 60%, #0a1f52 100%)`
+              : "radial-gradient(50% 50% at 50% 50%, #3a5a99 0%, #15306b 60%, #0a1f52 100%)",
+            boxShadow: won ? `0 0 18px ${accent.glow}` : "none",
+            opacity: won ? 0.9 : 0.6,
+          }}
+        />
       </div>
+      {/* reflejo */}
+      <div
+        aria-hidden
+        className="pointer-events-none -mt-1 h-10 w-full overflow-hidden sm:h-12"
+        style={{
+          maskImage: "linear-gradient(180deg, rgba(0,0,0,0.35), transparent 85%)",
+          WebkitMaskImage: "linear-gradient(180deg, rgba(0,0,0,0.35), transparent 85%)",
+        }}
+      >
+        <TrophyArt
+          type={type}
+          dimmed={!won}
+          className="mx-auto h-32 w-24 -scale-y-100 blur-[1px] sm:h-44 sm:w-32"
+        />
+      </div>
+
+      {/* Contador */}
+      <div className="-mt-6 flex items-center gap-2 sm:-mt-8">
+        <span
+          className={cn(
+            "font-display text-4xl font-black italic tabular-nums leading-none sm:text-5xl",
+            won ? "text-white" : "text-white/35",
+          )}
+          style={{ textShadow: won ? NUM_SHADOW : undefined }}
+        >
+          <span className="mr-0.5 text-xl sm:text-2xl">×</span>
+          {count}
+        </span>
+      </div>
+      <p className="mt-1 font-display text-[10px] font-bold uppercase italic tracking-wider text-[#8fc4ff] tabular-nums">
+        {prize > 0 ? `Premio ${compactMoney(prize)}` : "Sin premio"}
+      </p>
     </div>
   );
 }
@@ -442,31 +576,36 @@ function PrizeEditor({
   onSave: (trophy: TrophyType, value: number) => void;
 }) {
   return (
-    <section className="rounded-xl border border-white/[0.08] bg-card/60 p-4">
-      <h2 className="font-display text-sm font-semibold">Premio por título</h2>
-      <p className="mt-0.5 text-xs text-muted-foreground">
-        Se suma al presupuesto del club cada vez que añades ese título. Admite
-        «25000000», «25.000.000» o «25M».
-      </p>
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {TROPHIES.map((t) => (
-          <PrizeField
-            key={`${t.key}-${prizes[t.key]}`}
-            label={t.label}
-            value={prizes[t.key]}
-            onSave={(v) => onSave(t.key, v)}
-          />
-        ))}
+    <div className="border-t border-black/40">
+      <PesTitle>Valor de cada título</PesTitle>
+      <div className="p-3 sm:p-4">
+        <p className="text-xs text-[#b9d6ff]">
+          Lo que cobra un club por ganar cada competición. Se guarda al salir del
+          campo. Admite «25000000», «25.000.000» o «25M».
+        </p>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {TROPHIES.map((t) => (
+            <PrizeField
+              key={`${t.key}-${prizes[t.key]}`}
+              type={t.key}
+              label={t.label}
+              value={prizes[t.key]}
+              onSave={(v) => onSave(t.key, v)}
+            />
+          ))}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
 
 function PrizeField({
+  type,
   label,
   value,
   onSave,
 }: {
+  type: TrophyType;
   label: string;
   value: number;
   onSave: (value: number) => void;
@@ -485,8 +624,13 @@ function PrizeField({
   }
 
   return (
-    <label className="flex flex-col gap-1 text-xs">
-      <span className="font-medium text-foreground">{label}</span>
+    <label className="flex flex-col gap-1">
+      <span
+        className="border-l-4 pl-2 font-display text-xs font-black uppercase italic tracking-wide text-white"
+        style={{ borderColor: ACCENT[type].stripe }}
+      >
+        {label}
+      </span>
       <input
         inputMode="numeric"
         value={draft}
@@ -497,13 +641,75 @@ function PrizeField({
           if (e.key === "Enter") (e.target as HTMLInputElement).blur();
         }}
         className={cn(
-          "h-9 rounded-md border bg-background/60 px-3 text-sm tabular-nums outline-none focus:ring-2 focus:ring-primary/40",
-          invalid ? "border-destructive" : "border-white/[0.1]",
+          "h-9 border bg-[#04102c] px-3 font-display text-sm font-bold italic tabular-nums text-white outline-none focus:border-[#ffd12e] focus:shadow-[0_0_0_2px_rgba(255,209,46,0.35)]",
+          invalid ? "border-[#ff4d5e]" : "border-[#3b72d6]",
         )}
       />
-      <span className={cn("tabular-nums", invalid ? "text-destructive" : "text-muted-foreground")}>
+      <span
+        className={cn(
+          "font-display text-[11px] font-bold italic tabular-nums",
+          invalid ? "text-[#ff8a96]" : "text-[#8fc4ff]",
+        )}
+      >
         {invalid ? "Cantidad no válida" : formatMoney(value)}
       </span>
     </label>
+  );
+}
+
+function TitleRow({
+  type,
+  label,
+  count,
+  prize,
+  disabled,
+  onChange,
+}: {
+  type: TrophyType;
+  label: string;
+  count: number;
+  prize: number;
+  disabled: boolean;
+  onChange: (delta: number) => void;
+}) {
+  return (
+    <li className="flex items-center gap-2 px-2 py-2 sm:gap-3 sm:px-3">
+      <TrophyArt type={type} dimmed={count === 0} className="h-9 w-7 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p
+          className="border-l-4 pl-2 font-display text-xs font-black uppercase italic tracking-wide text-white sm:text-sm"
+          style={{ borderColor: ACCENT[type].stripe }}
+        >
+          {label}
+        </p>
+        <p className="pl-3 font-display text-[10px] font-bold uppercase italic text-[#8fc4ff] tabular-nums">
+          {prize > 0 ? `+${compactMoney(prize)} por título` : "Sin valor asignado"}
+        </p>
+      </div>
+      <PesButton
+        label={`Quitar un título de ${label}`}
+        onClick={() => onChange(-1)}
+        disabled={disabled || count === 0}
+        className="px-2 py-1"
+      >
+        <Minus className="size-3.5" />
+      </PesButton>
+      <span
+        className="w-8 text-center font-display text-2xl font-black italic tabular-nums text-white"
+        style={{ textShadow: NUM_SHADOW }}
+      >
+        {count}
+      </span>
+      <PesButton
+        label={`Sumar un título de ${label}`}
+        onClick={() => onChange(1)}
+        disabled={disabled}
+        active
+        className="px-2 py-1"
+      >
+        <Plus className="size-3.5" />
+        <span className="hidden sm:inline">Sumar</span>
+      </PesButton>
+    </li>
   );
 }
