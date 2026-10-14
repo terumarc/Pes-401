@@ -62,13 +62,14 @@ export function MobileTabBar() {
           {TABS.map(({ href, label, Icon }) => {
             const active = isActive(pathname, href);
             return (
-              <li key={href} className="flex-1">
+              // El color va en el <li>: la regla global de los enlaces (color: inherit) lo hereda.
+              <li key={href} className={cn("flex-1", active ? "text-primary" : "text-muted-foreground")}>
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-semibold transition-[color,background-color,transform] duration-200 select-none active:scale-90",
-                    active ? "bg-primary/[0.14] text-primary" : "text-muted-foreground hover:text-foreground",
+                    active ? "bg-primary/[0.14]" : "hover:text-foreground",
                   )}
                 >
                   <Icon className="size-[22px]" strokeWidth={active ? 2.3 : 1.8} aria-hidden />
