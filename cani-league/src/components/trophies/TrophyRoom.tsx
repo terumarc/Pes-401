@@ -98,18 +98,16 @@ export function TrophyRoom({
     });
   }
 
-  async function savePrize(trophy: TrophyType, value: number) {
-    const previous = prizes[trophy];
-    setPrizes((p) => ({ ...p, [trophy]: value }));
+  async function savePrizes(next: TrophyCounts): Promise<string | null> {
     try {
-      const saved = await setTrophyPrizeAction(leagueId, trophy, value);
-      setPrizes((p) => ({ ...p, [trophy]: saved }));
+      for (const t of TROPHIES) {
+        if (next[t.key] === prizes[t.key]) continue;
+        const saved = await setTrophyPrizeAction(leagueId, t.key, next[t.key]);
+        setPrizes((p) => ({ ...p, [t.key]: saved }));
+      }
+      return null;
     } catch (err) {
-      setPrizes((p) => ({ ...p, [trophy]: previous }));
-      setFeedback({
-        kind: "error",
-        text: err instanceof Error ? err.message : "No se pudo guardar el premio.",
-      });
+      return err instanceof Error ? err.message : "No se pudieron guardar los premios. Inténtalo de nuevo.";
     }
   }
 
@@ -131,7 +129,6 @@ export function TrophyRoom({
               cabinets={cabinets}
               disabled={pending}
               onRemove={(teamId) => changeTitles(teamId, t.key, -1)}
-              onSavePrize={(v) => savePrize(t.key, v)}
             />
           ))}
         </div>
@@ -144,6 +141,8 @@ export function TrophyRoom({
         feedback={feedback}
         onAdd={(teamId, trophy) => changeTitles(teamId, trophy, 1)}
       />
+
+      <PrizesCard prizes={prizes} onSave={savePrizes} />
 
       <Standings ranking={ranking} />
     </div>
@@ -159,7 +158,6 @@ function TrophyColumn({
   cabinets,
   disabled,
   onRemove,
-  onSavePrize,
 }: {
   type: TrophyType;
   label: string;
@@ -167,7 +165,6 @@ function TrophyColumn({
   cabinets: TeamTrophyCabinet[];
   disabled: boolean;
   onRemove: (teamId: string) => void;
-  onSavePrize: (value: number) => void;
 }) {
   const winners = cabinets
     .filter((c) => c.trophies[type] > 0)
@@ -197,13 +194,21 @@ function TrophyColumn({
 
       <div className="flex flex-1 flex-col px-3 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
         <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-          <h2 className="font-display text-base font-bold leading-tight tracking-tight sm:text-lg">{label}</h2>
+          <h2 className="text-base font-bold leading-tight tracking-tight sm:text-lg">{label}</h2>
           <span className="text-xs text-muted-foreground tabular-nums">
             {editions} {editions === 1 ? "edición" : "ediciones"}
           </span>
         </div>
 
-        <PrizeEditor value={prize} label={label} onSave={onSavePrize} />
+        <p className="text-xs text-muted-foreground">
+          {prize > 0 ? (
+            <>
+              Premio <span className="font-medium text-primary tabular-nums">{compactMoney(prize)}</span>
+            </>
+          ) : (
+            "Sin premio"
+          )}
+        </p>
 
         {winners.length > 0 ? (
           <ul className="mt-4 space-y-0.5">
@@ -215,7 +220,7 @@ function TrophyColumn({
                   style={{ backgroundColor: c.team.primary_color }}
                 />
                 <span className="min-w-0 flex-1 truncate text-[13px] sm:text-sm">{c.team.name}</span>
-                <span className="font-display text-sm font-bold tabular-nums">×{c.trophies[type]}</span>
+                <span className="text-sm font-bold tabular-nums">×{c.trophies[type]}</span>
                 <Button
                   variant="ghost"
                   size="icon-xs"
@@ -235,77 +240,6 @@ function TrophyColumn({
         )}
       </div>
     </section>
-  );
-}
-
-function PrizeEditor({
-  value,
-  label,
-  onSave,
-}: {
-  value: number;
-  label: string;
-  onSave: (value: number) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [invalid, setInvalid] = useState(false);
-
-  function open() {
-    setDraft(value ? String(value) : "");
-    setInvalid(false);
-    setEditing(true);
-  }
-
-  function commit() {
-    const parsed = draft.trim() === "" ? 0 : parseMoneyInput(draft);
-    if (parsed === null) {
-      setInvalid(true);
-      return;
-    }
-    setEditing(false);
-    if (parsed !== value) onSave(parsed);
-  }
-
-  if (editing) {
-    return (
-      <div className="mt-1">
-        <Input
-          autoFocus
-          inputMode="numeric"
-          value={draft}
-          placeholder="Ej. 25M"
-          aria-label={`Premio por ganar ${label}`}
-          aria-invalid={invalid || undefined}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commit();
-            if (e.key === "Escape") setEditing(false);
-          }}
-          className="h-8 border-white/[0.08] bg-card/60 text-sm tabular-nums"
-        />
-        <p className={cn("mt-1 text-[11px]", invalid ? "text-destructive" : "text-muted-foreground")}>
-          {invalid ? "Escribe una cantidad: 25000000, 25.000.000 o 25M." : "Enter para guardar · Esc para cancelar"}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={open}
-      className="mt-0.5 self-start rounded text-left text-xs text-muted-foreground underline decoration-dotted decoration-white/25 underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
-    >
-      {value > 0 ? (
-        <>
-          Premio <span className="font-medium text-primary tabular-nums">{compactMoney(value)}</span>
-        </>
-      ) : (
-        "Fijar premio"
-      )}
-    </button>
   );
 }
 
@@ -329,7 +263,7 @@ function AddTitle({
 
   return (
     <Card className={cn(CARD, "p-5")}>
-      <h2 className="font-display text-lg font-bold tracking-tight">Añadir título</h2>
+      <h2 className="text-lg font-bold tracking-tight">Añadir título</h2>
 
       <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div role="radiogroup" aria-label="Competición" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:flex-1">
@@ -396,7 +330,7 @@ function AddTitle({
           ? feedback.text
           : team && prize > 0
             ? `${team.team.name} recibirá ${formatMoney(prize)} (presupuesto actual ${formatMoney(team.team.budget)}).`
-            : "Esta competición no tiene premio: el presupuesto no cambia. Puedes fijarlo en el trofeo."}
+            : "Esta competición no tiene premio: el presupuesto no cambia. Puedes fijarlo en «Premio de cada trofeo»."}
       </p>
     </Card>
   );
@@ -408,7 +342,7 @@ function Standings({ ranking }: { ranking: TeamTrophyCabinet[] }) {
 
   return (
     <Card className={CARD}>
-      <h2 className="px-5 pt-5 font-display text-lg font-bold tracking-tight">Palmarés</h2>
+      <h2 className="px-5 pt-5 text-lg font-bold tracking-tight">Palmarés</h2>
       <div className={cn(cols, "mt-3 border-b border-white/[0.06] px-5 pb-2 text-[11px] text-muted-foreground")}>
         <span>#</span>
         <span>Club</span>
@@ -439,10 +373,115 @@ function Standings({ ranking }: { ranking: TeamTrophyCabinet[] }) {
                 {c.trophies[t.key]}
               </span>
             ))}
-            <span className="text-right font-display font-bold tabular-nums">{c.total}</span>
+            <span className="text-right font-bold tabular-nums">{c.total}</span>
           </li>
         ))}
       </ol>
+    </Card>
+  );
+}
+
+function PrizesCard({
+  prizes,
+  onSave,
+}: {
+  prizes: TrophyCounts;
+  onSave: (next: TrophyCounts) => Promise<string | null>;
+}) {
+  const toDraft = (p: TrophyCounts) =>
+    Object.fromEntries(TROPHIES.map((t) => [t.key, p[t.key] ? String(p[t.key]) : ""])) as Record<
+      TrophyType,
+      string
+    >;
+  const [drafts, setDrafts] = useState(() => toDraft(prizes));
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<Feedback>(null);
+
+  const parsed = Object.fromEntries(
+    TROPHIES.map((t) => [t.key, drafts[t.key].trim() === "" ? 0 : parseMoneyInput(drafts[t.key])]),
+  ) as Record<TrophyType, number | null>;
+  const invalid = TROPHIES.filter((t) => parsed[t.key] === null);
+  const dirty = TROPHIES.some((t) => parsed[t.key] !== prizes[t.key]);
+
+  async function save() {
+    if (invalid.length || !dirty) return;
+    setSaving(true);
+    setMessage(null);
+    const error = await onSave(parsed as TrophyCounts);
+    setSaving(false);
+    setMessage(error ? { kind: "error", text: error } : { kind: "ok", text: "Premios guardados." });
+  }
+
+  return (
+    <Card className={cn(CARD, "p-5")}>
+      <h2 className="text-lg font-bold tracking-tight">Premio de cada trofeo</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Lo que cobra un club al ganar cada competición. Se suma a su presupuesto al añadir el título.
+      </p>
+
+      <form
+        className="mt-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save();
+        }}
+      >
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {TROPHIES.map((t) => {
+            const value = parsed[t.key];
+            return (
+              <label key={t.key} className="flex flex-col gap-1.5">
+                <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <PixelTrophy type={t.key} className="h-5 w-auto" />
+                  {t.label}
+                </span>
+                <Input
+                  inputMode="numeric"
+                  value={drafts[t.key]}
+                  placeholder="0"
+                  aria-invalid={value === null || undefined}
+                  onChange={(e) => {
+                    setMessage(null);
+                    setDrafts((d) => ({ ...d, [t.key]: e.target.value }));
+                  }}
+                  className="h-10 border-white/[0.08] bg-card/60 tabular-nums"
+                />
+                <span
+                  className={cn(
+                    "text-[11px] tabular-nums",
+                    value === null ? "text-destructive" : "text-muted-foreground",
+                  )}
+                >
+                  {value === null ? "Cantidad no válida" : formatMoney(value)}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p
+            aria-live="polite"
+            className={cn(
+              "text-xs",
+              message?.kind === "error"
+                ? "text-destructive"
+                : message
+                  ? "text-emerald-400"
+                  : "text-muted-foreground",
+            )}
+          >
+            {message
+              ? message.text
+              : invalid.length
+                ? "Escribe cantidades como 25000000, 25.000.000 o 25M."
+                : "Admite 25000000, 25.000.000 o 25M."}
+          </p>
+          <Button type="submit" size="lg" className="h-10 px-4" disabled={saving || !dirty || invalid.length > 0}>
+            {saving ? "Guardando…" : "Guardar premios"}
+          </Button>
+        </div>
+      </form>
     </Card>
   );
 }
