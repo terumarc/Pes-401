@@ -30,6 +30,7 @@ import {
   getPlayerFixedPrice,
 } from "@/lib/players";
 import { cn } from "@/lib/utils";
+import { SortableTh } from "@/components/ui/sortable-th";
 import type { Player, Team } from "@/types";
 
 export type PositionTab = "all" | "gk" | "def" | "mid" | "att" | "market";
@@ -613,30 +614,30 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="border-b border-border/80 bg-white/[0.02] text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  <th scope="col" className="px-4 py-3.5">
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} asc="name_asc" className="px-4 py-3.5">
                     Futbolista
-                  </th>
+                  </SortableTh>
                   <th scope="col" className="px-3 py-3.5 text-center">
                     Pos
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-center">
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} desc="overall_desc" asc="overall_asc" className="px-3 py-3.5 text-center">
                     Media
-                  </th>
+                  </SortableTh>
                   <th scope="col" className="px-3 py-3.5 text-center">
                     Tier
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-center hidden sm:table-cell">
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} asc="age_asc" className="px-3 py-3.5 text-center hidden sm:table-cell">
                     Edad
-                  </th>
+                  </SortableTh>
                   <th scope="col" className="px-3 py-3.5 text-center hidden md:table-cell">
                     Contrato
                   </th>
-                  <th scope="col" className="px-4 py-3.5 text-right hidden lg:table-cell">
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} desc="renewal_desc" className="px-4 py-3.5 text-right hidden lg:table-cell">
                     Renovación
-                  </th>
-                  <th scope="col" className="px-4 py-3.5 text-right">
-                    Valor Fijo
-                  </th>
+                  </SortableTh>
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} desc="value_desc" asc="value_asc" className="px-4 py-3.5 text-right">
+                    Valor fijo
+                  </SortableTh>
                   <th scope="col" className="px-3 py-3.5 text-center hidden sm:table-cell">
                     Mercado
                   </th>

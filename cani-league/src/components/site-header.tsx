@@ -5,9 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, ChevronRight, ChevronLeft, ArrowLeft } from "lucide-react";
+import { Trophy, ChevronRight, ChevronLeft, ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeaderAssistantButton } from "@/components/assistant/header-assistant-button";
+import { CommandMenuButton } from "@/components/layout/CommandMenu";
 import { useAssistant } from "@/components/assistant/assistant-context";
 import { isRootScreen } from "@/components/layout/MobileTabBar";
 import { cn } from "@/lib/utils";
@@ -31,7 +32,7 @@ const DETAIL_ROUTES: { prefix: string; title: string; parent: string; parentHref
 
 const HOME = "/league";
 
-export function SiteHeader() {
+export function SiteHeader({ season }: { season?: string | null }) {
   const pathname = usePathname();
   const router = useRouter();
   const { openAssistant } = useAssistant();
@@ -80,6 +81,16 @@ export function SiteHeader() {
         )}
       >
         <div className="flex justify-start">
+          {root && (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("open-command-menu"))}
+              aria-label="Buscar un club o un jugador"
+              className="flex size-11 items-center justify-center text-primary select-none active:opacity-50"
+            >
+              <Search className="size-5" aria-hidden />
+            </button>
+          )}
           {!root && (
             <button
               type="button"
@@ -148,13 +159,16 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <CommandMenuButton />
           <HeaderAssistantButton />
-          <Badge
-            variant="outline"
-            className="border-border bg-white/[0.03] text-[11px] font-medium text-muted-foreground"
-          >
-            Temporada 2026
-          </Badge>
+          {season && (
+            <Badge
+              variant="outline"
+              className="border-border bg-white/[0.03] text-[11px] font-medium text-muted-foreground"
+            >
+              Temporada {season}
+            </Badge>
+          )}
         </div>
       </div>
     </header>

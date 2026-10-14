@@ -3,6 +3,7 @@
 import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { SortableTh } from "@/components/ui/sortable-th";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -1097,25 +1098,25 @@ export function PlayerList({
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border/60 bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               <tr>
-                <th scope="col" className="px-4 py-3">Jugador</th>
+                <SortableTh sortBy={sortBy} onSort={(v) => { setSortBy(v); setCurrentPage(1); }} asc="name_asc" className="px-4 py-3">Jugador</SortableTh>
                 <th scope="col" className="px-3 py-3">Pos</th>
                 <th scope="col" className="px-3 py-3">País</th>
                 <th scope="col" className="px-3 py-3">Equipo</th>
-                <th scope="col" className="px-3 py-3 text-center">
+                <SortableTh sortBy={sortBy} onSort={(v) => { setSortBy(v); setCurrentPage(1); }} desc="overall_desc" asc="overall_asc" className="px-3 py-3 text-center">
                   {positionGroupTab === "gk" ? "Media (DEF+GK)" : "Media OVR"}
-                </th>
+                </SortableTh>
                 <th scope="col" className="px-3 py-3 text-center">Tier</th>
                 <th scope="col" className="px-3 py-3 text-center hidden sm:table-cell">Contrato</th>
                 <th scope="col" className="px-3 py-3 text-center hidden lg:table-cell">Renovación</th>
                 {positionGroupTab !== "gk" && (
                   <>
-                    <th scope="col" className="px-3 py-3 text-center hidden md:table-cell">VEL</th>
-                    <th scope="col" className="px-3 py-3 text-center hidden md:table-cell">TIR</th>
-                    <th scope="col" className="px-3 py-3 text-center hidden md:table-cell">PAS</th>
+                    <SortableTh sortBy={sortBy} onSort={(v) => { setSortBy(v); setCurrentPage(1); }} desc="speed_desc" className="px-3 py-3 text-center hidden md:table-cell">VEL</SortableTh>
+                    <SortableTh sortBy={sortBy} onSort={(v) => { setSortBy(v); setCurrentPage(1); }} desc="shooting_desc" className="px-3 py-3 text-center hidden md:table-cell">TIR</SortableTh>
+                    <SortableTh sortBy={sortBy} onSort={(v) => { setSortBy(v); setCurrentPage(1); }} desc="passing_desc" className="px-3 py-3 text-center hidden md:table-cell">PAS</SortableTh>
                   </>
                 )}
                 <th scope="col" className="px-3 py-3 text-center hidden md:table-cell">DEF</th>
-                <th scope="col" className="px-4 py-3 text-right">Valor</th>
+                <SortableTh sortBy={sortBy} onSort={(v) => { setSortBy(v); setCurrentPage(1); }} desc="value_desc" asc="value_asc" className="px-4 py-3 text-right">Valor</SortableTh>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40 font-medium">

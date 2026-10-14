@@ -27,6 +27,7 @@ import { TeamCard, TeamLogo } from "@/components/teams/TeamCard";
 import { EditTeamButton } from "@/components/teams/EditTeamButton";
 import { padPosition } from "@/lib/format/stats";
 import { cn } from "@/lib/utils";
+import { SortableTh } from "@/components/ui/sortable-th";
 import type { TeamWithStanding } from "@/types";
 
 type SortOption =
@@ -225,27 +226,27 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="border-b border-border/80 bg-white/[0.02] text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  <th scope="col" className="px-4 py-3.5 text-center w-14">
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} asc="position_asc" className="px-4 py-3.5 text-center w-14">
                     Pos
-                  </th>
-                  <th scope="col" className="px-4 py-3.5">
+                  </SortableTh>
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} asc="name_asc" className="px-4 py-3.5">
                     Club
-                  </th>
+                  </SortableTh>
                   <th scope="col" className="px-4 py-3.5 hidden md:table-cell">
                     Propietario
                   </th>
-                  <th scope="col" className="px-4 py-3.5 text-center">
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} desc="overall_desc" className="px-4 py-3.5 text-center">
                     Media OVR
-                  </th>
-                  <th scope="col" className="px-4 py-3.5 text-center hidden sm:table-cell">
+                  </SortableTh>
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} desc="players_desc" className="px-4 py-3.5 text-center hidden sm:table-cell">
                     Jugadores
-                  </th>
-                  <th scope="col" className="px-4 py-3.5 text-right">
+                  </SortableTh>
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} desc="budget_desc" asc="budget_asc" className="px-4 py-3.5 text-right">
                     Presupuesto
-                  </th>
-                  <th scope="col" className="px-4 py-3.5 text-right hidden lg:table-cell">
-                    Valor Plantilla
-                  </th>
+                  </SortableTh>
+                  <SortableTh sortBy={sortBy} onSort={setSortBy} desc="squad_desc" className="px-4 py-3.5 text-right hidden lg:table-cell">
+                    Valor plantilla
+                  </SortableTh>
                   <th scope="col" className="px-4 py-3.5 hidden xl:table-cell">
                     Estrella
                   </th>

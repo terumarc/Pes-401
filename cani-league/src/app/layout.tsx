@@ -10,6 +10,9 @@ import { AssistantSheet } from "@/components/assistant/assistant-sheet";
 import { AssistantTrigger } from "@/components/assistant/assistant-trigger";
 import { RouteProgressBar } from "@/components/layout/RouteProgressBar";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
+import { CommandMenu } from "@/components/layout/CommandMenu";
+import { getPrimaryLeague } from "@/lib/data/league";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
 import "./globals.css";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
@@ -32,7 +35,17 @@ export const viewport: Viewport = {
   themeColor: "#0a0a0a",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+async function getSeason(): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    return (await getPrimaryLeague())?.season ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const season = await getSeason();
   return (
     <html lang="es" className={cn("dark antialiased", "font-sans", geist.variable)} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
@@ -49,15 +62,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             >
               <AppSidebar variant="inset" />
               <SidebarInset>
-                <SiteHeader />
+                <SiteHeader season={season} />
                 <div className="flex flex-1 flex-col">
                   <main className="flex-1 w-full overflow-x-hidden px-4 pt-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:p-4 lg:p-6">
-                    {children}
+                    <div className="mx-auto w-full max-w-[1400px]">{children}</div>
                   </main>
                 </div>
               </SidebarInset>
             </SidebarProvider>
             <MobileTabBar />
+            <CommandMenu />
             <AssistantSheet />
             <AssistantTrigger />
           </AssistantProvider>
