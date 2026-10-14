@@ -74,13 +74,13 @@ export function PlayerStats({ player }: PlayerStatsProps) {
   return (
     <div className="space-y-6">
       {/* Chart Section */}
-      <div className="rounded-2xl border border-white/[0.08] bg-card/40 p-4 sm:p-5 backdrop-blur-md">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
-          <span className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+      <div className="rounded-2xl border border-border/80 bg-card/40 p-4 sm:p-5 backdrop-blur-md">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+          <span className="text-[11px] font-semibold text-muted-foreground">
             Gráfica de Habilidades
           </span>
 
-          <div role="tablist" aria-label="Modo de visualización gráfica" className="inline-flex rounded-lg border border-white/[0.1] bg-background/80 p-1 text-xs">
+          <div role="tablist" aria-label="Modo de visualización gráfica" className="inline-flex rounded-lg border border-border bg-background/80 p-1 text-xs">
             <button
               type="button"
               role="tab"
@@ -157,7 +157,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
       {/* Category Filter Tabs */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+          <p className="text-[11px] font-semibold text-muted-foreground">
             Atributos Detallados ({filteredDefs.length})
           </p>
         </div>
@@ -180,7 +180,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
                   "rounded-lg px-3 py-1.5 min-h-[34px] text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "border border-white/[0.08] bg-white/[0.03] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
+                    : "border border-border/80 bg-white/[0.03] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
                 )}
               >
                 {cat.label} ({count})
@@ -199,7 +199,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
           return (
             <div
               key={def.key}
-              className="group flex flex-col justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition-colors hover:border-white/[0.16] hover:bg-white/[0.05]"
+              className="group flex flex-col justify-between rounded-xl border border-border/60 bg-white/[0.02] p-3 transition-colors hover:border-white/[0.16] hover:bg-white/[0.05]"
               style={{ animationDelay: `${index * 20}ms` }}
             >
               <div className="mb-2 flex items-center justify-between gap-2">
@@ -211,7 +211,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
                     <div className="truncate text-xs font-semibold text-foreground">
                       {def.label}
                     </div>
-                    <div className="text-[10px] tracking-wide text-muted-foreground uppercase">
+                    <div className="text-[10px] text-muted-foreground">
                       {def.pesName}
                     </div>
                   </div>
@@ -245,8 +245,8 @@ export function PlayerStats({ player }: PlayerStatsProps) {
       </div>
 
       {/* PES Color Scale Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-[11px] text-muted-foreground">
-        <span className="font-semibold uppercase tracking-wider text-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl border border-border/60 bg-white/[0.02] px-4 py-2.5 text-[11px] text-muted-foreground">
+        <span className="font-semibold text-foreground">
           Escala PES:
         </span>
         <div className="flex items-center gap-1.5">

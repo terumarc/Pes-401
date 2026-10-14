@@ -60,11 +60,11 @@ export default async function MarketPage() {
         aria-label="Resumen ejecutivo del mercado"
         className="grid grid-cols-2 gap-3 sm:grid-cols-4"
       >
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/40 p-4 backdrop-blur-md shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/40 p-4 backdrop-blur-md shadow-xs">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <div className="flex items-center gap-2 text-muted-foreground mb-1.5">
             <Store className="size-4 text-primary" />
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Mercado</span>
+            <span className="text-xs font-semibold">Total Mercado</span>
           </div>
           <p className="font-display text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {players.length.toLocaleString()}
@@ -72,11 +72,11 @@ export default async function MarketPage() {
           <span className="text-[11px] text-muted-foreground">Futbolistas registrados</span>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/40 p-4 backdrop-blur-md shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/40 p-4 backdrop-blur-md shadow-xs">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <div className="flex items-center gap-2 text-muted-foreground mb-1.5">
             <UserCheck className="size-4 text-emerald-400" />
-            <span className="text-xs font-semibold uppercase tracking-wider">Agentes Libres</span>
+            <span className="text-xs font-semibold">Agentes Libres</span>
           </div>
           <p className="font-display text-2xl font-bold tracking-tight text-emerald-400 tabular-nums">
             {freeAgentsCount.toLocaleString()}
@@ -84,11 +84,11 @@ export default async function MarketPage() {
           <span className="text-[11px] text-muted-foreground">Fichaje directo sin club</span>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/40 p-4 backdrop-blur-md shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/40 p-4 backdrop-blur-md shadow-xs">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <div className="flex items-center gap-2 text-muted-foreground mb-1.5">
             <ShieldAlert className="size-4 text-amber-400" />
-            <span className="text-xs font-semibold uppercase tracking-wider">Con Cláusula</span>
+            <span className="text-xs font-semibold">Con Cláusula</span>
           </div>
           <p className="font-display text-2xl font-bold tracking-tight text-amber-300 tabular-nums">
             {clausePlayersCount.toLocaleString()}
@@ -96,11 +96,11 @@ export default async function MarketPage() {
           <span className="text-[11px] text-muted-foreground">Pertenecientes a clubes</span>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/40 p-4 backdrop-blur-md shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/40 p-4 backdrop-blur-md shadow-xs">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <div className="flex items-center gap-2 text-muted-foreground mb-1.5">
-            <Coins className="size-4 text-purple-400" />
-            <span className="text-xs font-semibold uppercase tracking-wider">Precio Medio</span>
+            <Coins className="size-4 text-primary" />
+            <span className="text-xs font-semibold">Precio Medio</span>
           </div>
           <p className="font-display text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {formatMoney(avgValue)}

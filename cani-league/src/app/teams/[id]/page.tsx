@@ -74,7 +74,7 @@ export default async function TeamDetailPage({ params }: Props) {
           asChild
           variant="ghost"
           size="sm"
-          className="gap-1.5 text-muted-foreground hover:text-foreground border border-white/[0.08] bg-card/40 backdrop-blur-md shadow-xs h-9 px-3"
+          className="gap-1.5 text-muted-foreground hover:text-foreground border border-border/80 bg-card/40 backdrop-blur-md shadow-xs h-9 px-3"
         >
           <Link href="/teams" prefetch={false}>
             <ChevronLeft className="size-4" />
@@ -84,7 +84,7 @@ export default async function TeamDetailPage({ params }: Props) {
       </div>
 
       {/* HERO BANNER DEL EQUIPO - STRIPE POLISH */}
-      <div className="group relative overflow-hidden rounded-3xl border border-white/[0.1] bg-card/70 backdrop-blur-md shadow-xl transition-all">
+      <div className="group relative overflow-hidden rounded-3xl border border-border bg-card/70 backdrop-blur-md shadow-xl transition-all">
         {/* Banner superior cromático */}
         <div
           className="relative h-36 w-full sm:h-44"
@@ -112,12 +112,12 @@ export default async function TeamDetailPage({ params }: Props) {
 
               <div className="space-y-1 pt-1">
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <h1 className="font-display text-3xl font-black tracking-tight uppercase text-foreground sm:text-4xl">
+                  <h1 className="font-display text-3xl font-black tracking-tight text-foreground sm:text-4xl">
                     {team.name}
                   </h1>
                   <Badge
                     variant="outline"
-                    className="font-display text-xs font-black uppercase border-white/20 bg-white/[0.08] backdrop-blur-xs text-foreground"
+                    className="font-display text-xs font-black border-white/20 bg-white/[0.08] backdrop-blur-xs text-foreground"
                   >
                     {team.short_name}
                   </Badge>
@@ -152,9 +152,9 @@ export default async function TeamDetailPage({ params }: Props) {
           {/* KPI STATS CARDS EN HERO */}
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {/* PRESUPUESTO */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
+            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
                 <div className="flex size-6 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
                   <Wallet className="size-3.5" />
                 </div>
@@ -169,17 +169,17 @@ export default async function TeamDetailPage({ params }: Props) {
             </div>
 
             {/* PLANTILLA */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
+            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                <div className="flex size-6 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
+                <div className="flex size-6 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
                   <Users className="size-3.5" />
                 </div>
                 <span>Plantilla</span>
               </div>
               <p className="mt-2 font-display text-xl font-black text-foreground sm:text-2xl tabular-nums">
                 {players.length}{" "}
-                <span className="text-xs font-semibold text-muted-foreground uppercase">
+                <span className="text-xs font-semibold text-muted-foreground">
                   jugadores
                 </span>
               </p>
@@ -189,9 +189,9 @@ export default async function TeamDetailPage({ params }: Props) {
             </div>
 
             {/* MEDIA OVR */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
+            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
                 <div className="flex size-6 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
                   <Star className="size-3.5" />
                 </div>
@@ -206,9 +206,9 @@ export default async function TeamDetailPage({ params }: Props) {
             </div>
 
             {/* VALOR PLANTILLA */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
+            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
                 <div className="flex size-6 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                   <Coins className="size-3.5" />
                 </div>
@@ -232,8 +232,8 @@ export default async function TeamDetailPage({ params }: Props) {
 
       {/* GRÁFICO DE OVR DE LA PLANTILLA */}
       {players.length > 0 && (
-        <Card className="rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md shadow-xs">
-          <CardHeader className="flex-row items-center justify-between pb-2 border-b border-white/[0.06]">
+        <Card className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md shadow-xs">
+          <CardHeader className="flex-row items-center justify-between pb-2 border-b border-border/60">
             <div>
               <CardTitle className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
                 <BarChart3 className="size-4 text-primary" />

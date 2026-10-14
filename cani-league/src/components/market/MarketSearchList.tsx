@@ -412,7 +412,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
   return (
     <div className="space-y-6">
       {/* FILTER CONTROL PANEL */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 sm:p-5 shadow-xs backdrop-blur-md space-y-4">
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 sm:p-5 shadow-xs backdrop-blur-md space-y-4">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
           aria-hidden="true"
@@ -505,7 +505,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                   ? "Buscar jugadores en el mercado..."
                   : `Buscar ${POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel.toLowerCase()} en el mercado...`
               }
-              className="pl-9 pr-9 h-10 border-white/[0.08]"
+              className="pl-9 pr-9 h-10 border-border/80"
             />
             {search && (
               <button
@@ -544,7 +544,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {/* 1. NATIONALITY FILTER */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+            <label className="text-[11px] font-bold text-muted-foreground">
               Nacionalidad
             </label>
             <Select
@@ -570,7 +570,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
           {/* 2. POSITION FILTER */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+            <label className="text-[11px] font-bold text-muted-foreground">
               {positionGroupTab === "all" ? "Posición" : `Filtro ${POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}`}
             </label>
             <Select
@@ -596,7 +596,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
           {/* 3. AVERAGE POINTS / OVERALL FILTER */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+            <label className="text-[11px] font-bold text-muted-foreground">
               Media ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel})
             </label>
             <Select
@@ -621,7 +621,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
 
           {/* 4. RANGE OF VALUE FILTER */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+            <label className="text-[11px] font-bold text-muted-foreground">
               Rango de Valor / Precio
             </label>
             <Select
@@ -768,7 +768,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
           aria-label="Filtro rápido por Tier"
           className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-2 shrink-0 flex items-center gap-1">
+          <span className="text-[11px] font-semibold text-muted-foreground mr-2 shrink-0 flex items-center gap-1">
             <SlidersHorizontal className="size-3" aria-hidden="true" /> Tiers ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}):
           </span>
           <button

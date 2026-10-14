@@ -27,7 +27,7 @@ export function DashboardCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden rounded-xl border border-white/[0.08] bg-card/60 backdrop-blur-sm transition-all duration-250 hover:-translate-y-0.5 hover:border-white/[0.16] hover:shadow-lg hover:shadow-black/25",
+        "group relative overflow-hidden rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm transition-all duration-250 hover:-translate-y-0.5 hover:border-white/[0.16] hover:shadow-lg hover:shadow-black/25",
         className
       )}
     >

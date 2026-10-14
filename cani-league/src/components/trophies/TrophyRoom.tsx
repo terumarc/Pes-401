@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import type { TeamTrophyCabinet, TrophyCounts, TrophyType } from "@/types";
 
 const CARD =
-  "relative overflow-hidden border border-white/[0.08] bg-card/60 backdrop-blur-md shadow-xs py-0 gap-0";
+  "relative overflow-hidden border border-border/80 bg-card/60 backdrop-blur-md shadow-xs py-0 gap-0";
 
 /** Color del halo de luz de cada competición en la estantería. */
 const GLOW: Record<TrophyType, string> = {
@@ -181,7 +181,7 @@ function TrophyColumn({
       style={{ animationDelay: `${index * 70}ms`, animationFillMode: "both" }}
     >
       {/* Estante iluminado */}
-      <div className="group relative flex h-32 items-end justify-center pt-4 sm:h-44 sm:pt-6">
+      <div className="group relative flex h-36 items-end justify-center pt-4 sm:h-52 sm:pt-6">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 h-full transition-opacity duration-500"
@@ -194,7 +194,8 @@ function TrophyColumn({
           type={type}
           dimmed={editions === 0}
           title={label}
-          className="relative h-24 w-auto sm:h-32 drop-shadow-[0_6px_0_rgba(0,0,0,0.35)] motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[steps(2)] motion-safe:group-hover:-translate-y-1.5"
+          delay={index * 240}
+          className="relative h-28 sm:h-[168px] drop-shadow-[0_6px_0_rgba(0,0,0,0.35)] motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[steps(2)] motion-safe:group-hover:-translate-y-1.5"
         />
         <div aria-hidden className="absolute inset-x-3 bottom-0 sm:inset-x-6 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
       </div>
@@ -287,10 +288,10 @@ function AddTitle({
                   "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition-[color,background-color,border-color,transform] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
                   active
                     ? "border-primary/50 bg-primary/10 font-medium text-foreground"
-                    : "border-white/[0.08] text-muted-foreground hover:text-foreground",
+                    : "border-border/80 text-muted-foreground hover:text-foreground",
                 )}
               >
-                <PixelTrophy type={t.key} className="h-6 w-auto shrink-0" />
+                <PixelTrophy type={t.key} spin={false} className="h-6 shrink-0" />
                 <span className="truncate">{t.short}</span>
               </button>
             );
@@ -350,12 +351,12 @@ function Standings({ ranking }: { ranking: TeamTrophyCabinet[] }) {
   return (
     <Card className={CARD}>
       <h2 className="px-5 pt-5 text-lg font-semibold tracking-tight">Palmarés</h2>
-      <div className={cn(cols, "mt-3 border-b border-white/[0.06] px-5 pb-2 text-[11px] text-muted-foreground")}>
+      <div className={cn(cols, "mt-3 border-b border-border/60 px-5 pb-2 text-[11px] text-muted-foreground")}>
         <span>#</span>
         <span>Club</span>
         {TROPHIES.map((t) => (
           <span key={t.key} className="flex justify-center">
-            <PixelTrophy type={t.key} title={t.label} className="h-5 w-auto" />
+            <PixelTrophy type={t.key} spin={false} title={t.label} className="h-5" />
           </span>
         ))}
         <span className="text-right">Total</span>
@@ -439,7 +440,7 @@ function PrizesCard({
             return (
               <label key={t.key} className="flex flex-col gap-1.5">
                 <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                  <PixelTrophy type={t.key} className="h-5 w-auto" />
+                  <PixelTrophy type={t.key} spin={false} className="h-5" />
                   {t.label}
                 </span>
                 <Input
@@ -451,7 +452,7 @@ function PrizesCard({
                     setMessage(null);
                     setDrafts((d) => ({ ...d, [t.key]: e.target.value }));
                   }}
-                  className="h-10 border-white/[0.08] bg-card/60 tabular-nums"
+                  className="h-10 border-border/80 bg-card/60 tabular-nums"
                 />
                 <span
                   className={cn(

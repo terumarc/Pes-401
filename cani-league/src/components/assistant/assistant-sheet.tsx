@@ -108,10 +108,10 @@ export function AssistantSheet() {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 flex flex-col bg-background/95 backdrop-blur-xl border-l border-white/[0.08] shadow-2xl"
+        className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 flex flex-col bg-background/95 backdrop-blur-xl border-l border-border/80 shadow-2xl"
       >
         {/* Cabecera personalizada */}
-        <SheetHeader className="p-4 border-b border-white/[0.08] bg-muted/20 flex flex-row items-center justify-between shrink-0">
+        <SheetHeader className="p-4 border-b border-border/80 bg-muted/20 flex flex-row items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="size-10 rounded-full bg-gradient-to-tr from-amber-600 via-orange-500 to-yellow-400 flex items-center justify-center text-white font-bold shadow-md shadow-orange-500/20">
@@ -182,7 +182,7 @@ export function AssistantSheet() {
                   {msg.toolLogs.map((tool, i) => (
                     <div
                       key={i}
-                      className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md bg-muted/60 border border-white/[0.06] text-muted-foreground"
+                      className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md bg-muted/60 border border-border/60 text-muted-foreground"
                     >
                       <CheckCircle2 className="size-3 text-emerald-400" />
                       <span>{tool.description}</span>
@@ -204,7 +204,7 @@ export function AssistantSheet() {
                     ? "bg-primary text-primary-foreground rounded-br-xs"
                     : msg.error
                     ? "bg-destructive/10 border border-destructive/20 text-destructive rounded-bl-xs"
-                    : "bg-muted/40 border border-white/[0.08] text-foreground rounded-bl-xs"
+                    : "bg-muted/40 border border-border/80 text-foreground rounded-bl-xs"
                 )}
               >
                 {msg.role === "user" ? (
@@ -223,7 +223,7 @@ export function AssistantSheet() {
 
           {/* Estado de ejecución de herramienta en vivo */}
           {currentToolStatus && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 border border-white/[0.05] rounded-lg px-3 py-2 animate-pulse w-fit">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 border border-border/50 rounded-lg px-3 py-2 animate-pulse w-fit">
               <Search className="size-3.5 text-amber-400 animate-spin" />
               <span>{currentToolStatus}</span>
             </div>
@@ -242,7 +242,7 @@ export function AssistantSheet() {
                     key={idx}
                     type="button"
                     onClick={() => handleQuickPrompt(item.prompt)}
-                    className="text-left text-xs p-2.5 rounded-xl border border-white/[0.08] bg-muted/20 hover:bg-muted/50 hover:border-primary/40 transition-all text-muted-foreground hover:text-foreground group cursor-pointer"
+                    className="text-left text-xs p-2.5 rounded-xl border border-border/80 bg-muted/20 hover:bg-muted/50 hover:border-primary/40 transition-all text-muted-foreground hover:text-foreground group cursor-pointer"
                   >
                     <span className="font-medium block text-foreground/90 group-hover:text-primary transition-colors">
                       {item.label}
@@ -257,9 +257,9 @@ export function AssistantSheet() {
         </div>
 
         {/* Barra de entrada de texto */}
-        <div className="p-4 border-t border-white/[0.08] bg-muted/10 shrink-0">
+        <div className="p-4 border-t border-border/80 bg-muted/10 shrink-0">
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-            <div className="relative rounded-xl border border-white/[0.12] bg-background/80 focus-within:border-primary/60 transition-colors shadow-inner">
+            <div className="relative rounded-xl border border-border bg-background/80 focus-within:border-primary/60 transition-colors shadow-inner">
               <Textarea
                 ref={textareaRef}
                 value={input}
@@ -273,6 +273,7 @@ export function AssistantSheet() {
               <Button
                 type="submit"
                 size="icon"
+                aria-label="Enviar pregunta"
                 disabled={!input.trim() || isGenerating}
                 className="absolute right-2 bottom-2 size-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm disabled:opacity-40 transition-opacity"
               >

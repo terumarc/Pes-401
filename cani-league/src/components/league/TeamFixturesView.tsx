@@ -118,7 +118,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
       {/* 1. SELECTOR VISUAL DE EQUIPOS POR CHIPS CON ESCUDO */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5">
+          <p className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
             <Filter className="size-3.5 text-primary" /> Filtrar por Club
           </p>
           {selectedTeamId !== "all" && (
@@ -140,7 +140,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
               "flex min-h-[38px] items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all",
               selectedTeamId === "all"
                 ? "border-primary bg-primary text-primary-foreground shadow-md ring-2 ring-primary/25"
-                : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] text-muted-foreground hover:text-foreground",
+                : "border-border/80 bg-white/[0.02] hover:bg-white/[0.06] text-muted-foreground hover:text-foreground",
             )}
           >
             <Filter className="size-3.5" />
@@ -158,7 +158,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
                   "flex min-h-[38px] items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all",
                   isSelected
                     ? "border-primary bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 font-bold"
-                    : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] text-muted-foreground hover:text-foreground",
+                    : "border-border/80 bg-white/[0.02] hover:bg-white/[0.06] text-muted-foreground hover:text-foreground",
                 )}
               >
                 <TeamLogo
@@ -177,7 +177,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
       </div>
 
       {/* 2. BARRA DE HERRAMIENTAS: BÚSQUEDA, ESTADO, FASE Y MODO DE VISTA */}
-      <div className="space-y-2.5 rounded-2xl border border-white/[0.08] bg-card/50 p-3 sm:p-4 backdrop-blur-md shadow-sm">
+      <div className="space-y-2.5 rounded-2xl border border-border/80 bg-card/50 p-3 sm:p-4 backdrop-blur-md shadow-sm">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Status Pills */}
           <div className="flex flex-wrap items-center gap-1.5">
@@ -233,7 +233,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
                 placeholder="Buscar partido..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.03] py-1.5 pl-8 pr-7 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25"
+                className="w-full rounded-xl border border-border bg-white/[0.03] py-1.5 pl-8 pr-7 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25"
               />
               {searchQuery && (
                 <button
@@ -247,7 +247,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
             </div>
 
             {/* Vista Grid vs Compact */}
-            <div className="flex items-center rounded-xl border border-white/[0.08] bg-black/30 p-0.5">
+            <div className="flex items-center rounded-xl border border-border/80 bg-black/30 p-0.5">
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
@@ -281,10 +281,10 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
         </div>
 
         {/* Filtros secundarios: Fase (Ida / Vuelta) y Jornada específica */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-2 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-2 text-xs">
           {/* Fase */}
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mr-1 flex items-center gap-1">
+            <span className="text-[10px] text-muted-foreground font-bold mr-1 flex items-center gap-1">
               <Layers className="size-3 text-primary" /> Fase:
             </span>
             <button
@@ -328,7 +328,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
           {/* Selector de Jornada */}
           {matchdays.length > 0 && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+              <span className="text-[10px] text-muted-foreground font-bold">
                 Jornada:
               </span>
               <select
@@ -338,7 +338,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
                     e.target.value === "all" ? "all" : parseInt(e.target.value, 10),
                   )
                 }
-                className="rounded-lg border border-white/[0.1] bg-black/40 px-2 py-1 text-xs font-bold text-foreground focus:border-primary focus:outline-none"
+                className="rounded-lg border border-border bg-black/40 px-2 py-1 text-xs font-bold text-foreground focus:border-primary focus:outline-none"
               >
                 <option value="all">Todas las jornadas ({matchdays.length})</option>
                 {matchdays.map((m) => (
@@ -371,7 +371,7 @@ export function TeamFixturesView({ teams, matches }: TeamFixturesViewProps) {
 
       {/* 3. GRID O LISTA DE PARTIDOS CON ESTÉTICA ESPORTS */}
       {filteredMatches.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/[0.1] bg-card/20 py-14 text-center">
+        <div className="rounded-2xl border border-dashed border-border bg-card/20 py-14 text-center">
           <p className="font-display text-base font-bold text-foreground">
             No hay partidos con estos filtros
           </p>

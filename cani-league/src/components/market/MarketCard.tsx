@@ -40,7 +40,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
 
   return (
     <>
-      <Card className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-card/60 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.45)]">
+      <Card className="group relative overflow-hidden rounded-xl border border-border/80 bg-card/60 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.45)]">
         {/* Top hairline light reflection */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -54,7 +54,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
                   {tierInfo.tier}
                 </span>
                 <span
-                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-white/[0.03] text-muted-foreground border border-white/[0.08] flex items-center gap-1"
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-white/[0.03] text-muted-foreground border border-border/80 flex items-center gap-1"
                   title={`Contrato: ${contractInfo.durationLabel}`}
                 >
                   {contractInfo.duration > 0 ? (
@@ -67,7 +67,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
                   )}
                 </span>
               </div>
-              <span className="rounded px-1.5 py-0.5 text-[10px] font-bold bg-white/[0.06] border border-white/[0.08] text-foreground/90 uppercase tracking-wider">
+              <span className="rounded px-1.5 py-0.5 text-[10px] font-bold bg-white/[0.06] border border-border/80 text-foreground/90 uppercase tracking-wider">
                 {player.position}
               </span>
             </div>
@@ -85,7 +85,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
               }`}>
                 {formatStat(mediaValue)}
               </span>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+              <span className="text-[10px] text-muted-foreground font-semibold">
                 Media
               </span>
             </div>
@@ -141,7 +141,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
           ) : (
             <Button
               id={`fichar-clausula-${player.id}`}
-              className="flex-1 min-h-[40px] h-10 gap-2 font-semibold text-xs sm:text-sm shadow-xs border border-white/[0.12] bg-white/[0.04] hover:bg-white/[0.09] hover:border-white/[0.24] text-foreground transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex-1 min-h-[40px] h-10 gap-2 font-semibold text-xs sm:text-sm shadow-xs border border-border bg-white/[0.04] hover:bg-white/[0.09] hover:border-white/[0.24] text-foreground transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => {
                 setPurchaseType("clausula");
                 setModalOpen(true);
@@ -155,7 +155,7 @@ export function MarketCard({ player, teams }: MarketCardProps) {
           <Button
             asChild
             variant="outline"
-            className="flex-1 min-h-[40px] h-10 gap-2 text-xs sm:text-sm font-medium border-white/[0.1] bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/[0.2] transition-colors"
+            className="flex-1 min-h-[40px] h-10 gap-2 text-xs sm:text-sm font-medium border-border bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/[0.2] transition-colors"
           >
             <Link href={`/players/${player.id}`} aria-label={`Ver ficha de ${player.name}`}>
               <Eye className="size-4 text-muted-foreground" aria-hidden="true" />

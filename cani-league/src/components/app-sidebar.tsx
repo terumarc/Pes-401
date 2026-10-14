@@ -5,7 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -40,12 +39,6 @@ const ICONS = {
   CalendarDays,
   Swords,
 } as const;
-
-const user = {
-  name: "Manager",
-  email: "manager@canileague.com",
-  avatar: "/avatars/manager.jpg",
-}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
@@ -94,7 +87,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <p className="px-2 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+          PES 6 · Cani Patch
+        </p>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

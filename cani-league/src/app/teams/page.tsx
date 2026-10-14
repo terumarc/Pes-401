@@ -38,9 +38,9 @@ export default async function TeamsPage() {
       {/* KPI STATS CARDS - STRIPE POLISH */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {/* TOTAL CLUBES */}
-        <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 backdrop-blur-md shadow-xs transition-all hover:border-white/[0.18] hover:bg-card/85">
+        <div className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur-md shadow-xs transition-all hover:border-white/[0.18] hover:bg-card/85">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
             <div className="flex size-6 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
               <Shield className="size-3.5" />
             </div>
@@ -48,33 +48,33 @@ export default async function TeamsPage() {
           </div>
           <p className="mt-2 font-display text-2xl font-black text-foreground tabular-nums">
             {teams.length}{" "}
-            <span className="text-xs font-semibold text-muted-foreground uppercase">
+            <span className="text-xs font-semibold text-muted-foreground">
               clubes
             </span>
           </p>
         </div>
 
         {/* FUTBOLISTAS */}
-        <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 backdrop-blur-md shadow-xs transition-all hover:border-white/[0.18] hover:bg-card/85">
+        <div className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur-md shadow-xs transition-all hover:border-white/[0.18] hover:bg-card/85">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-            <div className="flex size-6 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
+            <div className="flex size-6 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
               <Users className="size-3.5" />
             </div>
             <span>Futbolistas</span>
           </div>
           <p className="mt-2 font-display text-2xl font-black text-foreground tabular-nums">
             {totalPlayers}{" "}
-            <span className="text-xs font-semibold text-muted-foreground uppercase">
+            <span className="text-xs font-semibold text-muted-foreground">
               en liga
             </span>
           </p>
         </div>
 
         {/* DINERO TOTAL */}
-        <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 backdrop-blur-md shadow-xs transition-all hover:border-white/[0.18] hover:bg-card/85">
+        <div className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur-md shadow-xs transition-all hover:border-white/[0.18] hover:bg-card/85">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
             <div className="flex size-6 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
               <Wallet className="size-3.5" />
             </div>
@@ -89,9 +89,9 @@ export default async function TeamsPage() {
         </div>
 
         {/* VALOR DE MERCADO TOTAL */}
-        <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 backdrop-blur-md shadow-xs transition-all hover:border-white/[0.18] hover:bg-card/85">
+        <div className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur-md shadow-xs transition-all hover:border-white/[0.18] hover:bg-card/85">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
             <div className="flex size-6 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
               <Coins className="size-3.5" />
             </div>

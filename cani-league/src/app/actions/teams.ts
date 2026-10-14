@@ -42,7 +42,6 @@ export async function updateTeamAction(
     revalidatePath("/teams", "page");
     revalidatePath(`/teams/${id}`, "page");
     revalidatePath(`/teams/${id}`, "layout");
-    revalidatePath("/dashboard", "page");
     revalidatePath("/league", "page");
     revalidatePath("/standings", "page");
     revalidatePath("/finances", "page");

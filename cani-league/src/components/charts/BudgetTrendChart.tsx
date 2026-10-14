@@ -20,7 +20,7 @@ export function BudgetTrendChart({
   } as const;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 sm:p-5 backdrop-blur-md shadow-xs">
+    <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 sm:p-5 backdrop-blur-md shadow-xs">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
         aria-hidden="true"

@@ -104,14 +104,14 @@ export default async function CalendarPage() {
       {hasFixtures && (
         <section
           aria-label="Progreso de la temporada"
-          className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-5 backdrop-blur-md shadow-sm"
+          className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-5 backdrop-blur-md shadow-sm"
         >
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-40" />
 
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2 max-w-xl">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
                   <CalendarDays className="size-3.5 text-primary" />
                   Progreso del Torneo
                 </span>
@@ -126,9 +126,9 @@ export default async function CalendarPage() {
             </div>
 
             {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-4 border-t lg:border-t-0 lg:border-l border-white/[0.08] pt-3 lg:pt-0 lg:pl-6 text-xs">
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-center">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground flex items-center justify-center gap-1">
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-4 border-t lg:border-t-0 lg:border-l border-border/80 pt-3 lg:pt-0 lg:pl-6 text-xs">
+              <div className="rounded-xl border border-border/60 bg-white/[0.02] p-2.5 text-center">
+                <span className="text-[10px] font-semibold text-muted-foreground flex items-center justify-center gap-1">
                   <CheckCircle2 className="size-3 text-emerald-400" /> Jugados
                 </span>
                 <p className="mt-1 font-display text-xl font-bold tabular-nums text-foreground">
@@ -136,8 +136,8 @@ export default async function CalendarPage() {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-center">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground flex items-center justify-center gap-1">
+              <div className="rounded-xl border border-border/60 bg-white/[0.02] p-2.5 text-center">
+                <span className="text-[10px] font-semibold text-muted-foreground flex items-center justify-center gap-1">
                   <Clock className="size-3 text-amber-400" /> Pendientes
                 </span>
                 <p className="mt-1 font-display text-xl font-bold tabular-nums text-foreground">
@@ -145,8 +145,8 @@ export default async function CalendarPage() {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-center">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground flex items-center justify-center gap-1">
+              <div className="rounded-xl border border-border/60 bg-white/[0.02] p-2.5 text-center">
+                <span className="text-[10px] font-semibold text-muted-foreground flex items-center justify-center gap-1">
                   <Flame className="size-3 text-rose-400" /> Goles / Part.
                 </span>
                 <p className="mt-1 font-display text-xl font-bold tabular-nums text-foreground">
@@ -160,7 +160,7 @@ export default async function CalendarPage() {
 
       {/* Clasificación en vivo */}
       <section className="space-y-3.5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 border-b border-white/[0.06] pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 border-b border-border/60 pb-3">
           <div className="flex items-center gap-2">
             <Trophy className="size-4 text-amber-400" />
             <h2 className="font-display text-lg sm:text-xl font-semibold tracking-tight text-foreground">
@@ -177,7 +177,7 @@ export default async function CalendarPage() {
       {/* Enfrentamientos por Equipos */}
       {hasFixtures ? (
         <section className="space-y-4 pt-2">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 border-b border-white/[0.06] pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 border-b border-border/60 pb-3">
             <div className="flex items-center gap-2">
               <Layers className="size-4 text-primary" />
               <h2 className="font-display text-lg sm:text-xl font-semibold tracking-tight text-foreground">
@@ -192,7 +192,7 @@ export default async function CalendarPage() {
           <TeamFixturesView teams={teams} matches={matches} />
         </section>
       ) : (
-        <div className="rounded-2xl border border-dashed border-white/[0.1] bg-card/20 py-16 text-center">
+        <div className="rounded-2xl border border-dashed border-border bg-card/20 py-16 text-center">
           <CalendarDays className="size-10 text-muted-foreground mx-auto mb-3 opacity-60" />
           <h3 className="font-display text-lg font-bold text-foreground">
             Aún no se ha generado el calendario

@@ -18,7 +18,7 @@ export function AssistantTrigger() {
         "fixed bottom-5 right-5 z-40 group cursor-pointer",
         "flex items-center gap-2.5 px-3.5 py-2.5 rounded-full",
         "bg-background/90 hover:bg-background backdrop-blur-md",
-        "border border-white/[0.12] hover:border-amber-500/50",
+        "border border-border hover:border-amber-500/50",
         "shadow-lg shadow-black/40 hover:shadow-amber-500/10",
         "transition-all duration-200 hover:scale-105 active:scale-95"
       )}

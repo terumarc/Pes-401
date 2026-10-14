@@ -26,7 +26,7 @@ export function TeamCard({ team }: TeamCardProps) {
       : null;
 
   return (
-    <Card className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.5)] focus-within:ring-2 focus-within:ring-primary/40">
+    <Card className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.5)] focus-within:ring-2 focus-within:ring-primary/40">
       {/* BANNER SUPERIOR CON GRADIENTE DE COLOR DEL CLUB */}
       <div
         className="relative h-22 w-full p-3.5 transition-opacity"
@@ -85,7 +85,7 @@ export function TeamCard({ team }: TeamCardProps) {
       <CardContent className="relative space-y-4 px-5 pt-0 pb-5">
         {/* ESCUDO DEL EQUIPO FLOTANTE Y MEDIA */}
         <div className="-mt-10 flex items-end justify-between">
-          <div className="rounded-full bg-card p-1.5 shadow-xl ring-2 ring-white/[0.12] transition-transform duration-300 group-hover:scale-105 group-hover:ring-primary/40">
+          <div className="rounded-full bg-card p-1.5 shadow-xl ring-2 ring-border transition-transform duration-300 group-hover:scale-105 group-hover:ring-primary/40">
             <TeamLogo
               name={team.name}
               logoUrl={team.logo_url}
@@ -96,7 +96,7 @@ export function TeamCard({ team }: TeamCardProps) {
 
           {team.avg_overall && (
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+              <span className="text-[10px] font-bold text-muted-foreground">
                 Media Plantilla
               </span>
               <Badge
@@ -106,7 +106,7 @@ export function TeamCard({ team }: TeamCardProps) {
                     ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
                     : team.avg_overall >= 75
                     ? "bg-blue-500/15 text-blue-400 border-blue-500/30"
-                    : "bg-white/[0.04] text-foreground border-white/[0.08]"
+                    : "bg-white/[0.04] text-foreground border-border/80"
                 )}
                 variant="outline"
               >
@@ -120,7 +120,7 @@ export function TeamCard({ team }: TeamCardProps) {
         <div>
           <Link
             href={`/teams/${team.id}`}
-            className="block truncate font-display text-xl font-black tracking-tight uppercase text-foreground transition-colors group-hover:text-primary outline-none focus-visible:underline"
+            className="block truncate font-display text-xl font-black tracking-tight text-foreground transition-colors group-hover:text-primary outline-none focus-visible:underline"
           >
             {team.name}
           </Link>
@@ -131,9 +131,9 @@ export function TeamCard({ team }: TeamCardProps) {
         </div>
 
         {/* GRID DE ESTADÍSTICAS VISUALES */}
-        <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-xs">
+        <div className="grid grid-cols-2 gap-2 rounded-xl border border-border/80 bg-white/[0.02] p-3 text-xs">
           <div>
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
               <Wallet className="size-3 text-primary shrink-0" />
               <span>Presupuesto</span>
             </div>
@@ -143,7 +143,7 @@ export function TeamCard({ team }: TeamCardProps) {
           </div>
 
           <div>
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
               <Coins className="size-3 text-emerald-400 shrink-0" />
               <span>Valor Plantilla</span>
             </div>
@@ -156,8 +156,8 @@ export function TeamCard({ team }: TeamCardProps) {
             </p>
           </div>
 
-          <div className="col-span-2 border-t border-white/[0.06] pt-2 flex items-center justify-between">
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="col-span-2 border-t border-border/60 pt-2 flex items-center justify-between">
+            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
               <Users className="size-3 text-primary shrink-0" />
               <span>Plantilla:</span>
             </div>
@@ -167,9 +167,9 @@ export function TeamCard({ team }: TeamCardProps) {
           </div>
 
           {team.top_player && (
-            <div className="col-span-2 border-t border-white/[0.06] pt-2">
+            <div className="col-span-2 border-t border-border/60 pt-2">
               <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground shrink-0">
                   <Star className="size-3 text-amber-400" />
                   <span>Estrella:</span>
                 </span>
@@ -233,7 +233,7 @@ export function TeamLogo({
       <img
         src={logoUrl}
         alt={name}
-        className={`${sizeClass} rounded-full object-cover ring-2 ring-white/[0.1] shadow-md`}
+        className={`${sizeClass} rounded-full object-cover ring-2 ring-border shadow-md`}
       />
     );
   }

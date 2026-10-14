@@ -35,7 +35,7 @@ export function EditTeamButton({
             variant="outline"
             size="icon"
             className={cn(
-              "size-10 shrink-0 rounded-xl border border-white/[0.12] bg-white/[0.04] backdrop-blur-md hover:bg-white/[0.1] hover:border-white/[0.25] text-muted-foreground hover:text-foreground shadow-xs cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-primary/40",
+              "size-10 shrink-0 rounded-xl border border-border bg-white/[0.04] backdrop-blur-md hover:bg-white/[0.1] hover:border-white/[0.25] text-muted-foreground hover:text-foreground shadow-xs cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-primary/40",
               className
             )}
             title={`Editar ${team.name}`}
@@ -47,7 +47,7 @@ export function EditTeamButton({
           <Button
             variant="outline"
             className={cn(
-              "gap-1.5 font-display font-semibold border-white/[0.12] bg-card/60 backdrop-blur-md hover:bg-card hover:border-white/[0.25] shadow-xs cursor-pointer transition-all",
+              "gap-1.5 font-display font-semibold border-border bg-card/60 backdrop-blur-md hover:bg-card hover:border-white/[0.25] shadow-xs cursor-pointer transition-all",
               className
             )}
           >
@@ -56,9 +56,9 @@ export function EditTeamButton({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg border-white/[0.1] bg-card/95 backdrop-blur-xl shadow-2xl p-6">
-        <DialogHeader className="border-b border-white/[0.08] pb-4">
-          <DialogTitle className="font-display text-xl font-bold tracking-tight text-foreground uppercase">
+      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg border-border bg-card/95 backdrop-blur-xl shadow-2xl p-6">
+        <DialogHeader className="border-b border-border/80 pb-4">
+          <DialogTitle className="font-display text-xl font-bold tracking-tight text-foreground">
             Editar Información del Club
           </DialogTitle>
           <p className="text-xs text-muted-foreground mt-1">

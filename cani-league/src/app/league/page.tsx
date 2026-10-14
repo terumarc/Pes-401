@@ -131,7 +131,7 @@ export default async function LeaguePage() {
                     <Link
                       key={match.id}
                       href="/calendar"
-                      className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-white/[0.08] bg-black/40 p-3 text-xs transition-all duration-200 hover:border-white/[0.2] hover:bg-black/60 hover:shadow-md"
+                      className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-border/80 bg-black/40 p-3 text-xs transition-all duration-200 hover:border-white/[0.2] hover:bg-black/60 hover:shadow-md"
                     >
                       {/* Dual club ambient lighting */}
                       <div
@@ -158,7 +158,7 @@ export default async function LeaguePage() {
 
                       {/* Matchday Badge & VS */}
                       <div className="relative z-10 flex flex-col items-center shrink-0 px-2">
-                        <span className="rounded-md border border-white/[0.1] bg-white/[0.04] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <span className="rounded-md border border-border bg-white/[0.04] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                           J.{match.matchday}
                         </span>
                         <span className="mt-0.5 font-display text-[11px] font-black text-primary drop-shadow-[0_0_6px_rgba(59,130,246,0.4)]">
@@ -183,7 +183,7 @@ export default async function LeaguePage() {
                 })}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl border border-dashed border-white/[0.1] bg-white/[0.01]">
+              <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl border border-dashed border-border bg-white/[0.01]">
                 <Calendar className="size-8 text-muted-foreground/60 mb-2" />
                 <p className="text-sm font-medium text-foreground">
                   {totalMatches > 0
@@ -232,13 +232,13 @@ export default async function LeaguePage() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <Link
                   href="/players?pos=DEF"
-                  className="group flex flex-col justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-500/30 hover:bg-blue-500/5"
+                  className="group flex flex-col justify-between rounded-xl border border-border/60 bg-white/[0.02] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground group-hover:text-blue-400 transition-colors">
+                    <span className="font-bold text-foreground group-hover:text-primary transition-colors">
                       🛡️ Defensas
                     </span>
-                    <ArrowRight className="size-3 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-blue-400 transition-all" />
+                    <ArrowRight className="size-3 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-primary transition-all" />
                   </div>
                   <span className="mt-2 text-[10px] text-muted-foreground">
                     Centrales y laterales
@@ -247,13 +247,13 @@ export default async function LeaguePage() {
 
                 <Link
                   href="/players?pos=MID"
-                  className="group flex flex-col justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-500/30 hover:bg-emerald-500/5"
+                  className="group flex flex-col justify-between rounded-xl border border-border/60 bg-white/[0.02] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground group-hover:text-emerald-400 transition-colors">
+                    <span className="font-bold text-foreground group-hover:text-primary transition-colors">
                       🎯 Medios
                     </span>
-                    <ArrowRight className="size-3 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-emerald-400 transition-all" />
+                    <ArrowRight className="size-3 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-primary transition-all" />
                   </div>
                   <span className="mt-2 text-[10px] text-muted-foreground">
                     Pivotes y mediapuntas
@@ -262,7 +262,7 @@ export default async function LeaguePage() {
 
                 <Link
                   href="/players?pos=ATT"
-                  className="group flex flex-col justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-500/30 hover:bg-rose-500/5"
+                  className="group flex flex-col justify-between rounded-xl border border-border/60 bg-white/[0.02] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-500/30 hover:bg-rose-500/5"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-foreground group-hover:text-rose-400 transition-colors">
@@ -277,7 +277,7 @@ export default async function LeaguePage() {
 
                 <Link
                   href="/players?pos=GK"
-                  className="group flex flex-col justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500/30 hover:bg-amber-500/5"
+                  className="group flex flex-col justify-between rounded-xl border border-border/60 bg-white/[0.02] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500/30 hover:bg-amber-500/5"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-foreground group-hover:text-amber-400 transition-colors">
@@ -291,7 +291,7 @@ export default async function LeaguePage() {
                 </Link>
               </div>
 
-              <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 flex items-center justify-between gap-3 text-xs">
+              <div className="rounded-xl border border-border/80 bg-white/[0.02] p-3 flex items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-2">
                   <Flame className="size-4 text-amber-400 shrink-0" />
                   <span className="text-muted-foreground">

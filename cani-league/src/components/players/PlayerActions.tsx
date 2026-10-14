@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/use-confirm";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -65,6 +67,7 @@ export function PlayerActions({
   variant = "default",
 }: PlayerActionsProps) {
   const router = useRouter();
+  const [confirm, confirmDialog] = useConfirm();
   const [pending, startTransition] = useTransition();
   const [moving, setMoving] = useState(false);
   const [releasing, setReleasing] = useState(false);
@@ -99,13 +102,13 @@ export function PlayerActions({
   }
 
   async function remove() {
-    if (
-      !window.confirm(
-        `¿Eliminar a ${playerForRelease.name}? Esta acción no se puede deshacer.`
-      )
-    ) {
-      return;
-    }
+    const ok = await confirm({
+      title: `Eliminar a ${playerForRelease.name}`,
+      description: "Se borra el jugador de la base de datos. No se puede deshacer.",
+      confirmLabel: "Eliminar jugador",
+      destructive: true,
+    });
+    if (!ok) return;
     await deletePlayerClient(playerId);
     startTransition(() => {
       router.push("/players");
@@ -120,7 +123,7 @@ export function PlayerActions({
         <Button
           asChild
           variant="outline"
-          className="min-h-[36px] h-9 px-3 text-xs font-semibold border-white/[0.1] hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
+          className="min-h-[36px] h-9 px-3 text-xs font-semibold border-border hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
         >
           <Link href={`/players/${playerId}`}>
             Ver ficha
@@ -131,7 +134,7 @@ export function PlayerActions({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="size-9 min-h-[36px] min-w-[36px] p-0 border-white/[0.1] hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
+              className="size-9 min-h-[36px] min-w-[36px] p-0 border-border hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
               aria-label={`Opciones de gestión para ${playerForRelease.name}`}
             >
               <MoreHorizontal className="size-4 text-foreground/80" />
@@ -204,7 +207,7 @@ export function PlayerActions({
                 Equipo de destino:
               </label>
               <Select value={teamId} onValueChange={(v) => v && setTeamId(v)}>
-                <SelectTrigger id="team-select-compact" className="w-full h-10 border-white/[0.1]">
+                <SelectTrigger id="team-select-compact" className="w-full h-10 border-border">
                   <SelectValue placeholder="Seleccionar equipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -245,6 +248,7 @@ export function PlayerActions({
             onOpenChange={setReleasing}
           />
         )}
+        {confirmDialog}
       </div>
     );
   }
@@ -254,7 +258,7 @@ export function PlayerActions({
     <div className="flex flex-wrap gap-2.5">
       <Button
         variant="outline"
-        className="min-h-[40px] px-4 gap-2 text-xs sm:text-sm font-medium border-white/[0.1] hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
+        className="min-h-[40px] px-4 gap-2 text-xs sm:text-sm font-medium border-border hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
         asChild
       >
         <Link href={`/players/${playerId}?edit=1`}>
@@ -266,7 +270,7 @@ export function PlayerActions({
       <Button
         type="button"
         variant="outline"
-        className="min-h-[40px] px-4 gap-2 text-xs sm:text-sm font-medium border-white/[0.1] hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
+        className="min-h-[40px] px-4 gap-2 text-xs sm:text-sm font-medium border-border hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
         onClick={() => setMoving(true)}
       >
         <ArrowRightLeft className="size-4 text-muted-foreground" />
@@ -325,7 +329,7 @@ export function PlayerActions({
               Equipo de destino:
             </label>
             <Select value={teamId} onValueChange={(v) => v && setTeamId(v)}>
-              <SelectTrigger id="team-select-full" className="w-full h-10 border-white/[0.1]">
+              <SelectTrigger id="team-select-full" className="w-full h-10 border-border">
                 <SelectValue placeholder="Seleccionar equipo" />
               </SelectTrigger>
               <SelectContent>
@@ -366,6 +370,7 @@ export function PlayerActions({
           onOpenChange={setReleasing}
         />
       )}
+      {confirmDialog}
     </div>
   );
 }

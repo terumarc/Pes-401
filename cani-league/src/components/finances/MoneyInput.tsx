@@ -45,7 +45,7 @@ export function MoneyInput({
           value={raw}
           placeholder={placeholder}
           aria-label={ariaLabel}
-          className="pl-8 h-10 font-mono text-sm tabular-nums border-white/[0.1] bg-background/50 focus-visible:ring-2 focus-visible:ring-primary"
+          className="pl-8 h-10 font-mono text-sm tabular-nums border-border bg-background/50 focus-visible:ring-2 focus-visible:ring-primary"
           onChange={(e) => {
             setRaw(e.target.value);
             setError(null);

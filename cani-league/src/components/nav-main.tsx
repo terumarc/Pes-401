@@ -36,7 +36,7 @@ export function NavMain({
                 className={cn(
                   "relative h-9 rounded-lg px-3 text-xs sm:text-sm font-medium transition-all duration-150",
                   item.isActive
-                    ? "bg-white/[0.08] text-foreground font-semibold shadow-xs border border-white/[0.08]"
+                    ? "bg-white/[0.08] text-foreground font-semibold shadow-xs border border-border/80"
                     : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
                 )}
               >

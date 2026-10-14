@@ -42,7 +42,7 @@ export default async function FinancesPage() {
       {/* EXECUTIVE FINANCIAL KPIS BAR */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {/* Total Budget */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 backdrop-blur-md transition-all hover:border-white/20 shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur-md transition-all hover:border-white/20 shadow-xs">
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
             aria-hidden="true"
@@ -62,14 +62,14 @@ export default async function FinancesPage() {
         </div>
 
         {/* Average Budget */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 backdrop-blur-md transition-all hover:border-white/20 shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur-md transition-all hover:border-white/20 shadow-xs">
           <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/40 to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
             aria-hidden="true"
           />
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Presupuesto Promedio</span>
-            <div className="flex size-7 items-center justify-center rounded-lg bg-sky-500/10 text-sky-400">
+            <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <TrendingUp className="size-3.5" aria-hidden="true" />
             </div>
           </div>
@@ -82,9 +82,9 @@ export default async function FinancesPage() {
         </div>
 
         {/* Squad Value */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 backdrop-blur-md transition-all hover:border-white/20 shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur-md transition-all hover:border-white/20 shadow-xs">
           <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
             aria-hidden="true"
           />
           <div className="flex items-center justify-between">
@@ -102,7 +102,7 @@ export default async function FinancesPage() {
         </div>
 
         {/* Leader in Budget */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 backdrop-blur-md transition-all hover:border-white/20 shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur-md transition-all hover:border-white/20 shadow-xs">
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent"
             aria-hidden="true"

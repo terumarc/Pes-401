@@ -137,7 +137,7 @@ export function SortableTeam({ item, rankIndex }: { item: StandingWithTeam; rank
     <li ref={setNodeRef} style={style} className="touch-none list-none">
       <Card
         className={cn(
-          "relative overflow-hidden rounded-xl border border-white/[0.08] bg-card/60 py-0 backdrop-blur-sm transition-all duration-200 hover:border-white/[0.18] hover:bg-card/90",
+          "relative overflow-hidden rounded-xl border border-border/80 bg-card/60 py-0 backdrop-blur-sm transition-all duration-200 hover:border-white/[0.18] hover:bg-card/90",
           isDragging && "z-20 ring-2 ring-primary/80 shadow-2xl opacity-95 scale-[1.01]"
         )}
       >
@@ -189,7 +189,7 @@ export function StandingsItem({
           "flex size-8 shrink-0 items-center justify-center rounded-lg font-display text-sm font-semibold tabular-nums sm:size-9 sm:text-base",
           isLeader && "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30 font-bold shadow-[0_0_12px_rgba(245,158,11,0.15)]",
           isEurope && "bg-blue-500/10 text-blue-300 ring-1 ring-blue-500/20",
-          !isLeader && !isEurope && "bg-white/[0.04] text-muted-foreground ring-1 ring-white/[0.06]"
+          !isLeader && !isEurope && "bg-white/[0.04] text-muted-foreground ring-1 ring-border/60"
         )}
       >
         {padPosition(item.position)}

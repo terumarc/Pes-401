@@ -26,7 +26,7 @@ export function MarketToggle({ playerId, available, className }: MarketTogglePro
       variant={available ? "outline" : "default"}
       disabled={pending}
       onClick={toggle}
-      className={className || "min-h-[38px] px-3.5 text-xs sm:text-sm font-medium gap-1.5 border-white/[0.1] hover:border-white/[0.2] transition-colors"}
+      className={className || "min-h-[38px] px-3.5 text-xs sm:text-sm font-medium gap-1.5 border-border hover:border-white/[0.2] transition-colors"}
       aria-label={available ? "Retirar jugador del mercado de transferencias" : "Poner jugador en el mercado de transferencias"}
     >
       {pending ? "Guardando..." : available ? "Retirar del mercado" : "Poner en mercado"}

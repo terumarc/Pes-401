@@ -70,7 +70,7 @@ export function RouteProgressBar() {
       className="pointer-events-none fixed top-0 left-0 right-0 z-50 h-0.5 overflow-hidden bg-transparent"
     >
       <div
-        className="h-full bg-gradient-to-r from-primary via-emerald-400 to-primary transition-all duration-200 ease-out shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+        className="h-full bg-gradient-to-r from-primary via-primary/60 to-primary transition-all duration-200 ease-out shadow-[0_0_8px_rgba(232,190,90,0.45)]"
         style={{
           width: `${progress}%`,
           opacity: progress === 100 ? 0 : 1,

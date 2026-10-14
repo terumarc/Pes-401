@@ -16,11 +16,11 @@ export function PageHeader({
   badge,
 }: PageHeaderProps) {
   return (
-    <header className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between border-b border-white/[0.06] pb-6">
+    <header className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between border-b border-border/60 pb-6">
       <div className="space-y-1.5">
         {eyebrow && (
           <div className="flex items-center gap-2">
-            <span className="inline-block size-1.5 rounded-full bg-emerald-500/80 ring-2 ring-emerald-500/20" />
+            <span className="inline-block size-1.5 rounded-full bg-primary ring-2 ring-primary/20" />
             <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
               {eyebrow}
             </p>

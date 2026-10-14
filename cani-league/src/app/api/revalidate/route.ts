@@ -34,7 +34,6 @@ export async function POST(request: Request) {
       revalidatePath("/", "layout");
       revalidatePath("/teams", "layout");
       revalidatePath("/teams", "page");
-      revalidatePath("/dashboard", "page");
       revalidatePath("/league", "page");
       revalidatePath("/finances", "page");
       revalidatePath("/standings", "page");

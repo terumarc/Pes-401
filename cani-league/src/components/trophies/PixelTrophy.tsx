@@ -1,56 +1,51 @@
+import type { CSSProperties } from "react";
 import type { TrophyType } from "@/types";
-import { TROPHY_SPRITES } from "@/components/trophies/trophy-sprites";
+import { cn } from "@/lib/utils";
 
-type Run = { x: number; y: number; w: number; color: string };
+/**
+ * Trofeo 3D en pixel art. Cada imagen de /public/trophies es una tira de
+ * FRAMES fotogramas (40×56 px) del modelo girando sobre su eje; se reproduce
+ * a saltos, como un sprite, y se escala sin suavizar.
+ * Se genera con scripts/render-trophies.py.
+ */
+const FRAMES = 16;
+const SPRITE_W = 40;
+const SPRITE_H = 56;
 
-const RUNS: Record<TrophyType, { runs: Run[]; w: number; h: number }> = (() => {
-  const out = {} as Record<TrophyType, { runs: Run[]; w: number; h: number }>;
-  for (const [key, sprite] of Object.entries(TROPHY_SPRITES) as [
-    TrophyType,
-    (typeof TROPHY_SPRITES)[TrophyType],
-  ][]) {
-    const runs: Run[] = [];
-    sprite.rows.forEach((row, y) => {
-      let x = 0;
-      while (x < row.length) {
-        const ch = row[x];
-        let w = 1;
-        while (row[x + w] === ch) w++;
-        if (ch !== ".") runs.push({ x, y, w, color: sprite.palette[ch] });
-        x += w;
-      }
-    });
-    out[key] = { runs, w: sprite.rows[0].length, h: sprite.rows.length };
-  }
-  return out;
-})();
-
-/** Trofeo en pixel art. Se escala sin suavizar para mantener los píxeles nítidos. */
 export function PixelTrophy({
   type,
   dimmed = false,
+  spin = true,
+  delay = 0,
   className,
   title,
 }: {
   type: TrophyType;
   dimmed?: boolean;
+  /** Girar. Desactívalo en iconos pequeños para no distraer. */
+  spin?: boolean;
+  /** Retraso en ms para que varios trofeos no giren sincronizados. */
+  delay?: number;
   className?: string;
   title?: string;
 }) {
-  const { runs, w, h } = RUNS[type];
+  const style: CSSProperties = {
+    aspectRatio: `${SPRITE_W} / ${SPRITE_H}`,
+    backgroundImage: `url(/trophies/${type}.png)`,
+    backgroundSize: `${FRAMES * 100}% 100%`,
+    backgroundRepeat: "no-repeat",
+    imageRendering: "pixelated",
+    animationDelay: delay ? `${delay}ms` : undefined,
+    ...(dimmed ? { filter: "grayscale(1) brightness(0.55)", opacity: 0.45 } : null),
+  };
+
   return (
-    <svg
-      viewBox={`0 0 ${w} ${h}`}
-      shapeRendering="crispEdges"
-      className={className}
+    <span
       role={title ? "img" : undefined}
+      aria-label={title}
       aria-hidden={title ? undefined : true}
-      style={dimmed ? { filter: "grayscale(1) brightness(0.55)", opacity: 0.45 } : undefined}
-    >
-      {title && <title>{title}</title>}
-      {runs.map((r, i) => (
-        <rect key={i} x={r.x} y={r.y} width={r.w} height={1} fill={r.color} />
-      ))}
-    </svg>
+      className={cn("inline-block", spin && !dimmed && "trophy-spin", className)}
+      style={style}
+    />
   );
 }

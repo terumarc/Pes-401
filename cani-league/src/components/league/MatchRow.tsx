@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/use-confirm";
+
 import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -34,6 +36,7 @@ const QUICK_GOALS = [0, 1, 2, 3, 4, 5];
 
 export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps) {
   const router = useRouter();
+  const [confirm, confirmDialog] = useConfirm();
   const [, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [homeGoals, setHomeGoals] = useState<number>(match.home_goals ?? 0);
@@ -60,7 +63,13 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
   }
 
   async function handleReset() {
-    if (!confirm("¿Borrar el resultado de este partido y devolverlo a estado pendiente?")) return;
+    const ok = await confirm({
+      title: "Borrar resultado",
+      description: "El partido vuelve a quedar pendiente y se pierde el marcador guardado.",
+      confirmLabel: "Borrar resultado",
+      destructive: true,
+    });
+    if (!ok) return;
     await resetMatchResultClient(match.id);
     setHomeGoals(0);
     setAwayGoals(0);
@@ -112,8 +121,8 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
         className={cn(
           "group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 overflow-hidden rounded-xl border p-3 transition-all",
           match.played
-            ? "border-white/[0.08] bg-card/60 hover:border-white/[0.18]"
-            : "border-dashed border-white/[0.1] bg-card/30 hover:border-primary/40",
+            ? "border-border/80 bg-card/60 hover:border-white/[0.18]"
+            : "border-dashed border-border bg-card/30 hover:border-primary/40",
         )}
       >
         {/* Glow lateral según ganador */}
@@ -127,8 +136,8 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
         )}
 
         {/* Info cabecera */}
-        <div className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">
-          <span className="rounded-md border border-white/[0.08] bg-white/[0.04] px-2 py-0.5">
+        <div className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground shrink-0">
+          <span className="rounded-md border border-border/80 bg-white/[0.04] px-2 py-0.5">
             J.{match.matchday}
           </span>
           <span>{match.round === 2 ? "Vuelta" : "Ida"}</span>
@@ -155,7 +164,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
 
           <div className="shrink-0 flex items-center justify-center">
             {match.played ? (
-              <div className="flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-black/40 px-2.5 py-1 font-display font-black text-sm tabular-nums">
+              <div className="flex items-center gap-1.5 rounded-lg border border-border bg-black/40 px-2.5 py-1 font-display font-black text-sm tabular-nums">
                 <span className={isHomeWinner ? "text-emerald-400" : "text-foreground"}>
                   {match.home_goals}
                 </span>
@@ -169,7 +178,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
                 size="sm"
                 variant="outline"
                 onClick={() => setEditing(true)}
-                className="h-7 px-2.5 text-xs font-bold gap-1 border-white/[0.1] bg-white/[0.02] hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                className="h-7 px-2.5 text-xs font-bold gap-1 border-border bg-white/[0.02] hover:bg-primary hover:text-primary-foreground hover:border-primary"
               >
                 <Pencil className="size-3" />
                 Anotar
@@ -218,6 +227,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
             </Button>
           </div>
         )}
+        {confirmDialog}
       </div>
     );
   }
@@ -232,8 +242,8 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
       className={cn(
         "group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-300",
         match.played
-          ? "border-white/[0.1] bg-card/75 shadow-lg shadow-black/25 hover:border-white/[0.22] hover:-translate-y-0.5"
-          : "border-dashed border-white/[0.12] bg-card/40 hover:border-primary/50 hover:bg-card/60",
+          ? "border-border bg-card/75 shadow-lg shadow-black/25 hover:border-white/[0.22] hover:-translate-y-0.5"
+          : "border-dashed border-border bg-card/40 hover:border-primary/50 hover:bg-card/60",
       )}
     >
       {/* 1. Dynamic Esports Club Glow (Gradiente ambiental perimetral sutil) */}
@@ -250,11 +260,11 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
 
       {/* 2. CABECERA ESPORTS: JORNADA, FASE, BOTÍN Y ESTADO */}
-      <div className="relative z-10 border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
+      <div className="relative z-10 border-b border-border/60 bg-white/[0.02] px-4 py-2.5">
         <div className="flex items-center justify-between gap-2">
           {/* Tag de Jornada & Ronda */}
-          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-            <span className="rounded-md border border-white/[0.1] bg-black/40 px-2 py-0.5 font-display text-foreground shadow-xs">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+            <span className="rounded-md border border-border bg-black/40 px-2 py-0.5 font-display text-foreground shadow-xs">
               J.{match.matchday}
             </span>
             <span className="text-white/40">·</span>
@@ -290,7 +300,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
             ) : (
               <Badge
                 variant="secondary"
-                className="h-5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-white/[0.05] border border-white/[0.08]"
+                className="h-5 px-2 text-[10px] font-semibold text-muted-foreground bg-white/[0.05] border border-border/80"
               >
                 Pendiente
               </Badge>
@@ -300,7 +310,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
 
         {/* Contexto de Ida / Vuelta & Marcador Global */}
         {match.round === 2 && reverseMatch && (
-          <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground/80 border-t border-white/[0.04] pt-1">
+          <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground/80 border-t border-border/40 pt-1">
             <span className="flex items-center gap-1">
               <History className="size-3 text-primary/70" />
               <span>Ida:</span>
@@ -331,7 +341,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {/* LOCAL COUNTER */}
               <div
-                className="flex flex-col items-center rounded-xl border border-white/[0.1] bg-black/40 p-3 shadow-inner"
+                className="flex flex-col items-center rounded-xl border border-border bg-black/40 p-3 shadow-inner"
                 style={{ borderTop: `3px solid ${homeColor}` }}
               >
                 <div className="flex items-center gap-2 mb-2 min-w-0 max-w-full">
@@ -351,7 +361,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
                   <button
                     type="button"
                     aria-label={`Restar gol a ${match.home_team.name}`}
-                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.05] text-foreground hover:bg-white/[0.12] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-border bg-white/[0.05] text-foreground hover:bg-white/[0.12] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setHomeGoals((g) => Math.max(0, g - 1))}
                   >
                     <Minus className="size-4" />
@@ -374,7 +384,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
                   <button
                     type="button"
                     aria-label={`Sumar gol a ${match.home_team.name}`}
-                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.05] text-foreground hover:bg-white/[0.12] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-border bg-white/[0.05] text-foreground hover:bg-white/[0.12] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setHomeGoals((g) => g + 1)}
                   >
                     <Plus className="size-4" />
@@ -403,7 +413,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
 
               {/* VISITANTE COUNTER */}
               <div
-                className="flex flex-col items-center rounded-xl border border-white/[0.1] bg-black/40 p-3 shadow-inner"
+                className="flex flex-col items-center rounded-xl border border-border bg-black/40 p-3 shadow-inner"
                 style={{ borderTop: `3px solid ${awayColor}` }}
               >
                 <div className="flex items-center gap-2 mb-2 min-w-0 max-w-full">
@@ -423,7 +433,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
                   <button
                     type="button"
                     aria-label={`Restar gol a ${match.away_team.name}`}
-                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.05] text-foreground hover:bg-white/[0.12] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-border bg-white/[0.05] text-foreground hover:bg-white/[0.12] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setAwayGoals((g) => Math.max(0, g - 1))}
                   >
                     <Minus className="size-4" />
@@ -445,7 +455,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
                   <button
                     type="button"
                     aria-label={`Sumar gol a ${match.away_team.name}`}
-                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.05] text-foreground hover:bg-white/[0.12] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-border bg-white/[0.05] text-foreground hover:bg-white/[0.12] active:scale-95 transition-all focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setAwayGoals((g) => g + 1)}
                   >
                     <Plus className="size-4" />
@@ -477,7 +487,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
               Pulsa <kbd className="rounded bg-white/[0.1] px-1 py-0.5 font-mono text-[9px]">Enter</kbd> para confirmar o <kbd className="rounded bg-white/[0.1] px-1 py-0.5 font-mono text-[9px]">Esc</kbd> para salir.
             </p>
 
-            <div className="flex items-center justify-end gap-2 pt-1 border-t border-white/[0.06]">
+            <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/60">
               <Button
                 type="button"
                 size="sm"
@@ -545,7 +555,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
             {/* MARCADOR O BOTÓN VS */}
             <div className="flex shrink-0 items-center justify-center px-1">
               {match.played ? (
-                <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.12] bg-black/60 px-4 py-2 shadow-2xl backdrop-blur-md">
+                <div className="flex items-center gap-2.5 rounded-xl border border-border bg-black/60 px-4 py-2 shadow-2xl backdrop-blur-md">
                   <span
                     className={cn(
                       "font-display text-2xl sm:text-3xl font-black tabular-nums tracking-tight",
@@ -575,7 +585,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
                   type="button"
                   onClick={() => setEditing(true)}
                   aria-label={`Anotar resultado entre ${match.home_team.name} y ${match.away_team.name}`}
-                  className="group/btn relative flex min-h-[44px] min-w-[72px] flex-col items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.03] px-3 py-1.5 transition-all hover:scale-105 hover:border-primary/60 hover:bg-primary/10 active:scale-95 shadow-sm"
+                  className="group/btn relative flex min-h-[44px] min-w-[72px] flex-col items-center justify-center rounded-xl border border-border bg-white/[0.03] px-3 py-1.5 transition-all hover:scale-105 hover:border-primary/60 hover:bg-primary/10 active:scale-95 shadow-sm"
                 >
                   <span className="font-display text-xs font-black tracking-widest text-muted-foreground/80 group-hover/btn:text-primary transition-colors">
                     VS
@@ -627,7 +637,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
 
       {/* 4. PIE DE TARJETA CUANDO YA ESTÁ JUGADO */}
       {match.played && !editing && (
-        <div className="relative z-10 flex items-center justify-between border-t border-white/[0.06] bg-black/20 px-4 py-2 text-xs">
+        <div className="relative z-10 flex items-center justify-between border-t border-border/60 bg-black/20 px-4 py-2 text-xs">
           <span className="text-[11px] text-muted-foreground font-medium truncate max-w-[200px] sm:max-w-none">
             {isHomeWinner
               ? `Victoria de ${match.home_team.short_name || match.home_team.name} (+3.0M€)`
@@ -664,6 +674,7 @@ export function MatchRow({ match, reverseMatch, compact = false }: MatchRowProps
           </div>
         </div>
       )}
+      {confirmDialog}
     </div>
   );
 }

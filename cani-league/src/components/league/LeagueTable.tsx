@@ -9,10 +9,10 @@ type LeagueTableProps = {
 
 export function LeagueTable({ rows }: LeagueTableProps) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md shadow-lg shadow-black/20">
+    <div className="overflow-x-auto rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md shadow-lg shadow-black/20">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-white/[0.08] bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <tr className="border-b border-border/80 bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             <th className="w-12 py-3.5 pl-4 text-left">#</th>
             <th className="py-3.5 pl-2 text-left">Club</th>
             <th className="px-3 py-3.5 text-center" title="Partidos Jugados">PJ</th>
@@ -25,7 +25,7 @@ export function LeagueTable({ rows }: LeagueTableProps) {
             <th className="px-4 py-3.5 text-center font-extrabold text-foreground" title="Puntos Totales">PTS</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.04]">
+        <tbody className="divide-y divide-border/40">
           {rows.map((row, idx) => {
             const position = idx + 1;
             const isLeader = position === 1;
@@ -44,7 +44,7 @@ export function LeagueTable({ rows }: LeagueTableProps) {
                           ? "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
                           : isEurope
                           ? "bg-blue-500/10 text-blue-300 ring-1 ring-blue-500/20"
-                          : "bg-white/[0.04] text-muted-foreground ring-1 ring-white/[0.06]"
+                          : "bg-white/[0.04] text-muted-foreground ring-1 ring-border/60"
                       }`}
                     >
                       {padPosition(position)}

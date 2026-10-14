@@ -23,7 +23,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
   const isElite = mediaValue >= 88;
 
   const content = (
-    <Card className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-card/60 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.45)]">
+    <Card className="group relative overflow-hidden rounded-xl border border-border/80 bg-card/60 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.45)]">
       {/* Stripe top-edge sheen */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -41,7 +41,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
                   {tierInfo.tier}
                 </span>
                 <span
-                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-white/[0.03] text-muted-foreground border border-white/[0.08] flex items-center gap-1"
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-white/[0.03] text-muted-foreground border border-border/80 flex items-center gap-1"
                   title={`Contrato: ${contractInfo.durationLabel}`}
                 >
                   {contractInfo.duration > 0 ? (
@@ -56,7 +56,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
               </div>
 
               <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground/90 bg-white/[0.06] border border-white/[0.08] px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">
+                <span className="font-semibold text-foreground/90 bg-white/[0.06] border border-border/80 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">
                   {player.position}
                 </span>
                 {player.nationality ? (
@@ -87,13 +87,13 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
               }`}>
                 {formatStat(mediaValue)}
               </span>
-              <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold">
+              <p className="text-[9px] text-muted-foreground font-semibold">
                 Media
               </p>
             </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between border-t border-white/[0.06] pt-2 text-xs">
+          <div className="mt-3 flex flex-wrap items-center justify-between border-t border-border/60 pt-2 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] text-muted-foreground">Valor:</span>
               <span className="font-semibold text-foreground tabular-nums">
@@ -155,7 +155,7 @@ export function PlayerAvatar({
   if (photoUrl) {
     return (
       <div
-        className={`${sizeClass} relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.12] bg-muted/40 shadow-inner select-none ${
+        className={`${sizeClass} relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/40 shadow-inner select-none ${
           isElite ? "ring-2 ring-amber-500/50 shadow-[0_0_18px_rgba(245,158,11,0.2)]" : ""
         }`}
       >
@@ -171,7 +171,7 @@ export function PlayerAvatar({
 
   return (
     <div
-      className={`${sizeClass} flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white/[0.12] via-white/[0.05] to-black/50 font-display text-foreground border border-white/[0.12] shadow-inner select-none ${
+      className={`${sizeClass} flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white/[0.12] via-white/[0.05] to-black/50 font-display text-foreground border border-border shadow-inner select-none ${
         isElite ? "ring-2 ring-amber-500/50 shadow-[0_0_18px_rgba(245,158,11,0.2)]" : ""
       }`}
       aria-hidden="true"

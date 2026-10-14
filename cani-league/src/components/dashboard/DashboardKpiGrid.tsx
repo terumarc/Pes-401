@@ -40,8 +40,8 @@ export function DashboardKpiGrid({
       subtext: `Distribuidos en ${teamCount} clubes oficiales`,
       href: "/players",
       cta: "Base de datos",
-      icon: <Users className="size-4 text-blue-400" />,
-      accentColor: "from-blue-500/20 to-transparent",
+      icon: <Users className="size-4 text-primary" />,
+      accentColor: "from-primary/15 to-transparent",
     },
     {
       label: "Mercado Activo",
@@ -61,8 +61,8 @@ export function DashboardKpiGrid({
           : "Calendario preparado",
       href: "/calendar",
       cta: "Ver calendario",
-      icon: <Trophy className="size-4 text-purple-400" />,
-      accentColor: "from-purple-500/20 to-transparent",
+      icon: <Trophy className="size-4 text-primary" />,
+      accentColor: "from-primary/15 to-transparent",
     },
   ];
 
@@ -73,17 +73,17 @@ export function DashboardKpiGrid({
           <Link
             key={kpi.label}
             href={kpi.href}
-            className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-white/[0.08] bg-card/60 p-4.5 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.18] hover:bg-card/85 hover:shadow-lg hover:shadow-black/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border/80 bg-card/60 p-4.5 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.18] hover:bg-card/85 hover:shadow-lg hover:shadow-black/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {/* Stripe subtle top hairline gradient */}
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
 
             <div>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                <span className="text-[11px] font-semibold text-muted-foreground">
                   {kpi.label}
                 </span>
-                <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-1.5 transition-colors group-hover:bg-white/[0.07]">
+                <div className="rounded-lg border border-border/80 bg-white/[0.03] p-1.5 transition-colors group-hover:bg-white/[0.07]">
                   {kpi.icon}
                 </div>
               </div>
@@ -98,7 +98,7 @@ export function DashboardKpiGrid({
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-2.5 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+            <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-2.5 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
               <span>{kpi.cta}</span>
               <ArrowUpRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </div>

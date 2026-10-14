@@ -496,12 +496,12 @@ export function PlayerList({
   return (
     <div className="space-y-6" id="players-view-container">
       {/* FILTER & CONTROLS PANEL */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/40 p-4 shadow-sm backdrop-blur-md space-y-4">
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/40 p-4 shadow-sm backdrop-blur-md space-y-4">
         {/* Subtle top edge sheen */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
         {/* Selector Principal por Agrupaciones de Posición */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
           <div
             role="tablist"
             aria-label="Filtrar por demarcación en el campo"
@@ -530,7 +530,7 @@ export function PlayerList({
                   className={`flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     active
                       ? tab.activeClass
-                      : "bg-white/[0.04] border border-white/[0.06] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
+                      : "bg-white/[0.04] border border-border/60 text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
                   }`}
                 >
                   <span className="text-base leading-none" aria-hidden="true">{tab.icon}</span>
@@ -588,7 +588,7 @@ export function PlayerList({
                 setSearch(e.target.value);
                 handleFilterChange();
               }}
-              className="pl-10 pr-10 h-10 min-h-[40px] bg-background/70 border-white/[0.1] focus-visible:ring-primary/40 text-xs sm:text-sm font-medium"
+              className="pl-10 pr-10 h-10 min-h-[40px] bg-background/70 border-border focus-visible:ring-primary/40 text-xs sm:text-sm font-medium"
             />
             {search && (
               <button
@@ -611,7 +611,7 @@ export function PlayerList({
             onClick={() => setShowAdvanced(!showAdvanced)}
             aria-expanded={showAdvanced}
             aria-controls="advanced-filters-panel"
-            className="gap-1.5 h-10 min-h-[40px] px-3.5 text-xs sm:text-sm font-medium border-white/[0.1] hover:border-white/[0.2]"
+            className="gap-1.5 h-10 min-h-[40px] px-3.5 text-xs sm:text-sm font-medium border-border hover:border-white/[0.2]"
           >
             <SlidersHorizontal className="size-3.5" />
             <span>Filtros avanzados</span>
@@ -630,7 +630,7 @@ export function PlayerList({
                 setSortBy(e.target.value as SortOption);
                 handleFilterChange();
               }}
-              className="h-10 min-h-[40px] rounded-lg border border-white/[0.1] bg-background/80 px-3 text-xs sm:text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
+              className="h-10 min-h-[40px] rounded-lg border border-border bg-background/80 px-3 text-xs sm:text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
             >
               <option value="overall_desc">Mayor Media (OVR ↓)</option>
               <option value="overall_asc">Menor Media (OVR ↑)</option>
@@ -651,7 +651,7 @@ export function PlayerList({
           <div
             role="group"
             aria-label="Modo de visualización"
-            className="flex items-center rounded-lg border border-white/[0.1] bg-background/60 p-1 shadow-xs"
+            className="flex items-center rounded-lg border border-border bg-background/60 p-1 shadow-xs"
           >
             <button
               type="button"
@@ -688,7 +688,7 @@ export function PlayerList({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-1">
           {/* 1. Nationality Selector */}
           <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
               <Globe className="size-3" /> Nacionalidad
             </label>
             <select
@@ -710,7 +710,7 @@ export function PlayerList({
 
           {/* 2. Position Category Selector */}
           <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
               <Filter className="size-3" /> {positionGroupTab === "all" ? "Posición" : `Filtro ${POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}`}
             </label>
             <select
@@ -732,7 +732,7 @@ export function PlayerList({
 
           {/* 3. Average Points / Overall Selector */}
           <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
               ★ Media ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel})
             </label>
             <select
@@ -753,7 +753,7 @@ export function PlayerList({
 
           {/* 4. Range of Value Selector */}
           <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
               💰 Rango de Valor
             </label>
             <select
@@ -879,9 +879,9 @@ export function PlayerList({
         <div
           role="group"
           aria-label="Filtro rápido por Tier"
-          className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-white/[0.06]"
+          className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-border/60"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1 shrink-0 flex items-center gap-1.5">
+          <span className="text-[11px] font-semibold text-muted-foreground mr-1 shrink-0 flex items-center gap-1.5">
             <SlidersHorizontal className="size-3 text-primary" aria-hidden="true" />
             Tiers ({POSITION_TABS.find((t) => t.id === positionGroupTab)?.shortLabel}):
           </span>
@@ -895,7 +895,7 @@ export function PlayerList({
             className={`rounded-full px-3 py-1 min-h-[32px] text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               selectedTier === "TODOS"
                 ? "bg-primary text-primary-foreground shadow-xs"
-                : "bg-white/[0.05] border border-white/[0.08] text-muted-foreground hover:bg-white/[0.09] hover:text-foreground"
+                : "bg-white/[0.05] border border-border/80 text-muted-foreground hover:bg-white/[0.09] hover:text-foreground"
             }`}
           >
             Todos
@@ -917,7 +917,7 @@ export function PlayerList({
                 className={`rounded-full px-3 py-1 min-h-[32px] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   active
                     ? "bg-primary text-primary-foreground shadow-xs font-bold"
-                    : "bg-white/[0.05] border border-white/[0.08] text-muted-foreground hover:bg-white/[0.09] hover:text-foreground"
+                    : "bg-white/[0.05] border border-border/80 text-muted-foreground hover:bg-white/[0.09] hover:text-foreground"
                 }`}
               >
                 <span>Tier {tier}</span>
@@ -936,7 +936,7 @@ export function PlayerList({
         </div>
 
         {/* ACTIVE FILTERS & INFO BAR */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2.5 border-t border-white/[0.06] text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2.5 border-t border-border/60 text-xs">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-muted-foreground font-medium mr-1">
               Mostrando <strong className="text-foreground">{filteredAndSorted.length.toLocaleString()}</strong> de{" "}
@@ -945,7 +945,7 @@ export function PlayerList({
 
             {/* Active filter badges */}
             {selectedNationality !== "TODAS" && (
-              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-border text-foreground">
                 <span>País: {selectedNationality}</span>
                 <button
                   type="button"
@@ -962,7 +962,7 @@ export function PlayerList({
             )}
 
             {selectedPos !== "TODAS" && (
-              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-border text-foreground">
                 <span>Posición: {selectedPos}</span>
                 <button
                   type="button"
@@ -979,7 +979,7 @@ export function PlayerList({
             )}
 
             {selectedTier !== "TODOS" && (
-              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-border text-foreground">
                 <span>Tier: {selectedTier}</span>
                 <button
                   type="button"
@@ -996,7 +996,7 @@ export function PlayerList({
             )}
 
             {overallPreset !== "ALL" && (
-              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-border text-foreground">
                 <span>Media: {overallPreset === "CUSTOM" ? (customMinOverall || "0") + " - " + (customMaxOverall || "100") : overallPreset}</span>
                 <button
                   type="button"
@@ -1015,7 +1015,7 @@ export function PlayerList({
             )}
 
             {valuePreset !== "ALL" && (
-              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-border text-foreground">
                 <span>Valor: {valuePreset === "CUSTOM" ? (customMinValue ? formatMoney(Number(customMinValue)) : "0") + " - " + (customMaxValue ? formatMoney(Number(customMaxValue)) : "Max") : valuePreset}</span>
                 <button
                   type="button"
@@ -1034,7 +1034,7 @@ export function PlayerList({
             )}
 
             {selectedTeam !== "TODOS" && (
-              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-white/[0.1] text-foreground">
+              <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs bg-white/[0.06] border-border text-foreground">
                 <span>Equipo: {teams.find((t) => t.id === selectedTeam)?.name || selectedTeam}</span>
                 <button
                   type="button"
@@ -1065,8 +1065,8 @@ export function PlayerList({
 
       {/* Main Content View */}
       {filteredAndSorted.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed border-white/[0.12] bg-card/40 backdrop-blur-md rounded-2xl">
-          <div className="size-12 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center mb-3">
+        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed border-border bg-card/40 backdrop-blur-md rounded-2xl">
+          <div className="size-12 rounded-full bg-white/[0.06] border border-border/80 flex items-center justify-center mb-3">
             <Search className="size-6 text-muted-foreground" aria-hidden="true" />
           </div>
           <h3 className="font-display font-semibold text-base text-foreground">No hay resultados</h3>
@@ -1076,7 +1076,7 @@ export function PlayerList({
           <Button
             variant="outline"
             onClick={clearFilters}
-            className="mt-4 gap-1.5 min-h-[40px] px-4 font-semibold border-white/[0.1] hover:border-white/[0.2]"
+            className="mt-4 gap-1.5 min-h-[40px] px-4 font-semibold border-border hover:border-white/[0.2]"
           >
             <RotateCcw className="size-3.5" aria-hidden="true" /> Limpiar todos los filtros
           </Button>
@@ -1093,9 +1093,9 @@ export function PlayerList({
         </section>
       ) : (
         /* Scouting Table View */
-        <div id="players-results-section" className="overflow-x-auto rounded-xl border border-white/[0.08] bg-card/40 backdrop-blur-md shadow-sm">
+        <div id="players-results-section" className="overflow-x-auto rounded-xl border border-border/80 bg-card/40 backdrop-blur-md shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-white/[0.06] bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <thead className="border-b border-border/60 bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th scope="col" className="px-4 py-3">Jugador</th>
                 <th scope="col" className="px-3 py-3">Pos</th>
@@ -1118,7 +1118,7 @@ export function PlayerList({
                 <th scope="col" className="px-4 py-3 text-right">Valor</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04] font-medium">
+            <tbody className="divide-y divide-border/40 font-medium">
               {paginatedPlayers.map((player) => {
                 const tierInfo = getPlayerTier(player);
                 const contractInfo = getPlayerContractInfo(player);
@@ -1136,7 +1136,7 @@ export function PlayerList({
                       </Link>
                     </td>
                     <td className="px-3 py-2.5">
-                      <span className="rounded px-1.5 py-0.5 text-[11px] font-bold bg-white/[0.06] border border-white/[0.08] text-foreground/80">
+                      <span className="rounded px-1.5 py-0.5 text-[11px] font-bold bg-white/[0.06] border border-border/80 text-foreground/80">
                         {player.position}
                       </span>
                     </td>
@@ -1155,7 +1155,7 @@ export function PlayerList({
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-center hidden sm:table-cell">
-                      <span className="inline-flex items-center text-[11px] font-semibold text-muted-foreground bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-md">
+                      <span className="inline-flex items-center text-[11px] font-semibold text-muted-foreground bg-white/[0.04] border border-border/60 px-2 py-0.5 rounded-md">
                         {contractInfo.durationBadge}
                       </span>
                     </td>
@@ -1197,7 +1197,7 @@ export function PlayerList({
       {totalPages > 1 && (
         <nav
           aria-label="Paginación de jugadores"
-          className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.08] pt-4 text-xs text-muted-foreground"
+          className="flex flex-wrap items-center justify-between gap-4 border-t border-border/80 pt-4 text-xs text-muted-foreground"
         >
           <span>
             Página <strong className="text-foreground">{safePage}</strong> de{" "}
@@ -1210,7 +1210,7 @@ export function PlayerList({
               disabled={safePage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               aria-label="Página anterior"
-              className="h-9 min-h-[36px] px-3 gap-1.5 text-xs font-semibold border-white/[0.1] hover:border-white/[0.2] transition-colors"
+              className="h-9 min-h-[36px] px-3 gap-1.5 text-xs font-semibold border-border hover:border-white/[0.2] transition-colors"
             >
               <ChevronLeft className="size-3.5" aria-hidden="true" />
               <span>Anterior</span>
@@ -1240,7 +1240,7 @@ export function PlayerList({
                     className={`size-9 min-w-[36px] min-h-[36px] rounded-lg text-xs font-bold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       isCurrent
                         ? "bg-primary text-primary-foreground shadow-xs"
-                        : "bg-white/[0.04] border border-white/[0.06] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
+                        : "bg-white/[0.04] border border-border/60 text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
                     }`}
                   >
                     {pNum}
@@ -1254,7 +1254,7 @@ export function PlayerList({
               disabled={safePage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               aria-label="Página siguiente"
-              className="h-9 min-h-[36px] px-3 gap-1.5 text-xs font-semibold border-white/[0.1] hover:border-white/[0.2] transition-colors"
+              className="h-9 min-h-[36px] px-3 gap-1.5 text-xs font-semibold border-border hover:border-white/[0.2] transition-colors"
             >
               <span>Siguiente</span>
               <ChevronRight className="size-3.5" aria-hidden="true" />

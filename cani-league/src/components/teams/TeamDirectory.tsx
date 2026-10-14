@@ -87,7 +87,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
   return (
     <div className="space-y-6">
       {/* BARRA DE HERRAMIENTAS / FILTROS CON ACABADO STRIPE */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.08] bg-card/60 p-3.5 backdrop-blur-md shadow-xs sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-card/60 p-3.5 backdrop-blur-md shadow-xs sm:flex-row sm:items-center sm:justify-between">
         {/* BUSCADOR */}
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -95,7 +95,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por club, sigla o propietario…"
-            className="pl-9 pr-9 h-10 border-white/[0.08] bg-white/[0.03] text-sm focus-visible:ring-primary/40"
+            className="pl-9 pr-9 h-10 border-border/80 bg-white/[0.03] text-sm focus-visible:ring-primary/40"
           />
           {search && (
             <button
@@ -118,7 +118,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
               aria-label="Ordenar equipos"
-              className="h-10 rounded-xl border border-white/[0.08] bg-white/[0.04] pl-8 pr-7 text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+              className="h-10 rounded-xl border border-border/80 bg-white/[0.04] pl-8 pr-7 text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
             >
               <option value="position_asc">Clasificación (#1 a #N)</option>
               <option value="budget_desc">Mayor Presupuesto</option>
@@ -131,7 +131,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
           </div>
 
           {/* ALTERNADOR DE VISTA GRID / TABLE */}
-          <div className="flex items-center rounded-xl border border-white/[0.08] bg-white/[0.03] p-0.5">
+          <div className="flex items-center rounded-xl border border-border/80 bg-white/[0.03] p-0.5">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
@@ -167,7 +167,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
               variant="ghost"
               size="sm"
               onClick={() => setSearch("")}
-              className="h-10 gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-white/[0.08]"
+              className="h-10 gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border/80"
               title="Restablecer filtros"
             >
               <RotateCcw className="size-3.5" />
@@ -192,8 +192,8 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
 
       {/* RESULTADOS O EMPTY STATE */}
       {filteredTeams.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-white/[0.12] bg-card/30 p-12 text-center backdrop-blur-xs">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white/[0.05] border border-white/[0.08]">
+        <div className="rounded-3xl border border-dashed border-border bg-card/30 p-12 text-center backdrop-blur-xs">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white/[0.05] border border-border/80">
             <Shield className="size-6 text-muted-foreground" />
           </div>
           <h3 className="mt-4 font-display text-lg font-bold text-foreground">
@@ -205,7 +205,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
           <Button
             variant="outline"
             onClick={() => setSearch("")}
-            className="mt-5 gap-1.5 font-display text-xs border-white/[0.1]"
+            className="mt-5 gap-1.5 font-display text-xs border-border"
           >
             <RotateCcw className="size-3.5" />
             Limpiar búsqueda
@@ -220,11 +220,11 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
         </div>
       ) : (
         /* VISTA DE TABLA COMPARATIVA STRIPE */
-        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md shadow-xs">
+        <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="border-b border-white/[0.08] bg-white/[0.02] text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border/80 bg-white/[0.02] text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   <th scope="col" className="px-4 py-3.5 text-center w-14">
                     Pos
                   </th>
@@ -254,7 +254,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className="divide-y divide-border/40">
                 {filteredTeams.map((team) => {
                   const rankDelta =
                     team.previous_position != null &&
@@ -311,10 +311,10 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
                             size="sm"
                           />
                           <div className="min-w-0">
-                            <span className="font-display font-bold uppercase text-foreground group-hover:text-primary transition-colors truncate block">
+                            <span className="font-display font-bold text-foreground group-hover:text-primary transition-colors truncate block">
                               {team.name}
                             </span>
-                            <span className="text-[11px] font-semibold text-muted-foreground uppercase">
+                            <span className="text-[11px] font-semibold text-muted-foreground">
                               {team.short_name}
                             </span>
                           </div>
@@ -340,7 +340,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
                                 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
                                 : team.avg_overall >= 75
                                 ? "bg-blue-500/15 text-blue-400 border-blue-500/30"
-                                : "bg-white/[0.04] text-foreground border-white/[0.08]"
+                                : "bg-white/[0.04] text-foreground border-border/80"
                             )}
                           >
                             ★ {team.avg_overall}

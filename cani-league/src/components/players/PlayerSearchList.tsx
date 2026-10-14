@@ -297,7 +297,7 @@ export function PlayerSearchList({ players, teams = [] }: PlayerSearchListProps)
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {/* 1. NATIONALITY FILTER */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+            <label className="text-[11px] font-bold text-muted-foreground">
               Nacionalidad
             </label>
             <Select value={nationality} onValueChange={(val) => setNationality(val ?? "ALL")}>
@@ -317,7 +317,7 @@ export function PlayerSearchList({ players, teams = [] }: PlayerSearchListProps)
 
           {/* 2. POSITION FILTER */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+            <label className="text-[11px] font-bold text-muted-foreground">
               Posición
             </label>
             <Select value={positionFilter} onValueChange={(val) => setPositionFilter(val ?? "ALL")}>
@@ -342,7 +342,7 @@ export function PlayerSearchList({ players, teams = [] }: PlayerSearchListProps)
 
           {/* 3. AVERAGE POINTS / OVERALL FILTER */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+            <label className="text-[11px] font-bold text-muted-foreground">
               Puntos de Media (OVR)
             </label>
             <Select value={overallPreset} onValueChange={(val) => setOverallPreset(val ?? "ALL")}>
@@ -361,7 +361,7 @@ export function PlayerSearchList({ players, teams = [] }: PlayerSearchListProps)
 
           {/* 4. RANGE OF VALUE FILTER */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+            <label className="text-[11px] font-bold text-muted-foreground">
               Rango de Valor
             </label>
             <Select value={valuePreset} onValueChange={(val) => setValuePreset(val ?? "ALL")}>

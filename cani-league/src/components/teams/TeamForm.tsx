@@ -92,7 +92,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6 pt-2">
       {/* TARJETA DE PREVISUALIZACIÓN EN VIVO (LIVE PREVIEW) */}
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <Sparkles className="size-3.5 text-amber-400" />
             Vista previa en directo
@@ -102,7 +102,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
           </span>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-card/80 shadow-md">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card/80 shadow-md">
           {/* Banner con gradiente en vivo */}
           <div
             className="h-16 w-full p-3 transition-colors duration-300"
@@ -113,7 +113,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
             <div className="flex items-center justify-between">
               <Badge
                 variant="outline"
-                className="bg-black/40 text-[10px] font-extrabold uppercase text-white/90 border-white/20 backdrop-blur-xs"
+                className="bg-black/40 text-[10px] font-extrabold text-white/90 border-white/20 backdrop-blur-xs"
               >
                 {form.short_name || "TAG"}
               </Badge>
@@ -134,7 +134,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
 
           <div className="px-4 pb-3.5 pt-0">
             <div className="-mt-7 flex items-center gap-3">
-              <div className="rounded-full bg-card p-1 shadow-md ring-2 ring-white/[0.1]">
+              <div className="rounded-full bg-card p-1 shadow-md ring-2 ring-border">
                 <TeamLogo
                   name={form.name || "Club"}
                   logoUrl={form.logo_url || null}
@@ -143,7 +143,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                 />
               </div>
               <div className="min-w-0 pt-6">
-                <h4 className="truncate font-display text-base font-bold uppercase text-foreground">
+                <h4 className="truncate font-display text-base font-bold text-foreground">
                   {form.name || "Nombre del Club"}
                 </h4>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -168,7 +168,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Ej. Real Madrid, Arsenal FC..."
-                className="h-10 border-white/[0.08] bg-white/[0.03]"
+                className="h-10 border-border/80 bg-white/[0.03]"
               />
             </Field>
           </div>
@@ -183,7 +183,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                   setForm((f) => ({ ...f, short_name: e.target.value.toUpperCase() }))
                 }
                 placeholder="RMA, ARS..."
-                className="h-10 border-white/[0.08] bg-white/[0.03] uppercase font-mono font-bold"
+                className="h-10 border-border/80 bg-white/[0.03] uppercase font-mono font-bold"
               />
             </Field>
           </div>
@@ -194,7 +194,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
             value={form.owner_name}
             onChange={(e) => setForm((f) => ({ ...f, owner_name: e.target.value }))}
             placeholder="Nombre o alias del entrenador/mánager"
-            className="h-10 border-white/[0.08] bg-white/[0.03]"
+            className="h-10 border-border/80 bg-white/[0.03]"
           />
         </Field>
 
@@ -207,9 +207,9 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
         />
 
         {/* SELECCIÓN DE COLORES */}
-        <div className="space-y-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5">
+        <div className="space-y-2 rounded-xl border border-border/80 bg-white/[0.02] p-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
               <Palette className="size-3.5 text-primary" />
               <span>Colores del Club</span>
             </div>
@@ -220,7 +220,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
 
           <div className="grid grid-cols-2 gap-3 pt-1">
             <div className="space-y-1">
-              <Label className="text-[10px] font-semibold text-muted-foreground uppercase">
+              <Label className="text-[10px] font-semibold text-muted-foreground">
                 Color Primario
               </Label>
               <div className="flex items-center gap-2">
@@ -230,7 +230,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, primary_color: e.target.value }))
                   }
-                  className="size-9 cursor-pointer rounded-lg border border-white/[0.1] bg-transparent p-0.5"
+                  className="size-9 cursor-pointer rounded-lg border border-border bg-transparent p-0.5"
                   aria-label="Color primario"
                 />
                 <Input
@@ -238,13 +238,13 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, primary_color: e.target.value }))
                   }
-                  className="h-9 font-mono text-xs uppercase border-white/[0.08] bg-white/[0.03]"
+                  className="h-9 font-mono text-xs uppercase border-border/80 bg-white/[0.03]"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label className="text-[10px] font-semibold text-muted-foreground uppercase">
+              <Label className="text-[10px] font-semibold text-muted-foreground">
                 Color Secundario
               </Label>
               <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, secondary_color: e.target.value }))
                   }
-                  className="size-9 cursor-pointer rounded-lg border border-white/[0.1] bg-transparent p-0.5"
+                  className="size-9 cursor-pointer rounded-lg border border-border bg-transparent p-0.5"
                   aria-label="Color secundario"
                 />
                 <Input
@@ -262,15 +262,15 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, secondary_color: e.target.value }))
                   }
-                  className="h-9 font-mono text-xs uppercase border-white/[0.08] bg-white/[0.03]"
+                  className="h-9 font-mono text-xs uppercase border-border/80 bg-white/[0.03]"
                 />
               </div>
             </div>
           </div>
 
           {/* PALETAS RÁPIDAS DE FÚTBOL */}
-          <div className="pt-2 border-t border-white/[0.06]">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase block mb-1.5">
+          <div className="pt-2 border-t border-border/60">
+            <span className="text-[10px] font-semibold text-muted-foreground block mb-1.5">
               Paletas Clásicas
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -285,7 +285,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                       secondary_color: preset.secondary,
                     }))
                   }
-                  className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-white/[0.08] hover:text-foreground transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 rounded-lg border border-border/80 bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-white/[0.08] hover:text-foreground transition-all cursor-pointer"
                 >
                   <span className="flex items-center -space-x-1">
                     <span
@@ -354,7 +354,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+      <Label className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
         {icon}
         <span>{label}</span>
       </Label>

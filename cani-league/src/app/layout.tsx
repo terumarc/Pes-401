@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
+import { Geist } from "next/font/google";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cn("dark antialiased", "font-sans", geist.variable)} suppressHydrationWarning>
+    <html lang="es" className={cn("dark antialiased", "font-sans", geist.variable)} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <RouteProgressBar />
         <TooltipProvider>

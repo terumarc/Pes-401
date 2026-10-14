@@ -171,7 +171,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-2xl font-black tracking-tight text-foreground uppercase">
+            <h2 className="font-display text-2xl font-black tracking-tight text-foreground">
               Plantilla del Club
             </h2>
             <Badge variant="secondary" className="font-display font-bold tabular-nums">
@@ -207,7 +207,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             "flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-emerald-400",
             activeTab === "all"
               ? "bg-emerald-600 text-white shadow-xs"
-              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-white/[0.06]"
+              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-border/60"
           )}
         >
           <span>Todos</span>
@@ -228,7 +228,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             "flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-amber-500",
             activeTab === "gk"
               ? "bg-amber-600 text-white shadow-xs"
-              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-white/[0.06]"
+              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-border/60"
           )}
         >
           <span>🧤 Porteros</span>
@@ -249,7 +249,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             "flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
             activeTab === "def"
               ? "bg-blue-600 text-white shadow-xs"
-              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-white/[0.06]"
+              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-border/60"
           )}
         >
           <span>🛡️ Defensas</span>
@@ -270,7 +270,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             "flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
             activeTab === "mid"
               ? "bg-emerald-600 text-white shadow-xs"
-              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-white/[0.06]"
+              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-border/60"
           )}
         >
           <span>🎯 Medios</span>
@@ -291,7 +291,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             "flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-rose-500",
             activeTab === "att"
               ? "bg-rose-600 text-white shadow-xs"
-              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-white/[0.06]"
+              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-border/60"
           )}
         >
           <span>⚡ Delanteros</span>
@@ -312,7 +312,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             "flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-emerald-400",
             activeTab === "market"
               ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-xs"
-              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-white/[0.06]"
+              : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground border border-border/60"
           )}
         >
           <Store className="size-3.5 text-emerald-400" />
@@ -331,7 +331,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
       </div>
 
       {/* BARRA DE HERRAMIENTAS: BÚSQUEDA, ORDENACIÓN Y MODO DE VISTA */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.08] bg-card/60 p-3.5 backdrop-blur-md shadow-xs sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-card/60 p-3.5 backdrop-blur-md shadow-xs sm:flex-row sm:items-center sm:justify-between">
         {/* BUSCADOR */}
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -339,7 +339,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar futbolista por nombre, posición o nacionalidad…"
-            className="pl-9 pr-9 h-10 border-white/[0.08] bg-white/[0.03] text-sm focus-visible:ring-primary/40"
+            className="pl-9 pr-9 h-10 border-border/80 bg-white/[0.03] text-sm focus-visible:ring-primary/40"
           />
           {search && (
             <button
@@ -362,7 +362,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
               aria-label="Ordenar futbolistas"
-              className="h-10 rounded-xl border border-white/[0.08] bg-white/[0.04] pl-8 pr-7 text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+              className="h-10 rounded-xl border border-border/80 bg-white/[0.04] pl-8 pr-7 text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
             >
               <option value="overall_desc">Mayor Media OVR</option>
               <option value="overall_asc">Menor Media OVR</option>
@@ -375,7 +375,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
           </div>
 
           {/* ALTERNADOR DE VISTA */}
-          <div className="flex items-center rounded-xl border border-white/[0.08] bg-white/[0.03] p-0.5">
+          <div className="flex items-center rounded-xl border border-border/80 bg-white/[0.03] p-0.5">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
@@ -414,7 +414,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
                 setActiveTab("all");
                 setSearch("");
               }}
-              className="h-10 gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-white/[0.08]"
+              className="h-10 gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border/80"
               title="Restablecer filtros"
             >
               <RotateCcw className="size-3.5" />
@@ -434,8 +434,8 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
 
       {/* RESULTADOS O ESTADO VACÍO */}
       {players.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-white/[0.12] bg-card/30 p-12 text-center backdrop-blur-xs">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-white/[0.05] border border-white/[0.08] shadow-inner">
+        <div className="rounded-3xl border border-dashed border-border bg-card/30 p-12 text-center backdrop-blur-xs">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-white/[0.05] border border-border/80 shadow-inner">
             <Users className="size-7 text-muted-foreground" />
           </div>
           <h3 className="mt-4 font-display text-lg font-bold text-foreground">
@@ -455,8 +455,8 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
           </Button>
         </div>
       ) : filteredPlayers.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-white/[0.12] bg-card/30 p-12 text-center backdrop-blur-xs">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white/[0.05] border border-white/[0.08]">
+        <div className="rounded-3xl border border-dashed border-border bg-card/30 p-12 text-center backdrop-blur-xs">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white/[0.05] border border-border/80">
             <Users className="size-6 text-muted-foreground" />
           </div>
           <h3 className="mt-4 font-display text-lg font-bold text-foreground">
@@ -471,7 +471,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
               setActiveTab("all");
               setSearch("");
             }}
-            className="mt-5 gap-1.5 font-display text-xs border-white/[0.1]"
+            className="mt-5 gap-1.5 font-display text-xs border-border"
           >
             <RotateCcw className="size-3.5" />
             Restablecer filtros
@@ -491,7 +491,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
             return (
               <Card
                 key={player.id}
-                className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.45)]"
+                className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.22] hover:bg-card/90 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.45)]"
               >
                 {/* Hairline sheen */}
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
@@ -539,10 +539,10 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
                           "flex flex-col items-center justify-center rounded-xl px-2.5 py-1 font-display font-black shadow-xs shrink-0",
                           isHighOvr
                             ? "bg-primary text-primary-foreground"
-                            : "bg-white/[0.06] border border-white/[0.08] text-foreground"
+                            : "bg-white/[0.06] border border-border/80 text-foreground"
                         )}
                       >
-                        <span className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground">
+                        <span className="text-[9px] font-bold text-muted-foreground">
                           MEDIA
                         </span>
                         <span className="text-base font-extrabold tabular-nums">
@@ -553,9 +553,9 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
                   </div>
 
                   {/* PRECIOS, VALOR Y RENOVACIÓN */}
-                  <div className="mt-3.5 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] border border-white/[0.06] p-2.5 text-xs">
+                  <div className="mt-3.5 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] border border-border/60 p-2.5 text-xs">
                     <div>
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                      <span className="text-[10px] font-semibold text-muted-foreground">
                         Valor (Tier {tierInfo.tier})
                       </span>
                       <p className="font-display font-bold text-foreground tabular-nums">
@@ -563,7 +563,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
                       </p>
                     </div>
                     <div>
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                      <span className="text-[10px] font-semibold text-muted-foreground">
                         Renovación ({contractInfo.renewalPercentLabel})
                       </span>
                       <p className="font-display font-bold text-foreground tabular-nums">
@@ -577,7 +577,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
                   </div>
 
                   {/* MERCADO FLAG Y ACCIONES */}
-                  <div className="mt-3.5 flex items-center justify-between border-t border-white/[0.06] pt-3 gap-2">
+                  <div className="mt-3.5 flex items-center justify-between border-t border-border/60 pt-3 gap-2">
                     {player.available_in_market ? (
                       <Badge
                         variant="outline"
@@ -608,11 +608,11 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
         </div>
       ) : (
         /* VISTA DE TABLA TÁCTICA */
-        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md shadow-xs">
+        <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="border-b border-white/[0.08] bg-white/[0.02] text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border/80 bg-white/[0.02] text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   <th scope="col" className="px-4 py-3.5">
                     Futbolista
                   </th>
@@ -645,7 +645,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className="divide-y divide-border/40">
                 {filteredPlayers.map((player) => {
                   const posBadge = getPositionBadge(player.position);
                   const mediaValue = getPlayerEffectiveRating(player);
@@ -715,7 +715,7 @@ export function TeamSquadView({ team, players, teams }: TeamSquadViewProps) {
 
                       {/* CONTRATO */}
                       <td className="px-3 py-2.5 text-center hidden md:table-cell">
-                        <span className="inline-flex items-center text-[11px] font-semibold text-muted-foreground bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-md">
+                        <span className="inline-flex items-center text-[11px] font-semibold text-muted-foreground bg-white/[0.04] border border-border/60 px-2 py-0.5 rounded-md">
                           {contractInfo.durationBadge}
                         </span>
                       </td>

@@ -56,7 +56,7 @@ export function DashboardStandingsPodium({
                 className={`relative flex flex-col justify-between overflow-hidden rounded-xl border p-3.5 backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-card/90 ${conf.ringColor} ${conf.glow}`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${conf.accentText}`}>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${conf.accentText}`}>
                     {conf.icon} {conf.badge}
                   </span>
                   <span className="font-display text-xs font-semibold tabular-nums text-muted-foreground">
@@ -81,7 +81,7 @@ export function DashboardStandingsPodium({
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between border-t border-white/[0.08] pt-2 text-xs">
+                <div className="mt-3 flex items-center justify-between border-t border-border/80 pt-2 text-xs">
                   <span className="text-[11px] text-muted-foreground">Presupuesto</span>
                   <BudgetDisplay amount={row.team.budget} size="sm" className="font-semibold" />
                 </div>
@@ -93,14 +93,14 @@ export function DashboardStandingsPodium({
 
       {/* Remaining Teams in Compact Clean List */}
       {remaining.length > 0 && (
-        <div className="rounded-xl border border-white/[0.08] bg-card/40 p-1 backdrop-blur-sm overflow-hidden">
-          <ol className="divide-y divide-white/[0.05]">
+        <div className="rounded-xl border border-border/80 bg-card/40 p-1 backdrop-blur-sm overflow-hidden">
+          <ol className="divide-y divide-border/50">
             {remaining.map((row) => (
               <li
                 key={row.team_id}
                 className="flex items-center gap-3 py-2.5 px-3 transition-colors hover:bg-white/[0.03] rounded-lg"
               >
-                <span className="flex size-6 items-center justify-center rounded-md bg-white/[0.04] font-display text-xs font-semibold tabular-nums text-muted-foreground ring-1 ring-white/[0.06]">
+                <span className="flex size-6 items-center justify-center rounded-md bg-white/[0.04] font-display text-xs font-semibold tabular-nums text-muted-foreground ring-1 ring-border/60">
                   {padPosition(row.position)}
                 </span>
                 <TeamLogo

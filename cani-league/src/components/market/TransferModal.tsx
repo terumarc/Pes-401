@@ -107,7 +107,7 @@ export function TransferModal({
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md border-white/[0.08] bg-card/95 backdrop-blur-xl shadow-2xl p-6">
+            <DialogContent className="sm:max-w-md border-border/80 bg-card/95 backdrop-blur-xl shadow-2xl p-6">
                 <DialogHeader className="space-y-1.5 pb-2 border-b border-border/50">
                     <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-display font-bold">
                         {isClausula ? (
@@ -149,7 +149,7 @@ export function TransferModal({
                 ) : (
                     <div className="space-y-4 py-2">
                         {/* Resumen del jugador */}
-                        <div className="flex items-center gap-3.5 rounded-xl border border-white/[0.08] bg-muted/40 p-3">
+                        <div className="flex items-center gap-3.5 rounded-xl border border-border/80 bg-muted/40 p-3">
                             <PlayerAvatar name={player.name} photoUrl={player.photo_url ?? null} size="md" />
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -175,7 +175,7 @@ export function TransferModal({
                                 </p>
                             </div>
                             <div className="text-right shrink-0">
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">
+                                <span className="text-[10px] font-bold text-muted-foreground block">
                                     {isClausula ? "Cláusula" : "Precio"}
                                 </span>
                                 <BudgetDisplay amount={price} size="sm" className="font-bold text-foreground" />
@@ -184,11 +184,11 @@ export function TransferModal({
 
                         {/* Selector de equipo comprador */}
                         <div className="space-y-2">
-                            <label htmlFor="transfer-buyer-select" className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                            <label htmlFor="transfer-buyer-select" className="text-xs font-bold text-muted-foreground block">
                                 Equipo comprador
                             </label>
                             <Select value={buyerTeamId} onValueChange={setBuyerTeamId}>
-                                <SelectTrigger id="transfer-buyer-select" className="w-full h-11 border-white/[0.08] bg-background/50">
+                                <SelectTrigger id="transfer-buyer-select" className="w-full h-11 border-border/80 bg-background/50">
                                     <SelectValue placeholder="Selecciona el club que ficha…" />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-60">

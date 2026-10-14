@@ -127,7 +127,7 @@ export function PlayerForm({
         {player ? "Editar jugador" : "Nuevo jugador"}
       </h2>
 
-      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5">
+      <div className="rounded-xl border border-border/80 bg-white/[0.02] p-3.5">
         <ImageUpload
           label="Foto del Jugador"
           value={form.photo_url}
@@ -217,7 +217,7 @@ export function PlayerForm({
       </div>
 
       <div>
-        <p className="mb-3 text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+        <p className="mb-3 text-[11px] font-medium tracking-[0.14em] text-muted-foreground">
           Stats
         </p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -237,7 +237,7 @@ export function PlayerForm({
       </div>
 
       <div>
-        <p className="mb-3 text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+        <p className="mb-3 text-[11px] font-medium tracking-[0.14em] text-muted-foreground">
           Valor
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -294,7 +294,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-[11px] tracking-wide text-muted-foreground uppercase">
+      <Label className="text-[11px] text-muted-foreground">
         {label}
       </Label>
       {children}

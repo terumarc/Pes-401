@@ -82,7 +82,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
   return (
     <div className="space-y-6">
       {/* 1. FINANCIAL RULES & LEAGUE PRIZES BANNER */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 p-4 sm:p-5 backdrop-blur-md shadow-xs">
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 sm:p-5 backdrop-blur-md shadow-xs">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent"
           aria-hidden="true"
@@ -112,7 +112,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
             onClick={() => setShowRules(!showRules)}
             aria-expanded={showRules}
             aria-controls="league-financial-rules-content"
-            className="self-start sm:self-auto min-h-[36px] h-9 gap-1.5 text-xs font-semibold border-white/[0.1] bg-white/[0.02] hover:bg-white/[0.06]"
+            className="self-start sm:self-auto min-h-[36px] h-9 gap-1.5 text-xs font-semibold border-border bg-white/[0.02] hover:bg-white/[0.06]"
           >
             <span>{showRules ? "Ocultar Detalles" : "Ver Normativa y Premios"}</span>
             {showRules ? (
@@ -125,7 +125,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
 
         {/* Core Rules Quick Summary Pills */}
         <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3 pt-3 border-t border-border/50 text-xs">
-          <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-muted/30 p-2.5">
+          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 p-2.5">
             <span className="text-base" aria-hidden="true">🏆</span>
             <div>
               <span className="font-bold text-foreground block">Inyección por Posición</span>
@@ -134,7 +134,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-muted/30 p-2.5">
+          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 p-2.5">
             <span className="text-base" aria-hidden="true">⚡</span>
             <div>
               <span className="font-bold text-foreground block">Venta Directa al Mercado</span>
@@ -143,7 +143,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-muted/30 p-2.5">
+          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 p-2.5">
             <span className="text-base" aria-hidden="true">🤝</span>
             <div>
               <span className="font-bold text-foreground block">Cláusulas de Rescisión</span>
@@ -160,7 +160,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
             id="league-financial-rules-content"
             className="mt-4 pt-4 border-t border-border/60 animate-in fade-in-50 duration-200 space-y-3"
           >
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <h4 className="text-xs font-bold text-muted-foreground">
               Tabla de Inyecciones Económicas por Clasificación de la Liga
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
@@ -170,9 +170,9 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
                 return (
                   <div
                     key={pos}
-                    className="flex flex-col rounded-lg border border-white/[0.06] bg-background/50 p-2 text-center"
+                    className="flex flex-col rounded-lg border border-border/60 bg-background/50 p-2 text-center"
                   >
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                    <span className="text-[10px] font-bold text-muted-foreground">
                       {pos}º Clasificado
                     </span>
                     <span className="font-display font-extrabold text-xs text-foreground mt-0.5 tabular-nums">
@@ -190,7 +190,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
       </div>
 
       {/* 2. BUDGET COMPARISON CHART CARD */}
-      <Card className="relative overflow-hidden border border-white/[0.08] bg-card/60 backdrop-blur-md shadow-xs">
+      <Card className="relative overflow-hidden border border-border/80 bg-card/60 backdrop-blur-md shadow-xs">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
           aria-hidden="true"
@@ -205,7 +205,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
                 Distribución del límite salarial y capacidad financiera relativa entre los clubes
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-muted/40 px-3.5 py-1.5 self-start sm:self-auto">
+            <div className="flex items-center gap-2 rounded-xl border border-border/80 bg-muted/40 px-3.5 py-1.5 self-start sm:self-auto">
               <Wallet className="size-3.5 text-primary" aria-hidden="true" />
               <span className="text-xs text-muted-foreground">Total Liga:</span>
               <BudgetDisplay amount={total} size="sm" className="font-bold text-foreground" />
@@ -234,7 +234,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar club por nombre..."
-            className="pl-9 pr-9 h-10 border-white/[0.08] bg-card/60"
+            className="pl-9 pr-9 h-10 border-border/80 bg-card/60"
           />
           {search && (
             <button
@@ -252,7 +252,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
           <ArrowUpDown className="size-3.5 text-muted-foreground" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">Ordenar:</span>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-56 h-10 text-xs border-white/[0.08] bg-card/60">
+            <SelectTrigger className="w-56 h-10 text-xs border-border/80 bg-card/60">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -269,7 +269,7 @@ export function FinancesPanel({ teams }: FinancesPanelProps) {
       {/* 4. CLUB FINANCIAL DIRECTORY LIST */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+          <h3 className="text-xs font-bold text-muted-foreground">
             Presupuestos por Club ({filteredTeams.length} de {teams.length})
           </h3>
           <span className="text-xs text-muted-foreground">
@@ -345,7 +345,7 @@ function FinanceRow({
   }
 
   return (
-    <Card className="flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-sm transition-all duration-200 hover:border-white/20 hover:shadow-md h-full">
+    <Card className="flex flex-col justify-between overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm transition-all duration-200 hover:border-white/20 hover:shadow-md h-full">
       <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 p-4 pb-3">
         <div className="flex min-w-0 items-center gap-3">
           {/* Position in league badge */}
@@ -356,7 +356,7 @@ function FinanceRow({
                   ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                   : team.position <= 3
                   ? "bg-sky-500/20 text-sky-400 border border-sky-500/30"
-                  : "bg-muted/60 text-muted-foreground border border-white/[0.06]"
+                  : "bg-muted/60 text-muted-foreground border border-border/60"
               }`}
               title={`Posición ${team.position}º en la liga`}
             >
@@ -400,7 +400,7 @@ function FinanceRow({
             type="button"
             variant="outline"
             size="sm"
-            className="shrink-0 min-h-[36px] h-8 px-3 gap-1.5 border-white/[0.1] bg-white/[0.02] text-xs font-semibold hover:bg-white/[0.06] transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+            className="shrink-0 min-h-[36px] h-8 px-3 gap-1.5 border-border bg-white/[0.02] text-xs font-semibold hover:bg-white/[0.06] transition-colors focus-visible:ring-2 focus-visible:ring-primary"
             onClick={() => {
               setBudget(team.budget || 0);
               setEditing(true);
@@ -445,7 +445,7 @@ function FinanceRow({
           <div className="space-y-3 pt-2 border-t border-border/50">
             {/* Quick Adjustment Chips */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+              <span className="text-[11px] font-bold text-muted-foreground block">
                 Ajuste Rápido
               </span>
               <div className="flex flex-wrap items-center gap-1">
@@ -473,7 +473,7 @@ function FinanceRow({
                 <button
                   type="button"
                   onClick={() => setBudget(50_000_000)}
-                  className="min-h-[28px] px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-all border border-white/[0.1] bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="min-h-[28px] px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-all border border-border bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
                   title="Restablecer al presupuesto base oficial de la liga"
                 >
                   €50M
@@ -485,7 +485,7 @@ function FinanceRow({
             <div>
               <label
                 htmlFor={`team-budget-input-${team.id}`}
-                className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1"
+                className="text-[11px] font-bold text-muted-foreground block mb-1"
               >
                 Cantidad exacta (€)
               </label>
@@ -518,7 +518,7 @@ function FinanceRow({
               <div className="flex items-center gap-2">
                 <Coins className="size-3.5 text-muted-foreground/70 shrink-0" aria-hidden="true" />
                 <div className="min-w-0">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                  <span className="text-[10px] font-bold text-muted-foreground block">
                     Plantilla
                   </span>
                   <span className="font-mono font-semibold text-foreground tabular-nums truncate block">
@@ -530,7 +530,7 @@ function FinanceRow({
               <div className="flex items-center gap-2">
                 <TrendingUp className="size-3.5 text-muted-foreground/70 shrink-0" aria-hidden="true" />
                 <div className="min-w-0">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                  <span className="text-[10px] font-bold text-muted-foreground block">
                     Ratio Solvencia
                   </span>
                   <span className="font-mono font-semibold text-foreground tabular-nums truncate block">
