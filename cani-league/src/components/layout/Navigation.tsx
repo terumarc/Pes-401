@@ -154,7 +154,7 @@ useEffect(() => {
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <Link href="/league" className="group flex items-center gap-3">
+    <Link href="/calendar" className="group flex items-center gap-3">
       <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-display font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
         CL
       </div>

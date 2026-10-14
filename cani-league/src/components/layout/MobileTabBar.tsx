@@ -6,7 +6,6 @@ import { useState } from "react";
 import {
   ChevronRight,
   Ellipsis,
-  House,
   ListOrdered,
   Shield,
   Store,
@@ -26,8 +25,8 @@ import { cn } from "@/lib/utils";
 
 /** Pestañas fijas de la barra inferior en móvil. */
 export const TABS = [
-  { href: "/league", label: "Inicio", Icon: House },
   { href: "/calendar", label: "Partidos", Icon: Swords },
+  { href: "/standings", label: "Tabla", Icon: ListOrdered },
   { href: "/teams", label: "Equipos", Icon: Shield },
   { href: "/market", label: "Mercado", Icon: Store },
 ] as const;
@@ -35,7 +34,6 @@ export const TABS = [
 /** Pantallas que viven dentro de «Más». */
 export const MORE = [
   { href: "/players", label: "Jugadores", Icon: Users },
-  { href: "/standings", label: "Clasificación", Icon: ListOrdered },
   { href: "/trophies", label: "Sala de trofeos", Icon: Trophy },
   { href: "/finances", label: "Finanzas", Icon: Wallet },
 ] as const;
@@ -58,40 +56,42 @@ export function MobileTabBar() {
     <>
       <nav
         aria-label="Navegación principal"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 md:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
       >
-        <ul className="mx-auto grid max-w-lg grid-cols-5">
+        <ul className="pointer-events-auto mx-auto flex h-16 max-w-md items-center gap-1 rounded-[1.75rem] border border-white/[0.08] bg-[oklch(0.2_0_0/0.82)] px-2 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl backdrop-saturate-150">
           {TABS.map(({ href, label, Icon }) => {
             const active = isActive(pathname, href);
             return (
-              <li key={href}>
+              <li key={href} className="flex-1">
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex h-14 flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors select-none active:opacity-60",
-                    active ? "text-primary" : "text-muted-foreground",
+                    "relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-semibold transition-[color,background-color,transform] duration-200 select-none active:scale-90",
+                    active ? "bg-primary/[0.14] text-primary" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <Icon className="size-[22px]" strokeWidth={active ? 2.2 : 1.8} aria-hidden />
+                  <Icon className="size-[22px]" strokeWidth={active ? 2.3 : 1.8} aria-hidden />
                   {label}
+                  {active && <span aria-hidden className="absolute -top-2 h-1 w-6 rounded-full bg-primary shadow-[0_0_12px_var(--color-primary)]" />}
                 </Link>
               </li>
             );
           })}
-          <li>
+          <li className="flex-1">
             <button
               type="button"
               onClick={() => setMoreOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={moreOpen}
               className={cn(
-                "flex h-14 w-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors select-none active:opacity-60",
-                moreActive ? "text-primary" : "text-muted-foreground",
+                "relative flex h-12 w-full flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-semibold transition-[color,background-color,transform] duration-200 select-none active:scale-90",
+                moreActive ? "bg-primary/[0.14] text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Ellipsis className="size-[22px]" strokeWidth={moreActive ? 2.2 : 1.8} aria-hidden />
+              <Ellipsis className="size-[22px]" strokeWidth={moreActive ? 2.3 : 1.8} aria-hidden />
               Más
+              {moreActive && <span aria-hidden className="absolute -top-2 h-1 w-6 rounded-full bg-primary shadow-[0_0_12px_var(--color-primary)]" />}
             </button>
           </li>
         </ul>

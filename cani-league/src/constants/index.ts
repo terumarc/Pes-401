@@ -17,7 +17,6 @@ export const PLAYER_POSITIONS: PlayerPosition[] = [
 ];
 
 export const NAV_ITEMS = [
-  { href: "/league", label: "Inicio", icon: "LayoutDashboard" },
   { href: "/calendar", label: "Partidos", icon: "Swords" },
   { href: "/standings", label: "Clasificación", icon: "ListOrdered" },
   { href: "/trophies", label: "Trofeos", icon: "Trophy" },

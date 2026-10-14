@@ -25,7 +25,7 @@ export default function Error({
       <div className="mt-6 flex gap-2">
         <Button onClick={() => retry()}>Reintentar</Button>
         <Button asChild variant="outline">
-          <Link href="/league">Ir al inicio</Link>
+          <Link href="/calendar">Ir a partidos</Link>
         </Button>
       </div>
     </div>

@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Cani League",
     description: "La liga de PES 6 con los amigos: partidos, fichajes, finanzas y trofeos.",
     lang: "es",
-    start_url: "/league",
+    start_url: "/calendar",
     scope: "/",
     display: "standalone",
     orientation: "portrait",

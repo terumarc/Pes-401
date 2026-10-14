@@ -14,7 +14,6 @@ import { isRootScreen } from "@/components/layout/MobileTabBar";
 import { cn } from "@/lib/utils";
 
 const ROUTE_LABELS: Record<string, { title: string; parent?: string }> = {
-  "/league": { title: "Inicio" },
   "/calendar": { title: "Partidos", parent: "Competición" },
   "/standings": { title: "Clasificación", parent: "Competición" },
   "/trophies": { title: "Sala de trofeos", parent: "Competición" },
@@ -30,7 +29,7 @@ const DETAIL_ROUTES: { prefix: string; title: string; parent: string; parentHref
   { prefix: "/players/", title: "Jugador", parent: "Jugadores", parentHref: "/players" },
 ];
 
-const HOME = "/league";
+const HOME = "/calendar";
 
 export function SiteHeader({ season }: { season?: string | null }) {
   const pathname = usePathname();
@@ -39,7 +38,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
   const detail = DETAIL_ROUTES.find((d) => pathname.startsWith(d.prefix));
   const currentRoute = ROUTE_LABELS[pathname] ??
     (detail ? { title: detail.title, parent: detail.parent } : {
-      title: pathname.replace("/", "").replace(/-/g, " ") || "Inicio",
+      title: pathname.replace("/", "").replace(/-/g, " ") || "Partidos",
     });
   const canGoBack = pathname !== HOME && pathname !== "/";
   const root = isRootScreen(pathname);

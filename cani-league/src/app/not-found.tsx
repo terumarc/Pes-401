@@ -10,7 +10,7 @@ export default function NotFound() {
         Puede que el enlace esté mal escrito o que el equipo o jugador se haya borrado.
       </p>
       <Button asChild className="mt-6">
-        <Link href="/league">Ir al inicio</Link>
+        <Link href="/calendar">Ir a partidos</Link>
       </Button>
     </div>
   );
