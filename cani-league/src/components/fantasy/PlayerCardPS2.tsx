@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { getPlayerEffectiveRating, getPlayerTier, getPositionGroup } from "@/lib/players";
 import { cn } from "@/lib/utils";
+import { PixelAvatar } from "@/components/fantasy/PixelAvatar";
 
 /* ------------------------------------------------------------------ */
 /* Carta de jugador con la estética de los menús de PES 6 / PS2:       */
@@ -36,7 +37,13 @@ type CardPlayer = {
   defending?: number | null;
 };
 
-type Club = { name: string; short_name?: string | null; logo_url?: string | null; primary_color?: string | null } | null;
+type Club = {
+  name: string;
+  short_name?: string | null;
+  logo_url?: string | null;
+  primary_color?: string | null;
+  secondary_color?: string | null;
+} | null;
 
 export function PlayerCardPS2({
   player,
@@ -101,7 +108,12 @@ export function PlayerCardPS2({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={player.photo_url} alt="" className="size-full object-cover" />
             ) : (
-              player.name.slice(0, 1).toUpperCase()
+              <PixelAvatar
+                seed={player.id}
+                shirt={club?.primary_color}
+                trim={club?.secondary_color}
+                className="size-full translate-y-[14%] scale-110"
+              />
             )}
           </span>
         </div>
