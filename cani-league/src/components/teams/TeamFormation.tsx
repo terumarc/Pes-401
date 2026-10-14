@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { Plus, RotateCcw } from "lucide-react";
 import {
@@ -285,6 +286,11 @@ export function TeamFormation({
   const [lineup, setLineup] = useState<Lineup>(() => autoLineup(players, "4-3-3"));
   const [activeId, setActiveId] = useState<string | null>(null);
   const suppressClick = useRef(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const hydrated = useRef(false);
 
   // Recupera la alineación guardada (solo en el cliente).
@@ -436,13 +442,19 @@ export function TeamFormation({
           )}
         </BenchZone>
 
-        <DragOverlay dropAnimation={{ duration: 160, easing: "cubic-bezier(0.2,0,0,1)" }}>
-          {activePlayer ? (
-            <div className="flex w-[4.5rem] scale-110 flex-col items-center drop-shadow-[0_12px_18px_rgba(0,0,0,0.55)]">
-              <TokenFace player={activePlayer} team={team} />
-            </div>
-          ) : null}
-        </DragOverlay>
+        {/* La ficha que sigue al dedo va en <body>: si la página tiene una animación con
+            transform, un elemento fixed dentro de ella se descoloca. */}
+        {mounted &&
+          createPortal(
+            <DragOverlay dropAnimation={{ duration: 160, easing: "cubic-bezier(0.2,0,0,1)" }}>
+              {activePlayer ? (
+                <div className="flex w-[4.5rem] scale-110 flex-col items-center drop-shadow-[0_12px_18px_rgba(0,0,0,0.55)]">
+                  <TokenFace player={activePlayer} team={team} />
+                </div>
+              ) : null}
+            </DragOverlay>,
+            document.body,
+          )}
       </DndContext>
     </section>
   );
