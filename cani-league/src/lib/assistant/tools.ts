@@ -1,55 +1,56 @@
-import { Type, type FunctionDeclaration } from "@google/genai";
+import type Anthropic from "@anthropic-ai/sdk";
 import { createStaticClient } from "@/lib/supabase/server";
 
-export const toolDeclarations: FunctionDeclaration[] = [
+/** Herramientas que David Villa puede usar para consultar la base de datos de la liga. */
+export const assistantTools: Anthropic.Tool[] = [
   {
     name: "get_teams",
     description: "Obtiene la lista de todos los equipos participantes en la Cani League, junto con su presupuesto actual, nombre de su presidente/mánager y nombre corto.",
-    parameters: {
-      type: Type.OBJECT,
+    input_schema: {
+      type: "object" as const,
       properties: {},
     },
   },
   {
     name: "get_standings",
     description: "Obtiene la tabla de clasificación actual de la liga (posiciones, puntos, partidos jugados, victorias, empates, derrotas, goles a favor y en contra).",
-    parameters: {
-      type: Type.OBJECT,
+    input_schema: {
+      type: "object" as const,
       properties: {},
     },
   },
   {
     name: "search_players",
     description: "Busca y filtra jugadores en la base de datos de la Cani League. Permite filtrar por nombre, posición (CF, SS, LWF, RWF, AMF, CMF, DMF, CB, LB, RB, GK), si están transferibles en el mercado, precio máximo, media general (overall) mínima y ordenar por atributos clave de PES 6.",
-    parameters: {
-      type: Type.OBJECT,
+    input_schema: {
+      type: "object" as const,
       properties: {
         query: {
-          type: Type.STRING,
+          type: "string",
           description: "Nombre o fragmento del nombre del jugador a buscar",
         },
         position: {
-          type: Type.STRING,
+          type: "string",
           description: "Posición táctica (ej: 'CF', 'SS', 'AMF', 'CMF', 'DMF', 'CB', 'LB', 'RB', 'GK')",
         },
         market_only: {
-          type: Type.BOOLEAN,
+          type: "boolean",
           description: "Si es true, solo busca jugadores que estén transferibles / disponibles en el mercado actualmente",
         },
         max_price: {
-          type: Type.INTEGER,
+          type: "integer",
           description: "Precio o valor máximo en euros (ej: 20000000 para 20M€)",
         },
         min_overall: {
-          type: Type.INTEGER,
+          type: "integer",
           description: "Media (Overall) mínima del jugador (de 0 a 100)",
         },
         sort_by: {
-          type: Type.STRING,
+          type: "string",
           description: "Criterio de ordenación: 'overall', 'speed', 'acceleration', 'shooting', 'passing', 'dribbling', 'defending', 'market_value', 'transfer_price'",
         },
         limit: {
-          type: Type.INTEGER,
+          type: "integer",
           description: "Cantidad máxima de jugadores a devolver (por defecto 10, máximo 20)",
         },
       },
@@ -58,11 +59,11 @@ export const toolDeclarations: FunctionDeclaration[] = [
   {
     name: "get_team_roster",
     description: "Obtiene la plantilla completa de un equipo específico con todos sus futbolistas, edades, posiciones, media (overall), precios y si están en el mercado.",
-    parameters: {
-      type: Type.OBJECT,
+    input_schema: {
+      type: "object" as const,
       properties: {
         team_name_or_id: {
-          type: Type.STRING,
+          type: "string",
           description: "Nombre del equipo (ej: 'Los Canis', 'Cani 401') o UUID del equipo",
         },
       },
@@ -72,15 +73,15 @@ export const toolDeclarations: FunctionDeclaration[] = [
   {
     name: "get_calendar_fixtures",
     description: "Obtiene los partidos de la liga, calendarios, resultados jugados y próximos enfrentamientos por jornada o vuelta.",
-    parameters: {
-      type: Type.OBJECT,
+    input_schema: {
+      type: "object" as const,
       properties: {
         matchday: {
-          type: Type.INTEGER,
+          type: "integer",
           description: "Número específico de jornada (opcional)",
         },
         round: {
-          type: Type.INTEGER,
+          type: "integer",
           description: "Vuelta: 1 para ida, 2 para vuelta (opcional)",
         },
       },
@@ -89,11 +90,11 @@ export const toolDeclarations: FunctionDeclaration[] = [
   {
     name: "get_recent_transfers",
     description: "Obtiene el historial de los traspasos y fichajes más recientes completados en la liga entre equipos.",
-    parameters: {
-      type: Type.OBJECT,
+    input_schema: {
+      type: "object" as const,
       properties: {
         limit: {
-          type: Type.INTEGER,
+          type: "integer",
           description: "Número de fichajes a devolver (por defecto 10)",
         },
       },

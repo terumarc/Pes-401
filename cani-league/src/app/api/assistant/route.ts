@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { runDavidVillaAssistant, type ChatMessage } from "@/lib/gemini/client";
+import { runDavidVillaAssistant, type ChatMessage } from "@/lib/assistant/claude";
 
 export const dynamic = "force-dynamic";
 
