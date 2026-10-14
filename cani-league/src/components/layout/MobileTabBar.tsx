@@ -58,44 +58,40 @@ export function MobileTabBar() {
     <>
       <nav
         aria-label="Navegación principal"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 md:hidden"
       >
-        <ul className="pointer-events-auto mx-auto flex max-w-md items-center justify-between gap-1 rounded-full border border-white/10 bg-card/85 p-1.5 shadow-[0_12px_30px_-8px_rgba(0,0,0,0.75)] backdrop-blur-xl backdrop-saturate-150">
+        <ul className="mx-auto grid max-w-lg grid-cols-5">
           {TABS.map(({ href, label, Icon }) => {
             const active = isActive(pathname, href);
             return (
-              <li key={href} className={cn(active && "flex-1")}>
+              <li key={href}>
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  aria-label={label}
                   className={cn(
-                    "flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all duration-200 select-none active:scale-95",
-                    active ? "px-4 text-primary-foreground" : "w-12 text-muted-foreground hover:text-foreground",
+                    "flex h-14 flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors select-none active:opacity-60",
+                    active ? "text-primary" : "text-muted-foreground",
                   )}
-                  style={active ? { background: "var(--brand-gradient)" } : undefined}
                 >
-                  <Icon className="size-[21px] shrink-0" strokeWidth={active ? 2.3 : 1.8} aria-hidden />
-                  {active && <span className="truncate">{label}</span>}
+                  <Icon className="size-[22px]" strokeWidth={active ? 2.2 : 1.8} aria-hidden />
+                  {label}
                 </Link>
               </li>
             );
           })}
-          <li className={cn(moreActive && "flex-1")}>
+          <li>
             <button
               type="button"
               onClick={() => setMoreOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={moreOpen}
-              aria-label="Más secciones"
               className={cn(
-                "flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all duration-200 select-none active:scale-95",
-                moreActive ? "px-4 text-primary-foreground" : "w-12 text-muted-foreground hover:text-foreground",
+                "flex h-14 w-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors select-none active:opacity-60",
+                moreActive ? "text-primary" : "text-muted-foreground",
               )}
-              style={moreActive ? { background: "var(--brand-gradient)" } : undefined}
             >
-              <Ellipsis className="size-[21px] shrink-0" strokeWidth={moreActive ? 2.3 : 1.8} aria-hidden />
-              {moreActive && <span className="truncate">{MORE.find((m) => isActive(pathname, m.href))?.label.replace("Sala de trofeos", "Trofeos")}</span>}
+              <Ellipsis className="size-[22px]" strokeWidth={moreActive ? 2.2 : 1.8} aria-hidden />
+              Más
             </button>
           </li>
         </ul>

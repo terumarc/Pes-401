@@ -32,7 +32,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0c1411",
+  themeColor: "#0a0a0a",
 };
 
 async function getSeason(): Promise<string | null> {

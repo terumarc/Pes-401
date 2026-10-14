@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { DashboardBudgetChart } from "@/components/dashboard/DashboardBudgetChart";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
-import { DashboardKpiGrid } from "@/components/dashboard/DashboardKpiGrid";
 import { DashboardQuickActions } from "@/components/dashboard/DashboardQuickActions";
 import { DashboardStandingsPodium } from "@/components/dashboard/DashboardStandingsPodium";
 import { SetupNotice } from "@/components/layout/SetupNotice";
@@ -16,12 +15,7 @@ import {
 import { getMatchesByLeague } from "@/lib/data/matches";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import {
-  Store,
-  Shield,
-  Users,
-  Trophy,
   Sparkles,
-  Swords,
   Calendar,
   ArrowRight,
   Flame,
@@ -57,16 +51,6 @@ export default async function LeaguePage() {
     getMatchesByLeague(league.id).catch(() => []),
   ]);
 
-  const totalBudget = stats.teams.reduce(
-    (sum, t) => sum + (t.budget || 0),
-    0
-  );
-  const averageBudget =
-    stats.teams.length > 0
-      ? Math.round(totalBudget / stats.teams.length)
-      : 0;
-
-  const playedMatches = rawMatches.filter((m) => m.played).length;
   const totalMatches = rawMatches.length;
 
   // Next upcoming unplayed matches (up to 3)
@@ -91,17 +75,6 @@ export default async function LeaguePage() {
 
       {/* Quick Actions Shortcuts for Managers */}
       <DashboardQuickActions />
-
-      {/* Executive Hero KPI Metric Cards */}
-      <DashboardKpiGrid
-        totalBudget={totalBudget}
-        averageBudget={averageBudget}
-        playerCount={stats.playerCount}
-        marketCount={stats.marketCount}
-        teamCount={stats.teamCount}
-        playedMatches={playedMatches}
-        totalMatches={totalMatches}
-      />
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8 items-start">

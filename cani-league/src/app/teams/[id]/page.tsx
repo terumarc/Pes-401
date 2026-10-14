@@ -2,20 +2,12 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  UserPlus,
-  Users,
-  Wallet,
-  Star,
-  TrendingUp,
-  ChevronLeft,
-  BarChart3,
-  Coins,
-} from "lucide-react";
+import { UserPlus, ChevronLeft, BarChart3 } from "lucide-react";
 import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
 import { EditTeamButton } from "@/components/teams/EditTeamButton";
 import { TeamLogo } from "@/components/teams/TeamCard";
 import { TeamSquadView } from "@/components/teams/TeamSquadView";
+import { TeamFormation } from "@/components/teams/TeamFormation";
 import { SquadOverallChart } from "@/components/charts/LeagueCharts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +21,6 @@ import {
 import {
   getPlayerEffectiveRating,
   getPlayerFixedPrice,
-  getPlayerContractInfo,
 } from "@/lib/players";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
@@ -53,10 +44,6 @@ export default async function TeamDetailPage({ params }: Props) {
   ]);
 
   const totalValue = players.reduce((sum, p) => sum + getPlayerFixedPrice(p), 0);
-  const totalRenewalCost = players.reduce(
-    (sum, p) => sum + getPlayerContractInfo(p).renewalCost,
-    0
-  );
   const ratedPlayers = players.filter((p) => p.overall != null);
   const avgOverall =
     ratedPlayers.length > 0
@@ -149,86 +136,26 @@ export default async function TeamDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* KPI STATS CARDS EN HERO */}
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {/* PRESUPUESTO */}
-            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
-                <div className="flex size-6 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
-                  <Wallet className="size-3.5" />
-                </div>
-                <span>Presupuesto</span>
-              </div>
-              <div className="mt-2 font-display text-xl font-black text-foreground sm:text-2xl tabular-nums">
-                <BudgetDisplay amount={team.budget} size="lg" />
-              </div>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Liquidez para fichajes
-              </p>
-            </div>
-
-            {/* PLANTILLA */}
-            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
-                <div className="flex size-6 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
-                  <Users className="size-3.5" />
-                </div>
-                <span>Plantilla</span>
-              </div>
-              <p className="mt-2 font-display text-xl font-black text-foreground sm:text-2xl tabular-nums">
-                {players.length}{" "}
-                <span className="text-xs font-semibold text-muted-foreground">
-                  jugadores
-                </span>
-              </p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Fichas ocupadas
-              </p>
-            </div>
-
-            {/* MEDIA OVR */}
-            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
-                <div className="flex size-6 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
-                  <Star className="size-3.5" />
-                </div>
-                <span>Media OVR</span>
-              </div>
-              <p className="mt-2 font-display text-xl font-black text-foreground sm:text-2xl tabular-nums">
-                {avgOverall ? `★ ${avgOverall}` : "—"}
-              </p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Nivel global del equipo
-              </p>
-            </div>
-
-            {/* VALOR PLANTILLA */}
-            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-white/[0.03] p-4 backdrop-blur-md shadow-xs transition-all hover:bg-white/[0.06]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
-                <div className="flex size-6 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                  <Coins className="size-3.5" />
-                </div>
-                <span>Valor Plantilla</span>
-              </div>
-              <div className="mt-2 font-display text-xl font-black text-foreground sm:text-2xl tabular-nums">
-                <BudgetDisplay amount={totalValue} size="lg" />
-              </div>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Renovaciones:{" "}
-                {totalRenewalCost > 0 ? (
-                  <span className="font-semibold text-amber-400">{totalRenewalCost}M €</span>
-                ) : (
-                  <span className="font-semibold text-emerald-400">0M €</span>
-                )}
-              </p>
-            </div>
-          </div>
+          <p className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground tabular-nums">
+            <span className="flex items-center gap-1.5">
+              Presupuesto <span className="font-semibold text-foreground"><BudgetDisplay amount={team.budget} /></span>
+            </span>
+            <span>
+              <span className="font-semibold text-foreground">{players.length}</span> jugadores
+            </span>
+            <span className="flex items-center gap-1.5">
+              Valor <span className="font-semibold text-foreground"><BudgetDisplay amount={totalValue} /></span>
+            </span>
+            {avgOverall && (
+              <span>
+                Media <span className="font-semibold text-foreground">{avgOverall}</span>
+              </span>
+            )}
+          </p>
         </div>
       </div>
+
+      {players.length > 0 && <TeamFormation team={team} players={players} teamId={team.id} />}
 
       {/* GRÁFICO DE OVR DE LA PLANTILLA */}
       {players.length > 0 && (
