@@ -412,18 +412,18 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
   return (
     <div className="space-y-6">
       {/* FILTER CONTROL PANEL */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 sm:p-5 shadow-xs backdrop-blur-md space-y-4">
+      <div className="space-y-4 sm:relative sm:overflow-hidden sm:rounded-2xl sm:border sm:border-border/80 sm:bg-card/60 sm:p-5 sm:shadow-xs sm:backdrop-blur-md">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
           aria-hidden="true"
         />
 
         {/* Selector Principal por Agrupaciones de Posición */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:border-b sm:border-border/60 sm:pb-3">
           <div
             role="tablist"
             aria-label="Filtrar mercado por posición"
-            className="flex flex-wrap items-center gap-2"
+            className="-mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:w-auto sm:flex-wrap sm:items-center sm:px-0"
           >
             {POSITION_TABS.map((tab) => {
               const active = positionGroupTab === tab.id;
@@ -444,7 +444,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
                       setCurrentPage(1);
                     });
                   }}
-                  className={`flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`flex shrink-0 items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-full text-sm font-semibold transition-all active:scale-[0.97] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     active
                       ? tab.activeClass
                       : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -540,8 +540,8 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
           </div>
         </div>
 
-        {/* PRIMARY FILTERS GRID */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* PRIMARY FILTERS GRID (en móvil, dentro de «Filtros») */}
+        <div className={`${showAdvanced ? "grid" : "hidden sm:grid"} grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4`}>
           {/* 1. NATIONALITY FILTER */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold text-muted-foreground">
@@ -1012,7 +1012,7 @@ export function MarketSearchList({ players, teams }: MarketSearchListProps) {
           </div>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/60 divide-y divide-border/60">
               {paginatedPlayers.map((player) => (
                 <MarketCard key={player.id} player={player} teams={teams} />
               ))}
