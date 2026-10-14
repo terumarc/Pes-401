@@ -1,559 +1,184 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  Pencil,
-  Check,
-  X,
-  Wallet,
-  TrendingUp,
-  Search,
-  ArrowUpDown,
-  Coins,
-  Shield,
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  Award,
-} from "lucide-react";
-import { BudgetComparisonChart } from "@/components/charts/LeagueCharts";
-import { BudgetDisplay } from "@/components/finances/BudgetDisplay";
+import { ChevronRight } from "lucide-react";
 import { MoneyInput } from "@/components/finances/MoneyInput";
 import { TeamLogo } from "@/components/teams/TeamCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { updateTeamClient } from "@/lib/data/mutations";
-import { getBudgetPercentage, formatMoney } from "@/lib/format/money";
+import { formatMoney, getBudgetPercentage } from "@/lib/format/money";
 import { calculatePositionReward } from "@/lib/economy";
+import { cn } from "@/lib/utils";
 import type { TeamWithStanding } from "@/types";
 
-type FinancesPanelProps = {
-  teams: TeamWithStanding[];
-};
+const STEPS = [-10_000_000, -1_000_000, 1_000_000, 10_000_000];
 
-export function FinancesPanel({ teams }: FinancesPanelProps) {
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<string>("budget_desc");
-  const [showRules, setShowRules] = useState(false);
+function stepLabel(delta: number) {
+  return `${delta > 0 ? "+" : "−"}${Math.abs(delta) / 1_000_000}M`;
+}
 
-  const maxBudget = Math.max(...teams.map((t) => t.budget || 0), 1);
-  const total = teams.reduce((sum, t) => sum + (t.budget || 0), 0);
+/** Hoja para cambiar el presupuesto de un club. */
+function BudgetSheet({ team, onClose }: { team: TeamWithStanding; onClose: () => void }) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [budget, setBudget] = useState(team.budget || 0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const changed = budget !== (team.budget || 0);
 
-  // Filtered & sorted teams
-  const filteredTeams = useMemo(() => {
-    const result = teams.filter((t) => {
-      if (!search.trim()) return true;
-      const q = search.toLowerCase().trim();
-      return (
-        t.name.toLowerCase().includes(q) ||
-        (t.short_name && t.short_name.toLowerCase().includes(q))
-      );
-    });
-
-    result.sort((a, b) => {
-      if (sortBy === "budget_desc") return (b.budget || 0) - (a.budget || 0);
-      if (sortBy === "budget_asc") return (a.budget || 0) - (b.budget || 0);
-      if (sortBy === "squad_value_desc") return (b.squad_value || 0) - (a.squad_value || 0);
-      if (sortBy === "position_asc") return (a.position || 999) - (b.position || 999);
-      if (sortBy === "name_asc") return a.name.localeCompare(b.name, "es");
-      return 0;
-    });
-
-    return result;
-  }, [teams, search, sortBy]);
+  async function save() {
+    setBusy(true);
+    setError(null);
+    try {
+      await updateTeamClient(team.id, { budget });
+      onClose();
+      startTransition(() => router.refresh());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar el presupuesto.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      {/* 1. FINANCIAL RULES & LEAGUE PRIZES BANNER */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-4 sm:p-5 backdrop-blur-md shadow-xs">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent"
-          aria-hidden="true"
-        />
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <Award className="size-5" aria-hidden="true" />
-            </div>
-            <div>
-              <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
-                Normativa Económica de la Competición
-                <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-extrabold text-amber-500 uppercase tracking-wider">
-                  Oficial
-                </span>
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Reglamento de inyecciones financieras, primas de posición y ventas directas
-              </p>
-            </div>
-          </div>
+    <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
+      <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[17px] text-[#0a84ff] active:opacity-60">
+          Cancelar
+        </button>
+        <DialogTitle className="text-[17px] font-semibold">Presupuesto</DialogTitle>
+        <button
+          type="button"
+          onClick={save}
+          disabled={busy || !changed}
+          className="h-11 justify-self-end text-[17px] font-semibold text-[#0a84ff] active:opacity-60 disabled:text-muted-foreground"
+        >
+          {busy ? "Guardando…" : "Guardar"}
+        </button>
+      </div>
+      <DialogDescription className="sr-only">Cambiar el presupuesto de {team.name}</DialogDescription>
 
-          <Button
+      <div className="mt-5 flex flex-col items-center gap-2">
+        <TeamLogo name={team.name} logoUrl={team.logo_url} color={team.primary_color} size="lg" />
+        <p className="text-[17px] font-semibold">{team.name}</p>
+        <p className="text-[34px] font-bold tabular-nums tracking-tight">{formatMoney(budget)}</p>
+      </div>
+
+      <div className="mt-4 grid grid-cols-4 gap-2">
+        {STEPS.map((d) => (
+          <button
+            key={d}
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowRules(!showRules)}
-            aria-expanded={showRules}
-            aria-controls="league-financial-rules-content"
-            className="self-start sm:self-auto min-h-[36px] h-9 gap-1.5 text-xs font-semibold border-border bg-white/[0.02] hover:bg-white/[0.06]"
+            onClick={() => setBudget((b) => Math.max(0, b + d))}
+            className="h-11 rounded-full bg-secondary text-[15px] font-semibold tabular-nums active:opacity-70"
           >
-            <span>{showRules ? "Ocultar Detalles" : "Ver Normativa y Premios"}</span>
-            {showRules ? (
-              <ChevronUp className="size-4 text-muted-foreground" aria-hidden="true" />
-            ) : (
-              <ChevronDown className="size-4 text-muted-foreground" aria-hidden="true" />
-            )}
-          </Button>
-        </div>
-
-        {/* Core Rules Quick Summary Pills */}
-        <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3 pt-3 border-t border-border/50 text-xs">
-          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 p-2.5">
-            <span className="text-base" aria-hidden="true">🏆</span>
-            <div>
-              <span className="font-bold text-foreground block">Inyección por Posición</span>
-              <span className="text-muted-foreground text-[11px]">
-                1º = €25M · +€5M por puesto (ida y vuelta)
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 p-2.5">
-            <span className="text-base" aria-hidden="true">⚡</span>
-            <div>
-              <span className="font-bold text-foreground block">Venta Directa al Mercado</span>
-              <span className="text-muted-foreground text-[11px]">
-                30% del valor ingresado al instante
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 p-2.5">
-            <span className="text-base" aria-hidden="true">🤝</span>
-            <div>
-              <span className="font-bold text-foreground block">Cláusulas de Rescisión</span>
-              <span className="text-muted-foreground text-[11px]">
-                100% abonado íntegro al club de origen
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Collapsible Extended Table of Position Rewards */}
-        {showRules && (
-          <div
-            id="league-financial-rules-content"
-            className="mt-4 pt-4 border-t border-border/60 animate-in fade-in-50 duration-200 space-y-3"
-          >
-            <h4 className="text-xs font-bold text-muted-foreground">
-              Tabla de Inyecciones Económicas por Clasificación de la Liga
-            </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-              {teams.map((_, idx) => {
-                const pos = idx + 1;
-                const reward = calculatePositionReward(pos);
-                return (
-                  <div
-                    key={pos}
-                    className="flex flex-col rounded-lg border border-border/60 bg-background/50 p-2 text-center"
-                  >
-                    <span className="text-[10px] font-bold text-muted-foreground">
-                      {pos}º Clasificado
-                    </span>
-                    <span className="font-display font-extrabold text-xs text-foreground mt-0.5 tabular-nums">
-                      {formatMoney(reward)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="text-[11px] text-muted-foreground italic">
-              * Las inyecciones se aplican en dos ventanas: al término de la fase de ida (todos los partidos de la 1ª vuelta disputados) y al término de la competición regular.
-            </p>
-          </div>
-        )}
+            {stepLabel(d)}
+          </button>
+        ))}
       </div>
 
-      {/* 2. BUDGET COMPARISON CHART CARD */}
-      <Card className="relative overflow-hidden border border-border/80 bg-card/60 backdrop-blur-md shadow-xs">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
-          aria-hidden="true"
-        />
-        <CardHeader className="border-b border-border/50 pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <CardTitle className="font-display text-lg font-bold tracking-tight">
-                Comparativa de Presupuestos de la Liga
-              </CardTitle>
-              <CardDescription className="text-xs sm:text-sm mt-0.5 text-muted-foreground">
-                Distribución del límite salarial y capacidad financiera relativa entre los clubes
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border/80 bg-muted/40 px-3.5 py-1.5 self-start sm:self-auto">
-              <Wallet className="size-3.5 text-primary" aria-hidden="true" />
-              <span className="text-xs text-muted-foreground">Total Liga:</span>
-              <BudgetDisplay amount={total} size="sm" className="font-bold text-foreground" />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <BudgetComparisonChart
-            teams={teams.map((t) => ({
-              name: t.name,
-              short_name: t.short_name || t.name.slice(0, 3).toUpperCase(),
-              budget: t.budget || 0,
-              color: t.primary_color || "var(--primary)",
-            }))}
-          />
-        </CardContent>
-      </Card>
-
-      {/* 3. TOOLBAR: SEARCH & SORT */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-          <Input
-            id="finances-search-input"
-            aria-label="Buscar club por nombre"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar club por nombre..."
-            className="pl-9 pr-9 h-10 border-border/80 bg-card/60"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label="Limpiar búsqueda"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-          <ArrowUpDown className="size-3.5 text-muted-foreground" aria-hidden="true" />
-          <span className="text-xs text-muted-foreground">Ordenar:</span>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-56 h-10 text-xs border-border/80 bg-card/60">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="budget_desc">Mayor Presupuesto (€ ↓)</SelectItem>
-              <SelectItem value="budget_asc">Menor Presupuesto (€ ↑)</SelectItem>
-              <SelectItem value="squad_value_desc">Mayor Valor de Plantilla (€ ↓)</SelectItem>
-              <SelectItem value="position_asc">Clasificación en Liga (1º → Último)</SelectItem>
-              <SelectItem value="name_asc">Nombre Club (A → Z)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* 4. CLUB FINANCIAL DIRECTORY LIST */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h3 className="text-xs font-bold text-muted-foreground">
-            Presupuestos por Club ({filteredTeams.length} de {teams.length})
-          </h3>
-          <span className="text-xs text-muted-foreground">
-            Límite máximo registrado: <strong className="text-foreground">{formatMoney(maxBudget)}</strong>
-          </span>
-        </div>
-
-        {filteredTeams.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/80 bg-card/30 p-10 text-center space-y-2">
-            <Shield className="size-8 mx-auto text-muted-foreground/60" aria-hidden="true" />
-            <p className="font-display font-semibold text-foreground">
-              No se han encontrado clubes
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Ningún equipo coincide con el término de búsqueda &quot;{search}&quot;.
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setSearch("")}
-              className="mt-2 min-h-[36px] h-9 px-4"
-            >
-              Restablecer búsqueda
-            </Button>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredTeams.map((team) => (
-              <FinanceRow key={team.id} team={team} maxBudget={maxBudget} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+      <label className="mt-5 block">
+        <span className="mb-1.5 block px-1 text-[13px] text-muted-foreground">Cantidad exacta</span>
+        <MoneyInput id={`budget-${team.id}`} value={budget} onChange={setBudget} ariaLabel={`Presupuesto de ${team.name} en euros`} />
+      </label>
+      {error && <p className="mt-3 text-[15px] text-destructive">{error}</p>}
+    </DialogContent>
   );
 }
 
-function FinanceRow({
-  team,
-  maxBudget,
-}: {
-  team: TeamWithStanding;
-  maxBudget: number;
-}) {
-  const router = useRouter();
-  const [editing, setEditing] = useState(false);
-  const [budget, setBudget] = useState(team.budget || 0);
-  const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  const pct = getBudgetPercentage(team.budget || 0, maxBudget);
-  const squadValue = team.squad_value || 0;
-  const ratio = squadValue > 0 ? Math.round(((team.budget || 0) / squadValue) * 100) : 0;
-
-  async function save() {
-    setError(null);
-    if (budget < 0) {
-      setError("El presupuesto debe ser mayor o igual a 0 €.");
-      return;
-    }
-    try {
-      await updateTeamClient(team.id, { budget });
-      setEditing(false);
-      startTransition(() => router.refresh());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar el presupuesto");
-    }
-  }
-
-  function adjustBudget(delta: number) {
-    setBudget((prev) => Math.max(0, prev + delta));
-  }
+/** Finanzas en listas agrupadas de iOS: presupuesto de cada club y normas económicas. */
+export function FinancesPanel({ teams }: { teams: TeamWithStanding[] }) {
+  const [editId, setEditId] = useState<string | null>(null);
+  const [showRewards, setShowRewards] = useState(false);
+  const sorted = [...teams].sort((a, b) => (b.budget || 0) - (a.budget || 0));
+  const maxBudget = Math.max(...teams.map((t) => t.budget || 0), 1);
+  const editing = teams.find((t) => t.id === editId) ?? null;
 
   return (
-    <Card className="flex flex-col justify-between overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm transition-all duration-200 hover:border-white/20 hover:shadow-md h-full">
-      <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 p-4 pb-3">
-        <div className="flex min-w-0 items-center gap-3">
-          {/* Position in league badge */}
-          {team.position != null && (
-            <span
-              className={`size-7 shrink-0 flex items-center justify-center rounded-xl text-xs font-black font-mono tracking-tight ${
-                team.position === 1
-                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                  : team.position <= 3
-                  ? "bg-sky-500/20 text-sky-400 border border-sky-500/30"
-                  : "bg-muted/60 text-muted-foreground border border-border/60"
-              }`}
-              title={`Posición ${team.position}º en la liga`}
-            >
-              #{team.position}
-            </span>
-          )}
-
-          <TeamLogo
-            name={team.name}
-            logoUrl={team.logo_url}
-            color={team.primary_color}
-            size="md"
-          />
-
-          <div className="min-w-0 flex-1">
-            <Link
-              href={`/teams/${team.id}`}
-              className="truncate font-display text-sm sm:text-base font-bold tracking-tight text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:underline block"
-              aria-label={`Ver perfil y plantilla del club ${team.name}`}
-            >
-              {team.name}
-            </Link>
-            {!editing && (
-              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                <BudgetDisplay
-                  amount={team.budget}
-                  size="md"
-                  className="font-bold text-foreground text-sm"
-                />
-                <span className="text-[10px] text-muted-foreground font-mono">
-                  ({pct}%)
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Action button */}
-        {!editing ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="shrink-0 min-h-[36px] h-8 px-3 gap-1.5 border-border bg-white/[0.02] text-xs font-semibold hover:bg-white/[0.06] transition-colors focus-visible:ring-2 focus-visible:ring-primary"
-            onClick={() => {
-              setBudget(team.budget || 0);
-              setEditing(true);
-            }}
-            aria-label={`Editar presupuesto de ${team.name}`}
-          >
-            <Pencil className="size-3 text-muted-foreground" aria-hidden="true" />
-            <span>Editar</span>
-          </Button>
-        ) : (
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="min-h-[36px] h-8 px-2.5 gap-1 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => setEditing(false)}
-            >
-              <X className="size-3.5" aria-hidden="true" />
-              <span className="hidden sm:inline">Cancelar</span>
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              disabled={pending}
-              onClick={save}
-              className="min-h-[36px] h-8 px-3 gap-1.5 text-xs font-semibold"
-            >
-              {pending ? (
-                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-              ) : (
-                <Check className="size-3.5" aria-hidden="true" />
-              )}
-              <span>{pending ? "…" : "Guardar"}</span>
-            </Button>
-          </div>
-        )}
-      </CardHeader>
-
-      <CardContent className="p-4 pt-0 space-y-3 flex-1 flex flex-col justify-end">
-        {editing ? (
-          <div className="space-y-3 pt-2 border-t border-border/50">
-            {/* Quick Adjustment Chips */}
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold text-muted-foreground block">
-                Ajuste Rápido
-              </span>
-              <div className="flex flex-wrap items-center gap-1">
-                {[
-                  { label: "+€10M", delta: 10_000_000, positive: true },
-                  { label: "+€5M", delta: 5_000_000, positive: true },
-                  { label: "+€1M", delta: 1_000_000, positive: true },
-                  { label: "-€1M", delta: -1_000_000, positive: false },
-                  { label: "-€5M", delta: -5_000_000, positive: false },
-                  { label: "-€10M", delta: -10_000_000, positive: false },
-                ].map((chip) => (
-                  <button
-                    key={chip.label}
-                    type="button"
-                    onClick={() => adjustBudget(chip.delta)}
-                    className={`min-h-[28px] px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-all border ${
-                      chip.positive
-                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
-                        : "border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                    }`}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
+    <div className="space-y-8">
+      <section aria-labelledby="fin-budgets">
+        <h2 id="fin-budgets" className="mb-2 px-1 text-[20px] font-bold tracking-tight">
+          Presupuestos
+        </h2>
+        <ul className="overflow-hidden rounded-[22px] bg-card">
+          {sorted.map((t) => {
+            const pct = getBudgetPercentage(t.budget || 0, maxBudget);
+            return (
+              <li key={t.id} className="group">
                 <button
                   type="button"
-                  onClick={() => setBudget(50_000_000)}
-                  className="min-h-[28px] px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-all border border-border bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
-                  title="Restablecer al presupuesto base oficial de la liga"
+                  onClick={() => setEditId(t.id)}
+                  className="flex min-h-[68px] w-full items-center gap-3 pl-4 text-left transition-colors active:bg-white/[0.06]"
+                  aria-label={`${t.name}: ${formatMoney(t.budget || 0)}. Cambiar presupuesto`}
                 >
-                  €50M
+                  <TeamLogo name={t.name} logoUrl={t.logo_url} color={t.primary_color} size="sm" />
+                  <div className="flex min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border py-3 pr-3 group-last:border-b-0">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="truncate text-[17px]">{t.name}</p>
+                        <p className="shrink-0 text-[17px] font-semibold tabular-nums">{formatMoney(t.budget || 0)}</p>
+                      </div>
+                      {/* Barra respecto al club con más presupuesto */}
+                      <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10" aria-hidden>
+                        <div className="h-full rounded-full bg-white/70" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                    <ChevronRight className="size-4 shrink-0 text-[#5a5a5f]" aria-hidden />
+                  </div>
                 </button>
-              </div>
-            </div>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-2 px-4 text-[13px] text-muted-foreground">Toca un club para cambiar su presupuesto.</p>
+      </section>
 
-            {/* Direct Number Input */}
-            <div>
-              <label
-                htmlFor={`team-budget-input-${team.id}`}
-                className="text-[11px] font-bold text-muted-foreground block mb-1"
-              >
-                Cantidad exacta (€)
-              </label>
-              <MoneyInput
-                id={`team-budget-input-${team.id}`}
-                value={budget}
-                onChange={setBudget}
-                ariaLabel={`Presupuesto de ${team.name} en euros`}
-              />
-              {error && (
-                <p className="mt-2 text-xs text-destructive font-medium" role="alert">
-                  {error}
-                </p>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2.5 pt-1">
-            {/* Visual Budget Progress Bar */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                <span>Capacidad vs. líder</span>
-                <span className="font-mono font-semibold text-foreground tabular-nums">{pct}%</span>
-              </div>
-              <Progress value={pct} className="h-1.5 bg-white/[0.06]" />
-            </div>
+      <section aria-labelledby="fin-rules">
+        <h2 id="fin-rules" className="mb-2 px-1 text-[20px] font-bold tracking-tight">
+          Normas
+        </h2>
+        <ul className="overflow-hidden rounded-[22px] bg-card">
+          {[
+            ["Venta directa al mercado", "30 % del valor"],
+            ["Cláusula de rescisión", "100 % al club de origen"],
+          ].map(([k, v]) => (
+            <li key={k} className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-4 py-3 text-[17px]">
+              <span>{k}</span>
+              <span className="text-right text-muted-foreground">{v}</span>
+            </li>
+          ))}
+          <li>
+            <button
+              type="button"
+              onClick={() => setShowRewards((s) => !s)}
+              aria-expanded={showRewards}
+              className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left text-[17px] active:bg-white/[0.06]"
+            >
+              <span>Premio por posición</span>
+              <ChevronRight className={cn("size-4 text-[#5a5a5f] transition-transform", showRewards && "rotate-90")} aria-hidden />
+            </button>
+            {showRewards && (
+              <ul className="border-t border-border">
+                {teams.map((_, i) => (
+                  <li key={i} className="flex items-center justify-between border-b border-border py-2.5 pl-8 pr-4 text-[15px] last:border-b-0">
+                    <span className="text-muted-foreground">{i + 1}.º</span>
+                    <span className="tabular-nums">{formatMoney(calculatePositionReward(i + 1))}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        </ul>
+        <p className="mt-2 px-4 text-[13px] text-muted-foreground">
+          Los premios por posición se cobran al acabar la ida y al acabar la liga.
+        </p>
+      </section>
 
-            {/* Economic Context Metrics Strip */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-xs">
-              <div className="flex items-center gap-2">
-                <Coins className="size-3.5 text-muted-foreground/70 shrink-0" aria-hidden="true" />
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-muted-foreground block">
-                    Plantilla
-                  </span>
-                  <span className="font-mono font-semibold text-foreground tabular-nums truncate block">
-                    {formatMoney(squadValue)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <TrendingUp className="size-3.5 text-muted-foreground/70 shrink-0" aria-hidden="true" />
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-muted-foreground block">
-                    Ratio Solvencia
-                  </span>
-                  <span className="font-mono font-semibold text-foreground tabular-nums truncate block">
-                    {ratio}%
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <Shield className="size-3 shrink-0 text-muted-foreground/70" aria-hidden="true" />
-                <span>{team.player_count ?? 0} jugadores</span>
-              </span>
-              {team.avg_overall != null && (
-                <span className="font-medium text-foreground">
-                  Media: <strong className="font-mono">{team.avg_overall}</strong>
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditId(null)}>
+        {editing && <BudgetSheet key={editing.id} team={editing} onClose={() => setEditId(null)} />}
+      </Dialog>
+    </div>
   );
 }

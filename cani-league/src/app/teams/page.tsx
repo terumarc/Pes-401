@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
-import { TeamDirectory } from "@/components/teams/TeamDirectory";
+import { TeamList } from "@/components/teams/TeamList";
+import { SegmentedNav, TEAM_SECTIONS } from "@/components/layout/SegmentedNav";
 import {
   getPrimaryLeague,
   getTeamsWithStandings,
@@ -22,15 +23,10 @@ export default async function TeamsPage() {
   const teams = await getTeamsWithStandings(league.id);
 
   return (
-    <div className="animate-fade-up space-y-8 pb-12">
-      <PageHeader
-        eyebrow="Clubes de la Liga"
-        title="Equipos"
-        description={`${teams.length} clubes compitiendo en ${league.name} · Temporada ${league.season}`}
-      />
-
-      {/* DIRECTORIO Y BUSCADOR INTERACTIVO */}
-      <TeamDirectory teams={teams} />
+    <div className="animate-fade-up pb-12">
+      <PageHeader title="Equipos" />
+      <SegmentedNav label="Secciones de equipos" items={TEAM_SECTIONS} current="/teams" />
+      <TeamList teams={teams} />
     </div>
   );
 }
