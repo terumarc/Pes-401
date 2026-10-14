@@ -651,7 +651,7 @@ export function PlayerList({
           <div
             role="group"
             aria-label="Modo de visualización"
-            className="flex items-center rounded-lg border border-border bg-background/60 p-1 shadow-xs"
+            className="hidden md:flex items-center rounded-lg border border-border bg-background/60 p-1 shadow-xs"
           >
             <button
               type="button"

@@ -242,3 +242,18 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .trophy-spin { animation: none; }
 }
+
+/* ---------- Sensación de app nativa en móvil ---------- */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+a, button, [role="button"], label, summary {
+  touch-action: manipulation;
+}
+@media (max-width: 767px) {
+  /* iOS hace zoom al enfocar campos de menos de 16px */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

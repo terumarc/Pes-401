@@ -131,7 +131,7 @@ export function TeamDirectory({ teams }: TeamDirectoryProps) {
           </div>
 
           {/* ALTERNADOR DE VISTA GRID / TABLE */}
-          <div className="flex items-center rounded-xl border border-border/80 bg-white/[0.03] p-0.5">
+          <div className="hidden md:flex items-center rounded-xl border border-border/80 bg-white/[0.03] p-0.5">
             <button
               type="button"
               onClick={() => setViewMode("grid")}

@@ -12,6 +12,7 @@ import {
   Menu,
   CalendarDays,
   Swords,
+  ListOrdered,
 } from "lucide-react";
 
 import { NAV_ITEMS } from "@/constants";
@@ -36,6 +37,7 @@ const ICONS = {
   Wallet,
   CalendarDays,
   Swords,
+  ListOrdered,
 } as const;
 
 export function Navigation() {

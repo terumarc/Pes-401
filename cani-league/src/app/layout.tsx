@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -9,6 +9,7 @@ import { AssistantProvider } from "@/components/assistant/assistant-context";
 import { AssistantSheet } from "@/components/assistant/assistant-sheet";
 import { AssistantTrigger } from "@/components/assistant/assistant-trigger";
 import { RouteProgressBar } from "@/components/layout/RouteProgressBar";
+import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import "./globals.css";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
@@ -16,6 +17,19 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 export const metadata: Metadata = {
   title: "Cani League Manager",
   description: "Manager externo para la liga PES 6 / Cani Patch",
+  applicationName: "Cani League",
+  appleWebApp: {
+    capable: true,
+    title: "Cani League",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -37,12 +51,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <SidebarInset>
                 <SiteHeader />
                 <div className="flex flex-1 flex-col">
-                  <main className="flex-1 w-full p-4 lg:p-6 overflow-x-hidden">
+                  <main className="flex-1 w-full overflow-x-hidden px-4 pt-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:p-4 lg:p-6">
                     {children}
                   </main>
                 </div>
               </SidebarInset>
             </SidebarProvider>
+            <MobileTabBar />
             <AssistantSheet />
             <AssistantTrigger />
           </AssistantProvider>

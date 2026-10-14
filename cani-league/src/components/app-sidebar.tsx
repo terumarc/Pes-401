@@ -25,6 +25,7 @@ import {
   Wallet,
   CalendarDays,
   Swords,
+  ListOrdered,
 } from "lucide-react"
 
 import { NAV_ITEMS } from "@/constants"
@@ -38,6 +39,7 @@ const ICONS = {
   Wallet,
   CalendarDays,
   Swords,
+  ListOrdered,
 } as const;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
