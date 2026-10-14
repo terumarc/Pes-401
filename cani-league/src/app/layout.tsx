@@ -65,7 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <SiteHeader season={season} />
                 <div className="flex flex-1 flex-col">
                   <main className="flex-1 w-full overflow-x-hidden px-4 pt-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:p-4 lg:p-6">
-                    <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+                    <div className="w-full">{children}</div>
                   </main>
                 </div>
               </SidebarInset>
