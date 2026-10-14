@@ -175,3 +175,13 @@ export type LeagueTableRow = {
   goal_diff: number;
   points: number;
 };
+
+export type TrophyType = "league" | "champions" | "cup" | "conference";
+
+export type TrophyCounts = Record<TrophyType, number>;
+
+export type TeamTrophyCabinet = {
+  team: Pick<Team, "id" | "name" | "short_name" | "logo_url" | "primary_color" | "budget">;
+  trophies: TrophyCounts;
+  total: number;
+};

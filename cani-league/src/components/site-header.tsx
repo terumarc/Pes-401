@@ -11,6 +11,7 @@ const ROUTE_LABELS: Record<string, { title: string; parent?: string }> = {
   "/league": { title: "Dashboard" },
   "/calendar": { title: "Calendario", parent: "Competición" },
   "/standings": { title: "Clasificación", parent: "Competición" },
+  "/trophies": { title: "Sala de trofeos", parent: "Competición" },
   "/teams": { title: "Equipos", parent: "Clubes" },
   "/players": { title: "Jugadores", parent: "Base de datos" },
   "/market": { title: "Mercado de Fichajes", parent: "Transferencias" },

@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      trophy_prizes: {
+        Row: {
+          league_id: string;
+          trophy: string;
+          prize: number;
+          updated_at: string;
+        };
+        Insert: {
+          league_id: string;
+          trophy: string;
+          prize?: number;
+          updated_at?: string;
+        };
+        Update: {
+          league_id?: string;
+          trophy?: string;
+          prize?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      team_trophies: {
+        Row: {
+          team_id: string;
+          trophy: string;
+          count: number;
+          updated_at: string;
+        };
+        Insert: {
+          team_id: string;
+          trophy: string;
+          count?: number;
+          updated_at?: string;
+        };
+        Update: {
+          team_id?: string;
+          trophy?: string;
+          count?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       transfers: {
   Row: {
     id: string;
