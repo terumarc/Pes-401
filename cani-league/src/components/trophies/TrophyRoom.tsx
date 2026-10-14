@@ -118,7 +118,7 @@ export function TrophyRoom({
     <div className="space-y-6">
       {/* Estantería: los cuatro trofeos y sus campeones */}
       <Card className={CARD}>
-        <div className="grid grid-cols-2 gap-px bg-black xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-px bg-black sm:grid-cols-2 xl:grid-cols-4">
           {TROPHIES.map((t, i) => (
             <TrophyColumn
               key={t.key}
@@ -176,11 +176,11 @@ function TrophyColumn({
   return (
     <section
       aria-label={label}
-      className="flex flex-col bg-card motion-safe:animate-fade-up"
+      className="flex flex-row bg-card motion-safe:animate-fade-up sm:flex-col"
       style={{ animationDelay: `${index * 70}ms`, animationFillMode: "both" }}
     >
       {/* Estante iluminado */}
-      <div className="group relative flex h-36 items-end justify-center pt-4 sm:h-52 sm:pt-6">
+      <div className="group relative flex w-28 shrink-0 items-center justify-center py-4 sm:h-52 sm:w-auto sm:items-end sm:pt-6 sm:pb-0">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 h-full transition-opacity duration-500"
@@ -194,11 +194,11 @@ function TrophyColumn({
           dimmed={editions === 0}
           title={label}
           delay={index * 240}
-          className="relative h-28 sm:h-[168px] drop-shadow-[0_6px_0_rgba(0,0,0,0.35)] motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[steps(2)] motion-safe:group-hover:-translate-y-1.5"
+          className="relative h-24 sm:h-[168px] drop-shadow-[0_6px_0_rgba(0,0,0,0.35)] motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[steps(2)] motion-safe:group-hover:-translate-y-1.5"
         />
       </div>
 
-      <div className="flex flex-1 flex-col px-3 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
+      <div className="flex min-w-0 flex-1 flex-col py-4 pr-4 sm:px-5 sm:pb-5 sm:pt-4">
         <div className="flex flex-col gap-0.5">
           <h2 className="text-[17px] font-semibold leading-tight">{label}</h2>
           <span className="text-[13px] text-muted-foreground tabular-nums">
@@ -217,16 +217,16 @@ function TrophyColumn({
         </p>
 
         {winners.length > 0 ? (
-          <ul className="mt-4 space-y-0.5">
+          <ul className="mt-3 space-y-0.5">
             {winners.map((c) => (
-              <li key={c.team.id} className="group/row flex items-center gap-1.5 rounded-md py-1 sm:gap-2.5 sm:pl-1">
+              <li key={c.team.id} className="group/row flex items-center gap-2 py-1 sm:pl-1">
                 <span
                   aria-hidden
                   className="size-2.5 shrink-0 rounded-full ring-1 ring-white/20"
                   style={{ backgroundColor: c.team.primary_color }}
                 />
                 <span className="min-w-0 flex-1 text-[15px] leading-tight">{c.team.name}</span>
-                <span className="text-[15px] font-semibold tabular-nums">×{c.trophies[type]}</span>
+                <span className="shrink-0 text-[15px] font-semibold tabular-nums">×{c.trophies[type]}</span>
                 <Button
                   variant="ghost"
                   size="icon-xs"
