@@ -12,6 +12,16 @@ import type { Player, Team } from "@/types";
 
 type Row = Player & { team?: Partial<Team> | null };
 
+const TIER_FILTERS = [
+  { key: "all", label: "Todos" },
+  { key: "S+", label: "S+" },
+  { key: "S", label: "S" },
+  { key: "A", label: "A" },
+  { key: "B", label: "B" },
+  { key: "C", label: "C" },
+  { key: "D", label: "D" },
+] as const;
+
 const GROUPS = [
   { key: "all", label: "Todos" },
   { key: "gk", label: "POR" },
@@ -84,6 +94,7 @@ function Segmented<T extends string>({
 export function PlayerBrowser({ players, teams, mode }: { players: Row[]; teams: Team[]; mode: "players" | "market" }) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<(typeof GROUPS)[number]["key"]>("all");
+  const [tier, setTier] = useState<(typeof TIER_FILTERS)[number]["key"]>("all");
   const [origin, setOrigin] = useState<"all" | "free" | "club">("all");
   const [sort, setSort] = useState<(typeof SORTS)[number]["key"]>("rating");
   const [limit, setLimit] = useState(PAGE);
@@ -93,6 +104,7 @@ export function PlayerBrowser({ players, teams, mode }: { players: Row[]; teams:
   const list = useMemo(() => {
     const out = players.filter((p) => {
       if (group !== "all" && getPositionGroup(p.position) !== group) return false;
+      if (tier !== "all" && getPlayerTier(p).tier !== tier) return false;
       if (origin === "free" && !isFree(p)) return false;
       if (origin === "club" && isFree(p)) return false;
       if (!q) return true;
@@ -110,7 +122,7 @@ export function PlayerBrowser({ players, teams, mode }: { players: Row[]; teams:
       return getPlayerEffectiveRating(b) - getPlayerEffectiveRating(a);
     });
     return out;
-  }, [players, group, origin, sort, q]);
+  }, [players, group, tier, origin, sort, q]);
 
   const shown = list.slice(0, limit);
 
@@ -145,6 +157,7 @@ export function PlayerBrowser({ players, teams, mode }: { players: Row[]; teams:
       </label>
 
       <Segmented label="Línea" value={group} onChange={(v) => { setGroup(v); setLimit(PAGE); }} options={GROUPS} />
+      <Segmented label="Nivel" value={tier} onChange={(v) => { setTier(v); setLimit(PAGE); }} options={TIER_FILTERS} />
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         {mode === "market" ? (

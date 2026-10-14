@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { MoneyInput } from "@/components/finances/MoneyInput";
@@ -89,7 +89,17 @@ function BudgetSheet({ team, onClose }: { team: TeamWithStanding; onClose: () =>
 }
 
 /** Finanzas en listas agrupadas de iOS: presupuesto de cada club y normas económicas. */
-export function FinancesPanel({ teams }: { teams: TeamWithStanding[] }) {
+export function FinancesPanel({
+  teams,
+  salaryByTeam = {},
+  extra,
+}: {
+  teams: TeamWithStanding[];
+  /** Sueldos que paga cada club por temporada. */
+  salaryByTeam?: Record<string, number>;
+  /** Secciones de contratos (sueldos y último cierre), entre Presupuestos y Normas. */
+  extra?: ReactNode;
+}) {
   const [editId, setEditId] = useState<string | null>(null);
   const [showRewards, setShowRewards] = useState(false);
   const sorted = [...teams].sort((a, b) => (b.budget || 0) - (a.budget || 0));
@@ -124,6 +134,11 @@ export function FinancesPanel({ teams }: { teams: TeamWithStanding[] }) {
                       <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10" aria-hidden>
                         <div className="h-full rounded-full bg-white/70" style={{ width: `${pct}%` }} />
                       </div>
+                      {salaryByTeam[t.id] > 0 && (
+                        <p className="mt-1.5 text-[13px] text-muted-foreground tabular-nums">
+                          Sueldos {formatMoney(salaryByTeam[t.id])} por temporada
+                        </p>
+                      )}
                     </div>
                     <ChevronRight className="size-4 shrink-0 text-[#5a5a5f]" aria-hidden />
                   </div>
@@ -134,6 +149,8 @@ export function FinancesPanel({ teams }: { teams: TeamWithStanding[] }) {
         </ul>
         <p className="mt-2 px-4 text-[13px] text-muted-foreground">Toca un club para cambiar su presupuesto.</p>
       </section>
+
+      {extra}
 
       <section aria-labelledby="fin-rules">
         <h2 id="fin-rules" className="mb-2 px-1 text-[20px] font-bold tracking-tight">

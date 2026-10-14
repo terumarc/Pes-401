@@ -9,6 +9,8 @@ import { PlayerStats } from "@/components/players/PlayerStats";
 import { getPlayerById, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { formatMoney } from "@/lib/format/money";
 import { getPlayerTier, getPlayerEffectiveRating, getPlayerContractInfo } from "@/lib/players";
+import { getPlayerSalary, getSeasonsLeft, DEFAULT_SALARY_PERCENT } from "@/lib/contracts";
+import { getSalaryTable } from "@/lib/data/contracts";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 type Props = {
@@ -33,7 +35,9 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
   if (!player) notFound();
 
   const league = await getPrimaryLeague();
-  const teams = league ? await getTeamsByLeague(league.id) : [];
+  const [teams, salaries] = league
+    ? await Promise.all([getTeamsByLeague(league.id), getSalaryTable(league.id)])
+    : [[], DEFAULT_SALARY_PERCENT];
   const tier = getPlayerTier(player);
   const rating = getPlayerEffectiveRating(player);
   const contract = getPlayerContractInfo(player);
@@ -56,7 +60,13 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
 
   const facts: [string, React.ReactNode][] = [
     ["Precio", formatMoney(contract.price)],
-    ["Contrato", contract.durationLabel],
+    [
+      "Contrato",
+      freeAgent || contract.duration === 0
+        ? "Sin contrato"
+        : `${getSeasonsLeft(player)} de ${contract.duration} ${contract.duration === 1 ? "temporada" : "temporadas"}`,
+    ],
+    ["Sueldo", getPlayerSalary(player, salaries) > 0 ? `${formatMoney(getPlayerSalary(player, salaries))} por temporada` : "Sin sueldo"],
     ["Renovación", contract.renewalCost > 0 ? `${contract.renewalPercentLabel} · ${formatMoney(contract.renewalCost)}` : "Gratis"],
     ["En el mercado", player.available_in_market ? "Sí" : "No"],
   ];

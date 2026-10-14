@@ -9,6 +9,87 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contract_salaries: {
+        Row: {
+          league_id: string;
+          tier: string;
+          percent: number;
+          updated_at: string;
+        };
+        Insert: {
+          league_id: string;
+          tier: string;
+          percent?: number;
+          updated_at?: string;
+        };
+        Update: {
+          league_id?: string;
+          tier?: string;
+          percent?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      season_closures: {
+        Row: {
+          league_id: string;
+          calendar_key: string;
+          stage: string;
+          created_at: string;
+        };
+        Insert: {
+          league_id: string;
+          calendar_key: string;
+          stage: string;
+          created_at?: string;
+        };
+        Update: {
+          league_id?: string;
+          calendar_key?: string;
+          stage?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      contract_events: {
+        Row: {
+          id: string;
+          league_id: string;
+          calendar_key: string;
+          team_id: string | null;
+          player_id: string | null;
+          player_name: string;
+          team_name: string;
+          kind: string;
+          amount: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          league_id: string;
+          calendar_key: string;
+          team_id?: string | null;
+          player_id?: string | null;
+          player_name: string;
+          team_name: string;
+          kind: string;
+          amount?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          league_id?: string;
+          calendar_key?: string;
+          team_id?: string | null;
+          player_id?: string | null;
+          player_name?: string;
+          team_name?: string;
+          kind?: string;
+          amount?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       trophy_prizes: {
         Row: {
           league_id: string;
@@ -208,6 +289,7 @@ export type Database = {
           market_value: number;
           transfer_price: number;
           available_in_market: boolean;
+          contract_seasons_left: number | null;
           created_at: string;
         };
         Insert: {
@@ -230,6 +312,7 @@ export type Database = {
           market_value?: number;
           transfer_price?: number;
           available_in_market?: boolean;
+          contract_seasons_left?: number | null;
           created_at?: string;
         };
         Update: {
@@ -252,6 +335,7 @@ export type Database = {
           market_value?: number;
           transfer_price?: number;
           available_in_market?: boolean;
+          contract_seasons_left?: number | null;
           created_at?: string;
         };
         Relationships: [

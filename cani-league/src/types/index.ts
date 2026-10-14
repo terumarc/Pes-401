@@ -83,6 +83,8 @@ export type Player = {
   transfer_price: number;
   clause_fee?: number;
   available_in_market: boolean;
+  /** Temporadas que le quedan al contrato; null = contrato completo de su nivel. */
+  contract_seasons_left?: number | null;
   pes_stats?: PesStats;
   created_at: string;
 };
@@ -141,6 +143,7 @@ export type PlayerCreateInput = {
   market_value?: number;
   transfer_price?: number;
   available_in_market?: boolean;
+  contract_seasons_left?: number | null;
 };
 
 export type PlayerUpdateInput = Partial<PlayerCreateInput>;

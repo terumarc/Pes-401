@@ -4,6 +4,7 @@ import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { calculateMatchReward } from "@/lib/economy";
 import { applySeasonMultipliers } from "@/lib/data/budget";
+import { calendarKeyOf, claimSeasonStage, closeSeasonContracts } from "@/lib/data/contracts";
 import { buildLeagueTable } from "@/lib/data/matches";
 import type { Team, MatchWithTeams } from "@/types";
 
@@ -114,8 +115,14 @@ export async function POST(request: Request) {
             team_id: row.team.id,
             position: idx + 1,
           }));
-          await applySeasonMultipliers(updatedMatch.league_id, standings, "end");
-          seasonStageApplied = "end";
+          // Una sola vez por calendario: corregir un resultado después no vuelve a pagar ni cobrar.
+          const calendarKey = calendarKeyOf(allLeagueMatches);
+          if (await claimSeasonStage(supabase, updatedMatch.league_id, calendarKey, "end")) {
+            await applySeasonMultipliers(updatedMatch.league_id, standings, "end");
+            seasonStageApplied = "end";
+          }
+          // Después de cobrar los premios, se pagan sueldos y renovaciones.
+          await closeSeasonContracts(updatedMatch.league_id, calendarKey);
         }
       } else if (round1Complete && updatedMatch.round === 1) {
         // Completó todos los partidos de ida (mitad de temporada)
@@ -136,8 +143,10 @@ export async function POST(request: Request) {
             team_id: row.team.id,
             position: idx + 1,
           }));
-          await applySeasonMultipliers(updatedMatch.league_id, standings, "mid");
-          seasonStageApplied = "mid";
+          if (await claimSeasonStage(supabase, updatedMatch.league_id, calendarKeyOf(allLeagueMatches), "mid")) {
+            await applySeasonMultipliers(updatedMatch.league_id, standings, "mid");
+            seasonStageApplied = "mid";
+          }
         }
       }
     }

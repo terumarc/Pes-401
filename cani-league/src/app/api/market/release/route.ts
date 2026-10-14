@@ -88,6 +88,7 @@ export async function POST(request: Request) {
       .update({
         team_id: freeAgentTeam.id,
         available_in_market: true,
+        contract_seasons_left: null,
       })
       .eq("id", playerId)
       .select("*")

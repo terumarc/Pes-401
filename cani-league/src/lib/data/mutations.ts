@@ -69,7 +69,7 @@ export async function transferPlayerClient(
   // 4. Mover jugador + sacarlo del mercado
   const { data: updatedPlayer, error: moveErr } = await supabase
     .from("players")
-    .update({ team_id: buyerTeamId, available_in_market: false })
+    .update({ team_id: buyerTeamId, available_in_market: false, contract_seasons_left: null })
     .eq("id", playerId)
     .select("*")
     .single();

@@ -91,7 +91,7 @@ export function PlayerActions({
   };
 
   async function moveTeam() {
-    await updatePlayerClient(playerId, { team_id: teamId });
+    await updatePlayerClient(playerId, { team_id: teamId, contract_seasons_left: null });
     setMoving(false);
     startTransition(() => router.refresh());
   }

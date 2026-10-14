@@ -125,6 +125,7 @@ export async function POST(request: Request) {
       .update({
         team_id: buyerTeamId,
         available_in_market: false,
+        contract_seasons_left: null, // contrato nuevo y completo al llegar al club
       })
       .eq("id", playerId)
       .select("*")
