@@ -74,26 +74,23 @@ export function PlayerStats({ player }: PlayerStatsProps) {
   return (
     <div className="space-y-6">
       {/* Chart Section */}
-      <div className="rounded-2xl border border-border/80 bg-card/40 p-4 sm:p-5 backdrop-blur-md">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
-          <span className="text-[11px] font-semibold text-muted-foreground">
-            Gráfica de Habilidades
-          </span>
+      <div>
+        <div className="mb-3">
 
-          <div role="tablist" aria-label="Modo de visualización gráfica" className="inline-flex rounded-lg border border-border bg-background/80 p-1 text-xs">
+          <div role="tablist" aria-label="Modo de visualización gráfica" className="flex h-9 w-full rounded-[9px] bg-input p-[2px]">
             <button
               type="button"
               role="tab"
               aria-selected={chartMode === "radar26"}
               onClick={() => setChartMode("radar26")}
               className={cn(
-                "rounded-md px-3 py-1.5 min-h-[32px] font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "flex-1 rounded-[7px] text-[13px] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 chartMode === "radar26"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-[#636366] text-white"
+                  : "text-[#ebebf5]/60"
               )}
             >
-              Radar PES (26)
+              Radar
             </button>
             <button
               type="button"
@@ -101,13 +98,13 @@ export function PlayerStats({ player }: PlayerStatsProps) {
               aria-selected={chartMode === "macro"}
               onClick={() => setChartMode("macro")}
               className={cn(
-                "rounded-md px-3 py-1.5 min-h-[32px] font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "flex-1 rounded-[7px] text-[13px] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 chartMode === "macro"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-[#636366] text-white"
+                  : "text-[#ebebf5]/60"
               )}
             >
-              Resumen (7)
+              Resumen
             </button>
             <button
               type="button"
@@ -115,10 +112,10 @@ export function PlayerStats({ player }: PlayerStatsProps) {
               aria-selected={chartMode === "bars"}
               onClick={() => setChartMode("bars")}
               className={cn(
-                "rounded-md px-3 py-1.5 min-h-[32px] font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "flex-1 rounded-[7px] text-[13px] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 chartMode === "bars"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-[#636366] text-white"
+                  : "text-[#ebebf5]/60"
               )}
             >
               Barras
@@ -128,27 +125,18 @@ export function PlayerStats({ player }: PlayerStatsProps) {
 
         {chartMode === "radar26" && (
           <div className="py-2">
-            <p className="mb-2 text-center text-xs text-muted-foreground">
-              Polígono de las 26 estadísticas PES (pasa el cursor por cada eje para ver el valor exacto)
-            </p>
             <PlayerRadarChart data={radar26Data} maxHeight={320} />
           </div>
         )}
 
         {chartMode === "macro" && (
           <div className="py-2">
-            <p className="mb-2 text-center text-xs text-muted-foreground">
-              Visión general de las 7 habilidades clave
-            </p>
             <PlayerRadarChart data={macroData} maxHeight={280} />
           </div>
         )}
 
         {chartMode === "bars" && (
           <div className="py-2">
-            <p className="mb-2 text-center text-xs text-muted-foreground">
-              Comparativa de barras coloreadas según el rango oficial PES
-            </p>
             <PlayerPesBarChart data={barData} />
           </div>
         )}
@@ -157,17 +145,13 @@ export function PlayerStats({ player }: PlayerStatsProps) {
       {/* Category Filter Tabs */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[11px] font-semibold text-muted-foreground">
-            Atributos Detallados ({filteredDefs.length})
+          <p className="text-[13px] text-muted-foreground">
+            {filteredDefs.length} atributos
           </p>
         </div>
 
         <div role="group" aria-label="Filtrar atributos por categoría" className="flex flex-wrap gap-1.5">
           {PES_CATEGORIES.map((cat) => {
-            const count =
-              cat.id === "all"
-                ? PES_STAT_DEFINITIONS.length
-                : PES_STAT_DEFINITIONS.filter((d) => d.category === cat.id).length;
             const isActive = activeCategory === cat.id;
 
             return (
@@ -177,13 +161,11 @@ export function PlayerStats({ player }: PlayerStatsProps) {
                 aria-pressed={isActive}
                 onClick={() => setActiveCategory(cat.id)}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 min-h-[34px] text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "border border-border/80 bg-white/[0.03] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
+                  "h-8 rounded-full px-3.5 text-[15px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  isActive ? "bg-white text-black" : "bg-secondary text-foreground"
                 )}
               >
-                {cat.label} ({count})
+                {cat.label.replace(/\s*\(\d+\)$/, "")}
               </button>
             );
           })}
@@ -199,7 +181,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
           return (
             <div
               key={def.key}
-              className="group flex flex-col justify-between rounded-xl border border-border/60 bg-white/[0.02] p-3 transition-colors hover:border-white/[0.16] hover:bg-white/[0.05]"
+              className="flex flex-col justify-between rounded-[14px] bg-secondary p-3"
               style={{ animationDelay: `${index * 20}ms` }}
             >
               <div className="mb-2 flex items-center justify-between gap-2">
@@ -208,10 +190,10 @@ export function PlayerStats({ player }: PlayerStatsProps) {
                     {def.shortLabel}
                   </span>
                   <div className="truncate">
-                    <div className="truncate text-xs font-semibold text-foreground">
+                    <div className="truncate text-[15px] font-semibold text-foreground">
                       {def.label}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-[12px] text-muted-foreground">
                       {def.pesName}
                     </div>
                   </div>
@@ -245,7 +227,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
       </div>
 
       {/* PES Color Scale Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl border border-border/60 bg-white/[0.02] px-4 py-2.5 text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-2 py-1 text-[12px] text-muted-foreground">
         <span className="font-semibold text-foreground">
           Escala PES:
         </span>

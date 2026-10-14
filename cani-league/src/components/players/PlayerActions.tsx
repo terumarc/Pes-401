@@ -140,35 +140,35 @@ export function PlayerActions({
             <DropdownMenuItem asChild>
               <Link
                 href={`/players/${playerId}?edit=1`}
-                className="flex items-center gap-2.5 cursor-pointer py-2 text-xs font-medium"
+                className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px]"
               >
-                <Edit3 className="size-3.5 text-muted-foreground" />
+                <Edit3 className="size-4 text-muted-foreground" />
                 <span>Editar jugador</span>
               </Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem
               onClick={() => setMoving(true)}
-              className="flex items-center gap-2.5 cursor-pointer py-2 text-xs font-medium"
+              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px]"
             >
-              <ArrowRightLeft className="size-3.5 text-muted-foreground" />
+              <ArrowRightLeft className="size-4 text-muted-foreground" />
               <span>Mover de equipo</span>
             </DropdownMenuItem>
 
             <DropdownMenuItem
               onClick={toggleMarket}
-              className="flex items-center gap-2.5 cursor-pointer py-2 text-xs font-medium"
+              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px]"
             >
-              <Store className="size-3.5 text-muted-foreground" />
+              <Store className="size-4 text-muted-foreground" />
               <span>{availableInMarket ? "Retirar de mercado" : "Poner en mercado"}</span>
             </DropdownMenuItem>
 
             {!isFreeAgent && (
               <DropdownMenuItem
                 onClick={() => setReleasing(true)}
-                className="flex items-center gap-2.5 cursor-pointer py-2 text-xs font-semibold text-amber-400 focus:text-amber-300 focus:bg-amber-500/10"
+                className="flex items-center gap-2.5 cursor-pointer py-2 text-[15px]"
               >
-                <Coins className="size-3.5 text-amber-400" />
+                <Coins className="size-4" />
                 <span>Liberar (+30% valor)</span>
               </DropdownMenuItem>
             )}
@@ -177,7 +177,7 @@ export function PlayerActions({
 
             <DropdownMenuItem
               onClick={remove}
-              className="flex items-center gap-2.5 cursor-pointer py-2 text-xs font-semibold text-destructive focus:text-destructive focus:bg-destructive/10"
+              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px] text-destructive focus:text-destructive focus:bg-destructive/10"
             >
               <Trash2 className="size-3.5" />
               <span>Eliminar jugador</span>
@@ -187,9 +187,9 @@ export function PlayerActions({
 
         {/* Modal de Mover Equipo Accesible */}
         <Dialog open={moving} onOpenChange={setMoving}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="border-0 bg-card p-5 sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-lg font-display">
+              <DialogTitle className="flex items-center gap-2 text-[20px] font-bold">
                 <ArrowRightLeft className="size-4 text-primary" />
                 Mover a {playerForRelease.name}
               </DialogTitle>
@@ -203,7 +203,7 @@ export function PlayerActions({
                 Equipo de destino:
               </label>
               <Select value={teamId} onValueChange={(v) => v && setTeamId(v)}>
-                <SelectTrigger id="team-select-compact" className="w-full h-10 border-border">
+                <SelectTrigger id="team-select-compact" className="w-full">
                   <SelectValue placeholder="Seleccionar equipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -220,14 +220,14 @@ export function PlayerActions({
               <Button
                 type="button"
                 variant="outline"
-                className="min-h-[40px]"
+                className=""
                 onClick={() => setMoving(false)}
               >
                 Cancelar
               </Button>
               <Button
                 type="button"
-                className="min-h-[40px] font-semibold"
+                className="font-semibold"
                 onClick={moveTeam}
               >
                 Confirmar Traspaso
@@ -251,10 +251,10 @@ export function PlayerActions({
 
   // --- MODO DEFAULT (Para la página de perfil /players/[id]) ---
   return (
-    <div className="flex flex-wrap gap-2.5">
+    <div className="grid grid-cols-2 gap-2">
       <Button
         variant="outline"
-        className="min-h-[40px] px-4 gap-2 text-xs sm:text-sm font-medium border-border hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
+        className="px-4 gap-2  font-medium"
         asChild
       >
         <Link href={`/players/${playerId}?edit=1`}>
@@ -266,7 +266,7 @@ export function PlayerActions({
       <Button
         type="button"
         variant="outline"
-        className="min-h-[40px] px-4 gap-2 text-xs sm:text-sm font-medium border-border hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
+        className="px-4 gap-2  font-medium"
         onClick={() => setMoving(true)}
       >
         <ArrowRightLeft className="size-4 text-muted-foreground" />
@@ -276,17 +276,17 @@ export function PlayerActions({
       <MarketToggle
         playerId={playerId}
         available={availableInMarket}
-        className="min-h-[40px] px-4 text-xs sm:text-sm"
+        className="px-4 "
       />
 
       {!isFreeAgent && (
         <Button
           type="button"
           variant="outline"
-          className="min-h-[40px] px-4 gap-2 border-amber-500/30 bg-amber-500/5 text-amber-400 hover:bg-amber-500/15 hover:border-amber-500/50 transition-all text-xs sm:text-sm font-semibold"
+          className="px-4 gap-2  font-semibold"
           onClick={() => setReleasing(true)}
         >
-          <Coins className="size-4 text-amber-400" />
+          <Coins className="size-4" />
           Liberar (+30%)
         </Button>
       )}
@@ -294,7 +294,7 @@ export function PlayerActions({
       <Button
         type="button"
         variant="destructive"
-        className="min-h-[40px] px-4 gap-2 text-xs sm:text-sm font-medium"
+        className="px-4 gap-2  font-medium"
         disabled={pending}
         onClick={remove}
         aria-label={`Eliminar definitivamente a ${playerForRelease.name}`}
@@ -309,9 +309,9 @@ export function PlayerActions({
 
       {/* Modal de Mover Equipo Accesible */}
       <Dialog open={moving} onOpenChange={setMoving}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="border-0 bg-card p-5 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg font-display">
+            <DialogTitle className="flex items-center gap-2 text-[20px] font-bold">
               <ArrowRightLeft className="size-4 text-primary" />
               Mover a {playerForRelease.name}
             </DialogTitle>
@@ -325,7 +325,7 @@ export function PlayerActions({
               Equipo de destino:
             </label>
             <Select value={teamId} onValueChange={(v) => v && setTeamId(v)}>
-              <SelectTrigger id="team-select-full" className="w-full h-10 border-border">
+              <SelectTrigger id="team-select-full" className="w-full">
                 <SelectValue placeholder="Seleccionar equipo" />
               </SelectTrigger>
               <SelectContent>
@@ -342,14 +342,14 @@ export function PlayerActions({
             <Button
               type="button"
               variant="outline"
-              className="min-h-[40px]"
+              className=""
               onClick={() => setMoving(false)}
             >
               Cancelar
             </Button>
             <Button
               type="button"
-              className="min-h-[40px] font-semibold"
+              className="font-semibold"
               onClick={moveTeam}
             >
               Confirmar Traspaso
