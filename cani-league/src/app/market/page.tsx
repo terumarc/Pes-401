@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
-import { MarketSearchList } from "@/components/market/MarketSearchList";
+import { PlayerBrowser } from "@/components/players/PlayerBrowser";
 import {
   getPlayers,
   getPrimaryLeague,
@@ -32,14 +32,9 @@ export default async function MarketPage() {
   );
 
   return (
-    <div className="animate-fade-up space-y-6 pb-12">
-      <PageHeader
-        eyebrow="Transferencias y Fichajes Oficiales"
-        title="Mercado de Jugadores"
-        description="Gestión de cláusulas de rescisión directas a otros clubes e incorporación inmediata de agentes libres."
-      />
-
-      <MarketSearchList players={players} teams={buyerTeams} />
+    <div className="animate-fade-up pb-12">
+      <PageHeader title="Mercado" />
+      <PlayerBrowser mode="market" players={players} teams={buyerTeams} />
     </div>
   );
 }

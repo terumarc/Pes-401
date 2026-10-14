@@ -107,22 +107,22 @@ export function TransferModal({
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md border-border/80 bg-card/95 backdrop-blur-xl shadow-2xl p-6">
-                <DialogHeader className="space-y-1.5 pb-2 border-b border-border/50">
-                    <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-display font-bold">
+            <DialogContent className="border-0 bg-card p-5 sm:max-w-md">
+                <DialogHeader className="space-y-1 text-left">
+                    <DialogTitle className="flex items-center gap-2 text-[20px] font-bold">
                         {isClausula ? (
-                            <span className="flex items-center gap-2 text-amber-500">
+                            <span className="flex items-center gap-2">
                                 <Zap className="size-5 shrink-0" aria-hidden="true" />
                                 Cláusula de Rescisión
                             </span>
                         ) : (
-                            <span className="flex items-center gap-2 text-primary">
+                            <span className="flex items-center gap-2">
                                 <Store className="size-5 shrink-0" aria-hidden="true" />
                                 Fichar Agente Libre
                             </span>
                         )}
                     </DialogTitle>
-                    <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
+                    <DialogDescription className="text-[15px] text-muted-foreground">
                         {isClausula
                             ? "Ejecuta la cláusula contractual para incorporar al jugador inmediatamente."
                             : "Ficha a este agente libre para reforzar la plantilla de tu club."}
@@ -131,8 +131,8 @@ export function TransferModal({
 
                 {status === "success" ? (
                     <div className="flex flex-col items-center gap-3 py-6 text-center animate-in zoom-in-95 duration-200">
-                        <CheckCircle2 className="size-12 text-emerald-500" aria-hidden="true" />
-                        <h3 className="font-display font-bold text-lg text-foreground">¡Operación Completada!</h3>
+                        <CheckCircle2 className="size-12 text-[#30d158]" aria-hidden="true" />
+                        <h3 className="text-[20px] font-bold">Fichaje hecho</h3>
                         <p className="text-sm text-muted-foreground max-w-xs">
                             <span className="font-semibold text-foreground">{player.name}</span> se ha incorporado con éxito a{" "}
                             <span className="font-semibold text-foreground">
@@ -149,7 +149,7 @@ export function TransferModal({
                 ) : (
                     <div className="space-y-4 py-2">
                         {/* Resumen del jugador */}
-                        <div className="flex items-center gap-3.5 rounded-xl border border-border/80 bg-muted/40 p-3">
+                        <div className="flex items-center gap-3.5 rounded-[14px] bg-secondary p-3">
                             <PlayerAvatar name={player.name} photoUrl={player.photo_url ?? null} size="md" />
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -170,7 +170,7 @@ export function TransferModal({
                                             {player.team.name}
                                         </span>
                                     ) : (
-                                        <span className="text-emerald-500 font-medium">Agente Libre</span>
+                                        <span className="font-medium">Agente libre</span>
                                     )}
                                 </p>
                             </div>
@@ -188,7 +188,7 @@ export function TransferModal({
                                 Equipo comprador
                             </label>
                             <Select value={buyerTeamId} onValueChange={setBuyerTeamId}>
-                                <SelectTrigger id="transfer-buyer-select" className="w-full h-11 border-border/80 bg-background/50">
+                                <SelectTrigger id="transfer-buyer-select" className="w-full">
                                     <SelectValue placeholder="Selecciona el club que ficha…" />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-60">

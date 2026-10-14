@@ -4,10 +4,10 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { Button } from "@/components/ui/button";
-import { PlayerList } from "@/components/players/PlayerList";
+import { PlayerBrowser } from "@/components/players/PlayerBrowser";
 import { PlayersPageClient } from "@/components/players/PlayersPageClient";
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
@@ -38,15 +38,13 @@ export default async function PlayersPage({ searchParams }: Props) {
   ]);
 
   return (
-    <div className="animate-fade-up space-y-8 pb-12">
+    <div className="animate-fade-up pb-12">
       <PageHeader
-        eyebrow="Base de datos global"
         title="Jugadores"
-        description={`${players.length.toLocaleString()} jugadores registrados en el sistema`}
         actions={
-          <Button asChild size="sm" className="gap-2">
+          <Button asChild variant="secondary" className="gap-1.5">
             <Link href="/players?new=1">
-              <UserPlus className="size-4" /> Nuevo jugador
+              <Plus className="size-[18px]" strokeWidth={2.4} aria-hidden /> Nuevo jugador
             </Link>
           </Button>
         }
@@ -58,7 +56,7 @@ export default async function PlayersPage({ searchParams }: Props) {
         defaultTeamId={params.team}
       />
 
-      <PlayerList players={players} teams={teams} />
+      <PlayerBrowser mode="players" players={players} teams={teams} />
     </div>
   );
 }

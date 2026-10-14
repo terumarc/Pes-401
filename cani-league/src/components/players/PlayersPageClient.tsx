@@ -21,7 +21,7 @@ export function PlayersPageClient({
   if (!showForm) return null;
 
   return (
-    <Card className="mb-8">
+    <Card className="mb-6">
       <CardContent>
         <PlayerForm
           teams={teams}
