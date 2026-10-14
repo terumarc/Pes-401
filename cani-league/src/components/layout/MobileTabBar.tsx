@@ -54,45 +54,44 @@ export function MobileTabBar() {
 
   return (
     <>
+      {/* Barra tipo iOS: cápsula de cristal y la pestaña activa en una cápsula más clara. */}
       <nav
         aria-label="Navegación principal"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:hidden"
       >
-        <ul className="pointer-events-auto mx-auto flex h-16 max-w-md items-center gap-1 rounded-[1.75rem] border border-white/[0.08] bg-[oklch(0.2_0_0/0.82)] px-2 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl backdrop-saturate-150">
+        <ul className="pointer-events-auto mx-auto flex h-[62px] max-w-md items-center rounded-full bg-[rgba(30,30,32,0.72)] p-1 shadow-[0_8px_24px_rgba(0,0,0,0.5),inset_0_0_0_0.5px_rgba(255,255,255,0.14)] backdrop-blur-xl backdrop-saturate-[1.8]">
           {TABS.map(({ href, label, Icon }) => {
             const active = isActive(pathname, href);
             return (
               // El color va en el <li>: la regla global de los enlaces (color: inherit) lo hereda.
-              <li key={href} className={cn("flex-1", active ? "text-primary" : "text-muted-foreground")}>
+              <li key={href} className={cn("h-full flex-1", active ? "text-white" : "text-[#98989f]")}>
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-semibold transition-[color,background-color,transform] duration-200 select-none active:scale-90",
-                    active ? "bg-primary/[0.14]" : "hover:text-foreground",
+                    "flex h-full flex-col items-center justify-center gap-[3px] rounded-full text-[10px] font-medium tracking-[-0.01em] transition-colors duration-200 select-none active:bg-white/10",
+                    active && "bg-white/[0.13]",
                   )}
                 >
-                  <Icon className="size-[22px]" strokeWidth={active ? 2.3 : 1.8} aria-hidden />
+                  <Icon className="size-[22px]" strokeWidth={active ? 2.2 : 1.9} aria-hidden />
                   {label}
-                  {active && <span aria-hidden className="absolute -top-2 h-1 w-6 rounded-full bg-primary shadow-[0_0_12px_var(--color-primary)]" />}
                 </Link>
               </li>
             );
           })}
-          <li className="flex-1">
+          <li className={cn("h-full flex-1", moreActive ? "text-white" : "text-[#98989f]")}>
             <button
               type="button"
               onClick={() => setMoreOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={moreOpen}
               className={cn(
-                "relative flex h-12 w-full flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-semibold transition-[color,background-color,transform] duration-200 select-none active:scale-90",
-                moreActive ? "bg-primary/[0.14] text-primary" : "text-muted-foreground hover:text-foreground",
+                "flex h-full w-full flex-col items-center justify-center gap-[3px] rounded-full text-[10px] font-medium tracking-[-0.01em] transition-colors duration-200 select-none active:bg-white/10",
+                moreActive && "bg-white/[0.13]",
               )}
             >
-              <Ellipsis className="size-[22px]" strokeWidth={moreActive ? 2.3 : 1.8} aria-hidden />
+              <Ellipsis className="size-[22px]" strokeWidth={moreActive ? 2.2 : 1.9} aria-hidden />
               Más
-              {moreActive && <span aria-hidden className="absolute -top-2 h-1 w-6 rounded-full bg-primary shadow-[0_0_12px_var(--color-primary)]" />}
             </button>
           </li>
         </ul>

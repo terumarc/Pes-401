@@ -171,13 +171,14 @@ export function QuickMatchModal({
       }}
     >
       <DialogTrigger asChild>
-        <Button
-          size="lg"
-          className="gap-2.5 font-display text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 sm:text-base"
+        <button
+          type="button"
+          aria-label="Registrar un partido"
+          className="flex h-9 items-center gap-1.5 rounded-full bg-card pl-3 pr-4 text-[15px] font-semibold text-foreground transition-opacity active:opacity-70"
         >
-          <Swords className="size-5 text-primary-foreground" />
-          Registrar Partido
-        </Button>
+          <Plus className="size-[18px]" strokeWidth={2.4} aria-hidden />
+          Partido
+        </button>
       </DialogTrigger>
 
       <DialogContent
