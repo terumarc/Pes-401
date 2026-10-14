@@ -1,19 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Minus, Plus, Trophy, Wallet } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { TeamLogo } from "@/components/teams/TeamCard";
 import { PixelTrophy } from "@/components/trophies/PixelTrophy";
 import { changeTeamTrophyAction, setTrophyPrizeAction } from "@/app/actions/trophies";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
@@ -21,17 +13,18 @@ import { TROPHIES } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { TeamTrophyCabinet, TrophyCounts, TrophyType } from "@/types";
 
-const CARD = "relative overflow-hidden border border-white/[0.08] bg-card/60 backdrop-blur-md shadow-xs";
+const CARD =
+  "relative overflow-hidden border border-white/[0.08] bg-card/60 backdrop-blur-md shadow-xs py-0 gap-0";
 
-function sortCabinets(list: TeamTrophyCabinet[]) {
-  return [...list].sort(
-    (a, b) =>
-      b.total - a.total ||
-      b.trophies.champions - a.trophies.champions ||
-      b.trophies.league - a.trophies.league ||
-      a.team.name.localeCompare(b.team.name),
-  );
-}
+/** Color del halo de luz de cada competición en la estantería. */
+const GLOW: Record<TrophyType, string> = {
+  league: "rgba(245,190,70,0.22)",
+  champions: "rgba(150,190,255,0.22)",
+  cup: "rgba(240,90,105,0.2)",
+  conference: "rgba(70,215,155,0.2)",
+};
+
+type Feedback = { kind: "ok" | "error"; text: string } | null;
 
 function compactMoney(value: number) {
   if (value >= 1_000_000) {
@@ -40,6 +33,16 @@ function compactMoney(value: number) {
   }
   if (value >= 1_000) return `${Math.round(value / 1_000)}k €`;
   return `${value} €`;
+}
+
+function sortByTotal(list: TeamTrophyCabinet[]) {
+  return [...list].sort(
+    (a, b) =>
+      b.total - a.total ||
+      b.trophies.champions - a.trophies.champions ||
+      b.trophies.league - a.trophies.league ||
+      a.team.name.localeCompare(b.team.name),
+  );
 }
 
 export function TrophyRoom({
@@ -53,19 +56,10 @@ export function TrophyRoom({
 }) {
   const [cabinets, setCabinets] = useState(initialCabinets);
   const [prizes, setPrizes] = useState(initialPrizes);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState(
-    () => sortCabinets(initialCabinets)[0]?.team.id ?? null,
-  );
+  const [feedback, setFeedback] = useState<Feedback>(null);
   const [pending, startTransition] = useTransition();
 
-  const ranking = useMemo(() => sortCabinets(cabinets), [cabinets]);
-  const selected = cabinets.find((c) => c.team.id === selectedId) ?? ranking[0];
-
-  if (!selected) {
-    return <p className="text-sm text-muted-foreground">No hay equipos en la liga todavía.</p>;
-  }
+  const ranking = useMemo(() => sortByTotal(cabinets), [cabinets]);
 
   function applyResult(teamId: string, trophy: TrophyType, count: number, budget: number) {
     setCabinets((prev) =>
@@ -78,25 +72,28 @@ export function TrophyRoom({
     );
   }
 
-  function changeCount(trophy: TrophyType, delta: number) {
-    const teamId = selected.team.id;
-    const teamName = selected.team.name;
-    if (pending) return;
-    if (delta < 0 && selected.trophies[trophy] === 0) return;
+  function changeTitles(teamId: string, trophy: TrophyType, delta: 1 | -1) {
+    const cabinet = cabinets.find((c) => c.team.id === teamId);
+    if (!cabinet || pending) return;
+    if (delta < 0 && cabinet.trophies[trophy] === 0) return;
+    const label = TROPHIES.find((t) => t.key === trophy)?.label ?? "";
 
-    setError(null);
-    setNotice(null);
+    setFeedback(null);
     startTransition(async () => {
       try {
         const res = await changeTeamTrophyAction(teamId, trophy, delta);
         applyResult(teamId, trophy, res.count, res.budget);
-        if (res.budgetDelta > 0) {
-          setNotice(`+${formatMoney(res.budgetDelta)} al presupuesto de ${teamName}`);
-        } else if (res.budgetDelta < 0) {
-          setNotice(`${formatMoney(res.budgetDelta)} descontados del presupuesto de ${teamName}`);
-        }
+        const verb = delta > 0 ? "Título añadido" : "Título quitado";
+        const money =
+          res.budgetDelta !== 0
+            ? ` · ${res.budgetDelta > 0 ? "+" : "−"}${compactMoney(Math.abs(res.budgetDelta))}, presupuesto ${formatMoney(res.budget)}`
+            : "";
+        setFeedback({ kind: "ok", text: `${verb}: ${label} para ${cabinet.team.name}${money}` });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "No se pudo guardar");
+        setFeedback({
+          kind: "error",
+          text: err instanceof Error ? err.message : "No se pudo guardar el título. Inténtalo de nuevo.",
+        });
       }
     });
   }
@@ -109,291 +106,156 @@ export function TrophyRoom({
       setPrizes((p) => ({ ...p, [trophy]: saved }));
     } catch (err) {
       setPrizes((p) => ({ ...p, [trophy]: previous }));
-      setError(err instanceof Error ? err.message : "No se pudo guardar el valor");
+      setFeedback({
+        kind: "error",
+        text: err instanceof Error ? err.message : "No se pudo guardar el premio.",
+      });
     }
+  }
+
+  if (ranking.length === 0) {
+    return <p className="text-sm text-muted-foreground">Añade equipos a la liga para empezar el palmarés.</p>;
   }
 
   return (
     <div className="space-y-6">
-      {/* Selector de club */}
-      <div className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-        <div className="flex gap-2">
-          {ranking.map((c) => {
-            const active = c.team.id === selected.team.id;
-            return (
-              <button
-                key={c.team.id}
-                type="button"
-                onClick={() => setSelectedId(c.team.id)}
-                className={cn(
-                  "flex shrink-0 items-center gap-2 rounded-xl border py-1 pl-1 pr-3 text-sm font-medium transition-colors",
-                  active
-                    ? "border-primary/40 bg-primary/10 text-foreground"
-                    : "border-white/[0.08] bg-card/60 text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <TeamLogo
-                  name={c.team.name}
-                  logoUrl={c.team.logo_url}
-                  color={c.team.primary_color}
-                  size="sm"
-                />
-                {c.team.short_name || c.team.name}
-                <span
-                  className={cn(
-                    "rounded-md px-1.5 text-[11px] font-bold tabular-nums",
-                    active ? "bg-primary/20 text-primary" : "bg-white/[0.06]",
-                  )}
-                >
-                  {c.total}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Vitrina del club */}
+      {/* Estantería: los cuatro trofeos y sus campeones */}
       <Card className={CARD}>
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
-          aria-hidden="true"
-        />
-        <CardHeader className="border-b border-border/50 pb-4">
-          <div className="flex items-center gap-3">
-            <TeamLogo
-              name={selected.team.name}
-              logoUrl={selected.team.logo_url}
-              color={selected.team.primary_color}
-              size="lg"
+        <div className="grid grid-cols-2 gap-px bg-white/[0.06] xl:grid-cols-4">
+          {TROPHIES.map((t) => (
+            <TrophyColumn
+              key={t.key}
+              type={t.key}
+              label={t.label}
+              prize={prizes[t.key]}
+              cabinets={cabinets}
+              disabled={pending}
+              onRemove={(teamId) => changeTitles(teamId, t.key, -1)}
+              onSavePrize={(v) => savePrize(t.key, v)}
             />
-            <div className="min-w-0 flex-1">
-              <CardTitle className="truncate font-display text-lg font-bold tracking-tight">
-                {selected.team.name}
-              </CardTitle>
-              <CardDescription className="mt-0.5 flex items-center gap-1.5 text-xs">
-                <Wallet className="size-3.5 text-primary" aria-hidden="true" />
-                <span className="tabular-nums">{formatMoney(selected.team.budget)}</span>
-              </CardDescription>
-            </div>
-            <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
-              <Trophy className="size-3" />
-              {selected.total} {selected.total === 1 ? "título" : "títulos"}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {TROPHIES.map((t) => {
-              const count = selected.trophies[t.key];
-              return (
-                <div
-                  key={t.key}
-                  className="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] px-2 pb-3 pt-4"
-                >
-                  <PixelTrophy
-                    type={t.key}
-                    dimmed={count === 0}
-                    title={t.label}
-                    className="h-24 w-auto sm:h-28"
-                  />
-                  <p className="mt-3 text-xs font-medium text-muted-foreground">{t.label}</p>
-                  <p
-                    className={cn(
-                      "font-display text-2xl font-bold tabular-nums",
-                      count === 0 && "text-muted-foreground/50",
-                    )}
-                  >
-                    {count}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
+          ))}
+        </div>
       </Card>
 
-      {/* Gestión manual */}
-      <Card className={CARD}>
-        <CardHeader className="border-b border-border/50 pb-4">
-          <CardTitle className="font-display text-lg font-bold tracking-tight">
-            Gestión de títulos
-          </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
-            Al sumar un título, su valor se añade al presupuesto del club. Si lo quitas, se descuenta.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-5">
-          <label className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-            <span className="text-xs font-medium text-muted-foreground">Club</span>
-            <NativeSelect
-              value={selected.team.id}
-              onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full sm:max-w-xs"
-              aria-label="Club"
-            >
-              {ranking.map((c) => (
-                <NativeSelectOption key={c.team.id} value={c.team.id}>
-                  {c.team.name}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </label>
+      <AddTitle
+        cabinets={ranking}
+        prizes={prizes}
+        pending={pending}
+        feedback={feedback}
+        onAdd={(teamId, trophy) => changeTitles(teamId, trophy, 1)}
+      />
 
-          <ul className="divide-y divide-border/50 rounded-xl border border-white/[0.08]">
-            {TROPHIES.map((t) => {
-              const count = selected.trophies[t.key];
-              const prize = prizes[t.key];
-              return (
-                <li key={t.key} className="flex items-center gap-3 px-3 py-2.5">
-                  <span className="flex w-8 shrink-0 justify-center">
-                    <PixelTrophy type={t.key} dimmed={count === 0} className="h-9 w-auto" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{t.label}</p>
-                    <p className="text-xs text-muted-foreground tabular-nums">
-                      {prize > 0 ? `+${compactMoney(prize)} por título` : "Sin valor asignado"}
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    aria-label={`Quitar un título de ${t.label}`}
-                    onClick={() => changeCount(t.key, -1)}
-                    disabled={pending || count === 0}
-                  >
-                    <Minus />
-                  </Button>
-                  <span className="w-7 text-center font-display text-lg font-bold tabular-nums">
-                    {count}
-                  </span>
-                  <Button
-                    size="sm"
-                    aria-label={`Sumar un título de ${t.label}`}
-                    onClick={() => changeCount(t.key, 1)}
-                    disabled={pending}
-                  >
-                    <Plus />
-                    <span className="hidden sm:inline">Sumar</span>
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-
-          {pending && <p className="text-xs text-primary animate-pulse">Guardando…</p>}
-          {notice && (
-            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-400">
-              {notice}
-            </div>
-          )}
-          {error && (
-            <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-3 border-t border-border/50 pt-4">
-            <div>
-              <p className="text-sm font-semibold">Valor de cada título</p>
-              <p className="text-xs text-muted-foreground">
-                Se guarda al salir del campo. Admite «25000000», «25.000.000» o «25M».
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {TROPHIES.map((t) => (
-                <PrizeField
-                  key={`${t.key}-${prizes[t.key]}`}
-                  label={t.label}
-                  value={prizes[t.key]}
-                  onSave={(v) => savePrize(t.key, v)}
-                />
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Palmarés */}
-      <Card className={CARD}>
-        <CardHeader className="border-b border-border/50 pb-4">
-          <CardTitle className="font-display text-lg font-bold tracking-tight">Palmarés</CardTitle>
-        </CardHeader>
-        <CardContent className="px-0 pt-0">
-          <div className="grid grid-cols-[1.5rem_1fr_repeat(4,1.75rem)_2rem] items-center gap-x-1.5 border-b border-border/50 px-4 py-2 text-[11px] text-muted-foreground sm:grid-cols-[2rem_1fr_repeat(4,3rem)_3rem]">
-            <span>#</span>
-            <span>Club</span>
-            {TROPHIES.map((t) => (
-              <span key={t.key} className="flex justify-center">
-                <PixelTrophy type={t.key} title={t.label} className="h-5 w-auto" />
-              </span>
-            ))}
-            <span className="text-right">Total</span>
-          </div>
-          <ul>
-            {ranking.map((c, idx) => {
-              const active = c.team.id === selected.team.id;
-              return (
-                <li key={c.team.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedId(c.team.id);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
-                    className={cn(
-                      "grid w-full grid-cols-[1.5rem_1fr_repeat(4,1.75rem)_2rem] items-center gap-x-1.5 px-4 py-2 text-left transition-colors hover:bg-white/[0.03] sm:grid-cols-[2rem_1fr_repeat(4,3rem)_3rem]",
-                      active && "bg-primary/[0.07]",
-                    )}
-                  >
-                    <span className="font-display text-sm tabular-nums text-muted-foreground">
-                      {idx + 1}
-                    </span>
-                    <span className="flex min-w-0 items-center gap-2">
-                      <TeamLogo
-                        name={c.team.name}
-                        logoUrl={c.team.logo_url}
-                        color={c.team.primary_color}
-                        size="sm"
-                      />
-                      <span className="truncate text-sm font-medium">{c.team.name}</span>
-                    </span>
-                    {TROPHIES.map((t) => (
-                      <span
-                        key={t.key}
-                        className={cn(
-                          "text-center text-sm tabular-nums",
-                          !c.trophies[t.key] && "text-muted-foreground/40",
-                        )}
-                      >
-                        {c.trophies[t.key]}
-                      </span>
-                    ))}
-                    <span className="text-right font-display text-sm font-bold tabular-nums">
-                      {c.total}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </CardContent>
-      </Card>
+      <Standings ranking={ranking} />
     </div>
   );
 }
 
-function PrizeField({
+/* ------------------------------------------------------------------ */
+
+function TrophyColumn({
+  type,
   label,
+  prize,
+  cabinets,
+  disabled,
+  onRemove,
+  onSavePrize,
+}: {
+  type: TrophyType;
+  label: string;
+  prize: number;
+  cabinets: TeamTrophyCabinet[];
+  disabled: boolean;
+  onRemove: (teamId: string) => void;
+  onSavePrize: (value: number) => void;
+}) {
+  const winners = cabinets
+    .filter((c) => c.trophies[type] > 0)
+    .sort((a, b) => b.trophies[type] - a.trophies[type] || a.team.name.localeCompare(b.team.name));
+  const editions = winners.reduce((sum, c) => sum + c.trophies[type], 0);
+
+  return (
+    <section aria-label={label} className="flex flex-col bg-card">
+      {/* Estante iluminado */}
+      <div className="group relative flex h-32 items-end justify-center pt-4 sm:h-44 sm:pt-6">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-full transition-opacity duration-500"
+          style={{
+            background: `radial-gradient(55% 75% at 50% 100%, ${GLOW[type]}, transparent 70%)`,
+            opacity: editions ? 1 : 0.25,
+          }}
+        />
+        <PixelTrophy
+          type={type}
+          dimmed={editions === 0}
+          title={label}
+          className="relative h-24 w-auto sm:h-32 drop-shadow-[0_6px_0_rgba(0,0,0,0.35)] motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[steps(2)] motion-safe:group-hover:-translate-y-1.5"
+        />
+        <div aria-hidden className="absolute inset-x-3 bottom-0 sm:inset-x-6 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+      </div>
+
+      <div className="flex flex-1 flex-col px-3 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
+        <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+          <h2 className="font-display text-base font-bold leading-tight tracking-tight sm:text-lg">{label}</h2>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {editions} {editions === 1 ? "edición" : "ediciones"}
+          </span>
+        </div>
+
+        <PrizeEditor value={prize} label={label} onSave={onSavePrize} />
+
+        {winners.length > 0 ? (
+          <ul className="mt-4 space-y-0.5">
+            {winners.map((c) => (
+              <li key={c.team.id} className="group/row flex items-center gap-1.5 rounded-md py-1 sm:gap-2.5 sm:pl-1">
+                <span
+                  aria-hidden
+                  className="size-2.5 shrink-0 rounded-full ring-1 ring-white/20"
+                  style={{ backgroundColor: c.team.primary_color }}
+                />
+                <span className="min-w-0 flex-1 truncate text-[13px] sm:text-sm">{c.team.name}</span>
+                <span className="font-display text-sm font-bold tabular-nums">×{c.trophies[type]}</span>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label={`Quitar un título de ${label} a ${c.team.name}`}
+                  title="Quitar un título"
+                  disabled={disabled}
+                  onClick={() => onRemove(c.team.id)}
+                  className="text-muted-foreground opacity-60 hover:text-destructive focus-visible:opacity-100 sm:opacity-0 sm:group-hover/row:opacity-100"
+                >
+                  <Minus />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 text-sm text-muted-foreground">Nadie la ha ganado todavía.</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function PrizeEditor({
   value,
+  label,
   onSave,
 }: {
-  label: string;
   value: number;
+  label: string;
   onSave: (value: number) => void;
 }) {
-  const [draft, setDraft] = useState(value ? String(value) : "");
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
   const [invalid, setInvalid] = useState(false);
+
+  function open() {
+    setDraft(value ? String(value) : "");
+    setInvalid(false);
+    setEditing(true);
+  }
 
   function commit() {
     const parsed = draft.trim() === "" ? 0 : parseMoneyInput(draft);
@@ -401,28 +263,186 @@ function PrizeField({
       setInvalid(true);
       return;
     }
-    setInvalid(false);
+    setEditing(false);
     if (parsed !== value) onSave(parsed);
   }
 
+  if (editing) {
+    return (
+      <div className="mt-1">
+        <Input
+          autoFocus
+          inputMode="numeric"
+          value={draft}
+          placeholder="Ej. 25M"
+          aria-label={`Premio por ganar ${label}`}
+          aria-invalid={invalid || undefined}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          className="h-8 border-white/[0.08] bg-card/60 text-sm tabular-nums"
+        />
+        <p className={cn("mt-1 text-[11px]", invalid ? "text-destructive" : "text-muted-foreground")}>
+          {invalid ? "Escribe una cantidad: 25000000, 25.000.000 o 25M." : "Enter para guardar · Esc para cancelar"}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <Input
-        inputMode="numeric"
-        value={draft}
-        placeholder="0"
-        aria-invalid={invalid || undefined}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-        }}
-        className="h-10 border-white/[0.08] bg-card/60 tabular-nums"
-      />
-      <span className={cn("text-[11px] tabular-nums", invalid ? "text-destructive" : "text-muted-foreground")}>
-        {invalid ? "Cantidad no válida" : formatMoney(value)}
-      </span>
-    </label>
+    <button
+      type="button"
+      onClick={open}
+      className="mt-0.5 self-start rounded text-left text-xs text-muted-foreground underline decoration-dotted decoration-white/25 underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+    >
+      {value > 0 ? (
+        <>
+          Premio <span className="font-medium text-primary tabular-nums">{compactMoney(value)}</span>
+        </>
+      ) : (
+        "Fijar premio"
+      )}
+    </button>
+  );
+}
+
+function AddTitle({
+  cabinets,
+  prizes,
+  pending,
+  feedback,
+  onAdd,
+}: {
+  cabinets: TeamTrophyCabinet[];
+  prizes: TrophyCounts;
+  pending: boolean;
+  feedback: Feedback;
+  onAdd: (teamId: string, trophy: TrophyType) => void;
+}) {
+  const [trophy, setTrophy] = useState<TrophyType>("league");
+  const [teamId, setTeamId] = useState(cabinets[0]?.team.id ?? "");
+  const team = cabinets.find((c) => c.team.id === teamId);
+  const prize = prizes[trophy];
+
+  return (
+    <Card className={cn(CARD, "p-5")}>
+      <h2 className="font-display text-lg font-bold tracking-tight">Añadir título</h2>
+
+      <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div role="radiogroup" aria-label="Competición" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:flex-1">
+          {TROPHIES.map((t) => {
+            const active = t.key === trophy;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setTrophy(t.key)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
+                  active
+                    ? "border-primary/50 bg-primary/10 font-medium text-foreground"
+                    : "border-white/[0.08] text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <PixelTrophy type={t.key} className="h-6 w-auto shrink-0" />
+                <span className="truncate">{t.short}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-2">
+          <NativeSelect
+            value={teamId}
+            onChange={(e) => setTeamId(e.target.value)}
+            aria-label="Club"
+            className="min-w-0 flex-1 lg:w-56 lg:flex-none [&_select]:h-10"
+          >
+            {cabinets.map((c) => (
+              <NativeSelectOption key={c.team.id} value={c.team.id}>
+                {c.team.name}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+          <Button
+            size="lg"
+            className="h-10 shrink-0 px-4"
+            disabled={pending || !team}
+            onClick={() => team && onAdd(team.team.id, trophy)}
+          >
+            <Plus />
+            {pending ? "Guardando…" : "Añadir título"}
+          </Button>
+        </div>
+      </div>
+
+      <p
+        aria-live="polite"
+        className={cn(
+          "mt-3 text-xs",
+          feedback?.kind === "error"
+            ? "text-destructive"
+            : feedback
+              ? "text-emerald-400"
+              : "text-muted-foreground",
+        )}
+      >
+        {feedback
+          ? feedback.text
+          : team && prize > 0
+            ? `${team.team.name} recibirá ${formatMoney(prize)} (presupuesto actual ${formatMoney(team.team.budget)}).`
+            : "Esta competición no tiene premio: el presupuesto no cambia. Puedes fijarlo en el trofeo."}
+      </p>
+    </Card>
+  );
+}
+
+function Standings({ ranking }: { ranking: TeamTrophyCabinet[] }) {
+  const cols =
+    "grid grid-cols-[1.25rem_1fr_repeat(4,1.6rem)_1.9rem] items-center gap-x-2 sm:grid-cols-[1.5rem_1fr_repeat(4,3rem)_3rem]";
+
+  return (
+    <Card className={CARD}>
+      <h2 className="px-5 pt-5 font-display text-lg font-bold tracking-tight">Palmarés</h2>
+      <div className={cn(cols, "mt-3 border-b border-white/[0.06] px-5 pb-2 text-[11px] text-muted-foreground")}>
+        <span>#</span>
+        <span>Club</span>
+        {TROPHIES.map((t) => (
+          <span key={t.key} className="flex justify-center">
+            <PixelTrophy type={t.key} title={t.label} className="h-5 w-auto" />
+          </span>
+        ))}
+        <span className="text-right">Total</span>
+      </div>
+      <ol className="pb-2">
+        {ranking.map((c, idx) => (
+          <li key={c.team.id} className={cn(cols, "px-5 py-2.5 text-sm")}>
+            <span className="tabular-nums text-muted-foreground">{idx + 1}</span>
+            <span className="flex min-w-0 items-center gap-2.5">
+              <span
+                aria-hidden
+                className="size-2.5 shrink-0 rounded-full ring-1 ring-white/20"
+                style={{ backgroundColor: c.team.primary_color }}
+              />
+              <span className="truncate">{c.team.name}</span>
+            </span>
+            {TROPHIES.map((t) => (
+              <span
+                key={t.key}
+                className={cn("text-center tabular-nums", !c.trophies[t.key] && "text-muted-foreground/35")}
+              >
+                {c.trophies[t.key]}
+              </span>
+            ))}
+            <span className="text-right font-display font-bold tabular-nums">{c.total}</span>
+          </li>
+        ))}
+      </ol>
+    </Card>
   );
 }

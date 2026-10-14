@@ -23,7 +23,7 @@ export default async function TrophiesPage() {
       <PageHeader
         eyebrow={league.name}
         title="Sala de trofeos"
-        description="Liga, Champions, Copa de Liga y Conference: el palmarés de cada club."
+        description="Los cuatro trofeos de la liga y quién los ha ganado."
       />
       {result.ok ? (
         <TrophyRoom
