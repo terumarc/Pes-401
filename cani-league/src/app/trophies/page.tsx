@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SegmentedNav, TABLE_SECTIONS } from "@/components/layout/SegmentedNav";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { TrophyRoom } from "@/components/trophies/TrophyRoom";
 import { getPrimaryLeague } from "@/lib/data/league";
@@ -19,12 +20,9 @@ export default async function TrophiesPage() {
   const result = await getTrophyCabinets(league.id);
 
   return (
-    <div className="animate-fade-up">
-      <PageHeader
-        eyebrow={league.name}
-        title="Sala de trofeos"
-        description="Los cuatro trofeos de la liga y quién los ha ganado."
-      />
+    <div className="animate-fade-up pb-12">
+      <PageHeader title="Tabla" />
+      <SegmentedNav label="Secciones de la tabla" items={TABLE_SECTIONS} current="/trophies" />
       {result.ok ? (
         <TrophyRoom
           leagueId={league.id}
@@ -32,7 +30,7 @@ export default async function TrophiesPage() {
           initialPrizes={result.prizes}
         />
       ) : (
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-200">
+        <div className="rounded-[22px] bg-card p-4 text-[15px] text-muted-foreground">
           {result.reason === "missing_table"
             ? "Falta crear las tablas de trofeos en Supabase (migración 004_trophies.sql)."
             : `No se pudo cargar la sala de trofeos: ${result.message}`}

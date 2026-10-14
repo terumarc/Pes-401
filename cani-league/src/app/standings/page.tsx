@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SegmentedNav, TABLE_SECTIONS } from "@/components/layout/SegmentedNav";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { StandingsList } from "@/components/standings/StandingsList";
 import {
@@ -21,12 +22,9 @@ export default async function StandingsPage() {
   const standings = await getStandingsWithTeams(league.id);
 
   return (
-    <div className="animate-fade-up">
-      <PageHeader
-        eyebrow={league.name}
-        title="Clasificación"
-        description="Orden manual. Arrastra para cambiar posiciones."
-      />
+    <div className="animate-fade-up pb-12">
+      <PageHeader title="Tabla" />
+      <SegmentedNav label="Secciones de la tabla" items={TABLE_SECTIONS} current="/standings" />
       <StandingsList
         key={standings.map((s) => `${s.team_id}:${s.position}`).join("|")}
         leagueId={league.id}

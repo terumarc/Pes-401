@@ -209,10 +209,12 @@ export function TeamLogo({
   name: string;
   logoUrl: string | null;
   color: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
 }) {
   const sizeClass =
-    size === "sm"
+    size === "xs"
+      ? "size-7 text-[10px]"
+      : size === "sm"
       ? "size-9 text-xs"
       : size === "lg"
         ? "size-14 text-base"
@@ -233,14 +235,14 @@ export function TeamLogo({
       <img
         src={logoUrl}
         alt={name}
-        className={`${sizeClass} rounded-full object-cover ring-2 ring-border shadow-md`}
+        className={`${sizeClass} shrink-0 rounded-full object-cover`}
       />
     );
   }
 
   return (
     <div
-      className={`${sizeClass} flex items-center justify-center rounded-full font-display font-bold text-white shadow-md ring-1 ring-white/20`}
+      className={`${sizeClass} flex items-center justify-center shrink-0 rounded-full font-bold text-white`}
       style={{ backgroundColor: color }}
       aria-hidden
     >
