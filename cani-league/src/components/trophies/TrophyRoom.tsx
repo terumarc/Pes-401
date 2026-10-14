@@ -190,17 +190,17 @@ export function TrophyRoom({
 
         <div className="relative px-3 pb-0 pt-24 sm:px-8 sm:pt-32">
           {/* Placa del club */}
-          <div className="absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2 rounded-full border border-amber-300/30 bg-black/40 px-3 py-1.5 backdrop-blur-sm sm:top-6">
+          <div className="absolute left-1/2 top-3 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 items-center gap-2 rounded-full border border-amber-300/30 bg-black/40 px-3 py-1.5 backdrop-blur-sm sm:top-6">
             <TeamLogo
               name={selected.team.name}
               logoUrl={selected.team.logo_url}
               color={selected.team.primary_color}
               size="sm"
             />
-            <span className="max-w-[44vw] truncate font-display text-sm font-semibold text-amber-50 sm:max-w-none sm:text-base">
+            <span className="max-w-[52vw] truncate font-display text-sm font-semibold text-amber-50 sm:max-w-none sm:text-base">
               {selected.team.name}
             </span>
-            <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-xs font-bold tabular-nums text-amber-200">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-400/20 px-2 py-0.5 text-xs font-bold tabular-nums text-amber-200">
               {selected.total} {selected.total === 1 ? "título" : "títulos"}
             </span>
           </div>
