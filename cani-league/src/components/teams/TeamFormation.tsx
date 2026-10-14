@@ -372,9 +372,9 @@ export function TeamFormation({
   return (
     <section aria-label="Formación" className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Formación <span className="font-normal text-muted-foreground tabular-nums">{filled}/11</span>
-        </h2>
+        <p className="text-[15px] text-muted-foreground tabular-nums">
+          {filled} de 11 titulares
+        </p>
         <button
           type="button"
           onClick={() => setLineup(autoLineup(players, lineup.formation))}

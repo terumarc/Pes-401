@@ -55,7 +55,7 @@ type PlayerActionsProps = {
     Player,
     "id" | "name" | "photo_url" | "position" | "transfer_price" | "market_value" | "team_id"
   >;
-  variant?: "default" | "compact";
+  variant?: "default" | "compact" | "icon";
 };
 
 export function PlayerActions({
@@ -117,24 +117,20 @@ export function PlayerActions({
   }
 
   // --- MODO COMPACTO (Para tarjetas en listas y cuadrículas) ---
-  if (variant === "compact") {
+  if (variant === "compact" || variant === "icon") {
     return (
       <div className="flex items-center gap-1.5">
-        <Button
-          asChild
-          variant="outline"
-          className="min-h-[36px] h-9 px-3 text-xs font-semibold border-border hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
-        >
-          <Link href={`/players/${playerId}`}>
-            Ver ficha
-          </Link>
-        </Button>
+        {variant === "compact" && (
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/players/${playerId}`}>Ver ficha</Link>
+          </Button>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="outline"
-              className="size-9 min-h-[36px] min-w-[36px] p-0 border-border hover:border-white/[0.22] hover:bg-white/[0.06] transition-all"
+              variant={variant === "icon" ? "ghost" : "outline"}
+              className="size-11 p-0 text-muted-foreground"
               aria-label={`Opciones de gestión para ${playerForRelease.name}`}
             >
               <MoreHorizontal className="size-4 text-foreground/80" />

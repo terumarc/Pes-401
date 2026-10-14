@@ -35,7 +35,7 @@ export function EditTeamButton({
             variant="outline"
             size="icon"
             className={cn(
-              "size-10 shrink-0 rounded-xl border border-border bg-white/[0.04] backdrop-blur-md hover:bg-white/[0.1] hover:border-white/[0.25] text-muted-foreground hover:text-foreground shadow-xs cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-primary/40",
+              "size-11 shrink-0",
               className
             )}
             title={`Editar ${team.name}`}
@@ -47,23 +47,20 @@ export function EditTeamButton({
           <Button
             variant="outline"
             className={cn(
-              "gap-1.5 font-display font-semibold border-border bg-card/60 backdrop-blur-md hover:bg-card hover:border-white/[0.25] shadow-xs cursor-pointer transition-all",
+              "gap-1.5",
               className
             )}
           >
-            <Pencil className="size-3.5 text-muted-foreground" />
-            <span>Editar Club</span>
+            <Pencil className="size-4" />
+            <span>Editar club</span>
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg border-border bg-card/95 backdrop-blur-xl shadow-2xl p-6">
-        <DialogHeader className="border-b border-border/80 pb-4">
-          <DialogTitle className="font-display text-xl font-bold tracking-tight text-foreground">
-            Editar Información del Club
+      <DialogContent className="max-h-[92vh] overflow-y-auto border-0 bg-card p-5 sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-[17px] font-semibold">
+            Editar club
           </DialogTitle>
-          <p className="text-xs text-muted-foreground mt-1">
-            Personaliza el nombre, colores oficiales, escudo y presupuesto de {team.name}
-          </p>
         </DialogHeader>
         <TeamForm team={team} onSaved={() => setOpen(false)} />
       </DialogContent>
