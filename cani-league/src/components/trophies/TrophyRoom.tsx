@@ -120,9 +120,10 @@ export function TrophyRoom({
       {/* Estantería: los cuatro trofeos y sus campeones */}
       <Card className={CARD}>
         <div className="grid grid-cols-2 gap-px bg-white/[0.06] xl:grid-cols-4">
-          {TROPHIES.map((t) => (
+          {TROPHIES.map((t, i) => (
             <TrophyColumn
               key={t.key}
+              index={i}
               type={t.key}
               label={t.label}
               prize={prizes[t.key]}
@@ -152,6 +153,7 @@ export function TrophyRoom({
 /* ------------------------------------------------------------------ */
 
 function TrophyColumn({
+  index,
   type,
   label,
   prize,
@@ -159,6 +161,7 @@ function TrophyColumn({
   disabled,
   onRemove,
 }: {
+  index: number;
   type: TrophyType;
   label: string;
   prize: number;
@@ -172,7 +175,11 @@ function TrophyColumn({
   const editions = winners.reduce((sum, c) => sum + c.trophies[type], 0);
 
   return (
-    <section aria-label={label} className="flex flex-col bg-card">
+    <section
+      aria-label={label}
+      className="flex flex-col bg-card motion-safe:animate-fade-up"
+      style={{ animationDelay: `${index * 70}ms`, animationFillMode: "both" }}
+    >
       {/* Estante iluminado */}
       <div className="group relative flex h-32 items-end justify-center pt-4 sm:h-44 sm:pt-6">
         <div
@@ -194,7 +201,7 @@ function TrophyColumn({
 
       <div className="flex flex-1 flex-col px-3 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
         <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-          <h2 className="text-base font-bold leading-tight tracking-tight sm:text-lg">{label}</h2>
+          <h2 className="text-base font-semibold leading-tight tracking-tight sm:text-lg">{label}</h2>
           <span className="text-xs text-muted-foreground tabular-nums">
             {editions} {editions === 1 ? "edición" : "ediciones"}
           </span>
@@ -263,7 +270,7 @@ function AddTitle({
 
   return (
     <Card className={cn(CARD, "p-5")}>
-      <h2 className="text-lg font-bold tracking-tight">Añadir título</h2>
+      <h2 className="text-lg font-semibold tracking-tight">Añadir título</h2>
 
       <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div role="radiogroup" aria-label="Competición" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:flex-1">
@@ -277,7 +284,7 @@ function AddTitle({
                 aria-checked={active}
                 onClick={() => setTrophy(t.key)}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
+                  "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition-[color,background-color,border-color,transform] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
                   active
                     ? "border-primary/50 bg-primary/10 font-medium text-foreground"
                     : "border-white/[0.08] text-muted-foreground hover:text-foreground",
@@ -305,7 +312,7 @@ function AddTitle({
           </NativeSelect>
           <Button
             size="lg"
-            className="h-10 shrink-0 px-4"
+            className="h-10 shrink-0 px-4 transition-transform active:scale-[0.98]"
             disabled={pending || !team}
             onClick={() => team && onAdd(team.team.id, trophy)}
           >
@@ -318,7 +325,7 @@ function AddTitle({
       <p
         aria-live="polite"
         className={cn(
-          "mt-3 text-xs",
+          "mt-3 text-pretty text-xs",
           feedback?.kind === "error"
             ? "text-destructive"
             : feedback
@@ -342,7 +349,7 @@ function Standings({ ranking }: { ranking: TeamTrophyCabinet[] }) {
 
   return (
     <Card className={CARD}>
-      <h2 className="px-5 pt-5 text-lg font-bold tracking-tight">Palmarés</h2>
+      <h2 className="px-5 pt-5 text-lg font-semibold tracking-tight">Palmarés</h2>
       <div className={cn(cols, "mt-3 border-b border-white/[0.06] px-5 pb-2 text-[11px] text-muted-foreground")}>
         <span>#</span>
         <span>Club</span>
@@ -414,8 +421,8 @@ function PrizesCard({
 
   return (
     <Card className={cn(CARD, "p-5")}>
-      <h2 className="text-lg font-bold tracking-tight">Premio de cada trofeo</h2>
-      <p className="mt-1 text-xs text-muted-foreground">
+      <h2 className="text-lg font-semibold tracking-tight">Premio de cada trofeo</h2>
+      <p className="mt-1 text-pretty text-xs text-muted-foreground">
         Lo que cobra un club al ganar cada competición. Se suma a su presupuesto al añadir el título.
       </p>
 
@@ -477,7 +484,7 @@ function PrizesCard({
                 ? "Escribe cantidades como 25000000, 25.000.000 o 25M."
                 : "Admite 25000000, 25.000.000 o 25M."}
           </p>
-          <Button type="submit" size="lg" className="h-10 px-4" disabled={saving || !dirty || invalid.length > 0}>
+          <Button type="submit" size="lg" className="h-10 px-4 transition-transform active:scale-[0.98]" disabled={saving || !dirty || invalid.length > 0}>
             {saving ? "Guardando…" : "Guardar premios"}
           </Button>
         </div>
