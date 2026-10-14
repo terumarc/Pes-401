@@ -78,7 +78,7 @@ export function ReleasePlayerModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-display">
-            <Coins className="size-5 text-amber-500" />
+            <Coins className="size-5 text-muted-foreground" />
             Liberar Jugador al Mercado
           </DialogTitle>
           <DialogDescription>
@@ -88,12 +88,12 @@ export function ReleasePlayerModal({
 
         {success ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <CheckCircle2 className="size-14 text-emerald-500 animate-in zoom-in-50 duration-300" />
-            <h3 className="font-display text-xl font-bold">¡Jugador Liberado!</h3>
+            <CheckCircle2 className="size-14 text-[#30d158] animate-in zoom-in-50 duration-300" />
+            <h3 className="text-xl font-bold">¡Jugador Liberado!</h3>
             <p className="text-sm text-muted-foreground">
               <strong>{player.name}</strong> ha sido liberado al mercado de Agentes Libres.
             </p>
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            <div className="rounded-xl border bg-[#30d158]/10 px-4 py-2 text-sm font-semibold text-[#30d158]">
               Se han ingresado +{formatMoney(releaseAmount)} al presupuesto del club
             </div>
             <Button className="mt-4 w-full" onClick={() => handleClose(false)}>
@@ -107,7 +107,7 @@ export function ReleasePlayerModal({
               <PlayerAvatar name={player.name} photoUrl={player.photo_url ?? null} size="md" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="truncate font-display text-base font-bold">{player.name}</h4>
+                  <h4 className="truncate text-base font-bold">{player.name}</h4>
                   <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-extrabold uppercase">
                     {player.position}
                   </span>
@@ -129,14 +129,14 @@ export function ReleasePlayerModal({
 
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Porcentaje de venta directa:</span>
-                <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-bold text-muted-foreground">
                   30%
                 </span>
               </div>
 
               <div className="border-t border-border/60 pt-2 flex items-center justify-between">
                 <span className="font-medium text-foreground">Ingreso para el club:</span>
-                <span className="font-display text-base font-extrabold text-emerald-600 dark:text-emerald-400">
+                <span className="text-base font-extrabold text-[#30d158]">
                   +{formatMoney(releaseAmount)}
                 </span>
               </div>
@@ -149,9 +149,9 @@ export function ReleasePlayerModal({
                   </div>
                   <div className="flex justify-between font-medium text-foreground">
                     <span className="flex items-center gap-1">
-                      Nuevo presupuesto: <ArrowRight className="size-3 text-emerald-500" />
+                      Nuevo presupuesto: <ArrowRight className="size-3 text-[#30d158]" />
                     </span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="font-bold text-[#30d158]">
                       {formatMoney(newBudget)}
                     </span>
                   </div>
@@ -160,8 +160,8 @@ export function ReleasePlayerModal({
             </div>
 
             {/* Aviso informativo */}
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground flex gap-2">
-              <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className="rounded-xl border bg-secondary p-3 text-xs text-muted-foreground flex gap-2">
+              <AlertCircle className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <p>
                 Al liberar al jugador, abandonará inmediatamente tu plantilla y pasará al mercado
                 de <strong>Agentes Libres</strong> disponible para ser fichado por cualquier club.
@@ -186,7 +186,7 @@ export function ReleasePlayerModal({
               </Button>
               <Button
                 type="button"
-                className="bg-amber-600 hover:bg-amber-700 text-white font-semibold gap-1.5"
+                className="gap-1.5"
                 onClick={handleRelease}
                 disabled={loading}
               >

@@ -40,7 +40,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
     (detail ? { title: detail.title, parent: detail.parent } : {
       title: pathname.replace("/", "").replace(/-/g, " ") || "Partidos",
     });
-  const canGoBack = pathname !== HOME && pathname !== "/";
+  const canGoBack = !isRootScreen(pathname);
   const root = isRootScreen(pathname);
 
   // Pantallas visitadas dentro de la app en esta sesión (la cabecera no se
@@ -117,7 +117,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
             aria-label="Abrir el asistente David Villa"
             className="flex size-11 items-center justify-center select-none active:opacity-50"
           >
-            <span className="flex size-7 items-center justify-center rounded-full bg-gradient-to-tr from-amber-600 to-yellow-400 text-[10px] font-black text-white">
+            <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-[13px] font-bold text-white">
               7
             </span>
           </button>

@@ -88,7 +88,7 @@ export function ResetLeagueBtn({ leagueId }: ResetLeagueBtnProps) {
                         <div className="flex items-start gap-3">
                             <CalendarX2 className="mt-0.5 size-5 shrink-0 text-primary" />
                             <div>
-                                <p className="font-display text-sm font-semibold text-foreground">
+                                <p className="text-sm font-semibold text-foreground">
                                     Solo reiniciar calendario
                                 </p>
                                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -111,7 +111,7 @@ export function ResetLeagueBtn({ leagueId }: ResetLeagueBtnProps) {
                         <div className="flex items-start gap-3">
                             <Coins className="mt-0.5 size-5 shrink-0 text-destructive" />
                             <div>
-                                <p className="font-display text-sm font-semibold text-destructive">
+                                <p className="text-sm font-semibold text-destructive">
                                     Reiniciar liga completa
                                 </p>
                                 <p className="mt-0.5 text-xs text-muted-foreground">

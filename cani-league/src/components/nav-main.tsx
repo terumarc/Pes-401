@@ -34,10 +34,10 @@ export function NavMain({
                 isActive={item.isActive}
                 asChild
                 className={cn(
-                  "relative h-9 rounded-lg px-3 text-xs sm:text-sm font-medium transition-all duration-150",
+                  "relative h-9 rounded-[10px] px-3 text-[15px] transition-colors",
                   item.isActive
-                    ? "bg-white/[0.08] text-foreground font-semibold shadow-xs border border-border/80"
-                    : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
+                    ? "bg-secondary font-semibold text-foreground"
+                    : "text-foreground/85 hover:bg-white/[0.04]"
                 )}
               >
                 <Link
@@ -46,13 +46,10 @@ export function NavMain({
                   onClick={() => setOpenMobile(false)}
                   className="flex items-center gap-2.5"
                 >
-                  <span className={cn("shrink-0 transition-colors", item.isActive ? "text-primary" : "text-muted-foreground")}>
+                  <span className={cn("shrink-0", item.isActive ? "text-foreground" : "text-muted-foreground")}>
                     {item.icon}
                   </span>
                   <span>{item.title}</span>
-                  {item.isActive && (
-                    <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-primary" />
-                  )}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

@@ -7,7 +7,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AssistantProvider } from "@/components/assistant/assistant-context";
 import { AssistantSheet } from "@/components/assistant/assistant-sheet";
-import { AssistantTrigger } from "@/components/assistant/assistant-trigger";
 import { RouteProgressBar } from "@/components/layout/RouteProgressBar";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { CommandMenu } from "@/components/layout/CommandMenu";
@@ -73,7 +72,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <MobileTabBar />
             <CommandMenu />
             <AssistantSheet />
-            <AssistantTrigger />
           </AssistantProvider>
         </TooltipProvider>
       </body>

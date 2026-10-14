@@ -21,7 +21,6 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { TeamLogo } from "@/components/teams/TeamCard";
 import { updateTeamAction } from "@/app/actions/teams";
 import { teamSchema } from "@/lib/validations";
-import { cn } from "@/lib/utils";
 import type { Team } from "@/types";
 
 type TeamFormProps = {
@@ -94,7 +93,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <Sparkles className="size-3.5 text-amber-400" />
+            <Sparkles className="size-3.5 text-muted-foreground" />
             Vista previa en directo
           </span>
           <span className="text-[10px] lowercase text-muted-foreground/80">
@@ -143,7 +142,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                 />
               </div>
               <div className="min-w-0 pt-6">
-                <h4 className="truncate font-display text-base font-bold text-foreground">
+                <h4 className="truncate text-base font-bold text-foreground">
                   {form.name || "Nombre del Club"}
                 </h4>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -324,7 +323,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
           type="submit"
           disabled={pending}
           size="lg"
-          className="w-full gap-2 font-display font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 transition-all duration-200 cursor-pointer rounded-xl"
+          className="w-full gap-2 transition-all duration-200 cursor-pointer rounded-xl"
         >
           {pending ? (
             <>

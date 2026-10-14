@@ -13,13 +13,13 @@ export function HeaderAssistantButton() {
       variant="outline"
       size="sm"
       onClick={openAssistant}
-      className="border-border bg-white/[0.03] text-xs font-medium text-foreground/90 hover:bg-white/[0.08] hover:text-amber-400 gap-1.5 transition-colors h-7 px-2.5"
+      className="h-8 gap-1.5 px-3 text-[13px]"
     >
-      <div className="size-3.5 rounded-full bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-[8px] text-white font-black">
+      <div className="flex size-4 items-center justify-center rounded-full bg-white text-[9px] font-bold text-black">
         7
       </div>
       <span>David Villa IA</span>
-      <Sparkles className="size-3 text-amber-400" />
+      <Sparkles className="size-3" />
     </Button>
   );
 }

@@ -108,16 +108,16 @@ export function AssistantSheet() {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 flex flex-col bg-background/95 backdrop-blur-xl border-l border-border/80 shadow-2xl"
+        className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 flex flex-col bg-background/95 border-l border-border/80"
       >
         {/* Cabecera personalizada */}
         <SheetHeader className="p-4 border-b border-border/80 bg-muted/20 flex flex-row items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="size-10 rounded-full bg-gradient-to-tr from-amber-600 via-orange-500 to-yellow-400 flex items-center justify-center text-white font-bold shadow-md shadow-orange-500/20">
+              <div className="size-10 rounded-full bg-secondary flex items-center justify-center text-white font-bold shadow-md shadow-orange-500/20">
                 <span className="text-xs tracking-tighter font-black">#7</span>
               </div>
-              <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+              <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-[#30d158] ring-2 ring-background animate-pulse" />
             </div>
 
             <div>
@@ -133,7 +133,7 @@ export function AssistantSheet() {
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                <Sparkles className="size-3 text-amber-400" />
+                <Sparkles className="size-3 text-muted-foreground" />
                 Director Deportivo & Asesor de PES 6
               </p>
             </div>
@@ -165,7 +165,7 @@ export function AssistantSheet() {
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground px-1">
                 {msg.role === "assistant" ? (
                   <>
-                    <Bot className="size-3 text-amber-400" />
+                    <Bot className="size-3 text-muted-foreground" />
                     <span className="font-semibold text-foreground/80">David Villa</span>
                   </>
                 ) : (
@@ -184,7 +184,7 @@ export function AssistantSheet() {
                       key={i}
                       className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md bg-muted/60 border border-border/60 text-muted-foreground"
                     >
-                      <CheckCircle2 className="size-3 text-emerald-400" />
+                      <CheckCircle2 className="size-3 text-[#30d158]" />
                       <span>{tool.description}</span>
                       {tool.count != null && (
                         <span className="font-mono text-primary font-bold">
@@ -224,7 +224,7 @@ export function AssistantSheet() {
           {/* Estado de ejecución de herramienta en vivo */}
           {currentToolStatus && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 border border-border/50 rounded-lg px-3 py-2 animate-pulse w-fit">
-              <Search className="size-3.5 text-amber-400 animate-spin" />
+              <Search className="size-3.5 text-muted-foreground animate-spin" />
               <span>{currentToolStatus}</span>
             </div>
           )}

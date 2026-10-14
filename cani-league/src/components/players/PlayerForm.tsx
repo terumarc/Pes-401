@@ -123,7 +123,7 @@ export function PlayerForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <h2 className="font-display text-xl font-semibold tracking-tight">
+      <h2 className="text-xl font-semibold tracking-tight">
         {player ? "Editar jugador" : "Nuevo jugador"}
       </h2>
 

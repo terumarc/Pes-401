@@ -181,7 +181,7 @@ export function QuickMatchModal({
       </DialogTrigger>
 
       <DialogContent
-        className="max-h-[92vh] overflow-y-auto sm:max-w-xl border-border bg-card/95 backdrop-blur-xl p-5 sm:p-6"
+        className="max-h-[92vh] overflow-y-auto sm:max-w-xl border-border bg-card/95 p-5 sm:p-6"
         onKeyDown={handleKeyDown}
       >
         <DialogHeader className="text-left space-y-1">
@@ -189,7 +189,7 @@ export function QuickMatchModal({
             <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/25">
               <Swords className="size-4" />
             </span>
-            <DialogTitle className="font-display text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            <DialogTitle className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
               Arena de Enfrentamientos
             </DialogTitle>
           </div>
@@ -199,7 +199,7 @@ export function QuickMatchModal({
         </DialogHeader>
 
         {/* 1. ESPORTS VS ARENA SHOWCASE */}
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-black/60 p-4 shadow-xl">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-black/60 p-4">
           {/* Dual team ambient glows */}
           {homeTeam && (
             <div
@@ -235,7 +235,7 @@ export function QuickMatchModal({
                     color={homeTeam.primary_color}
                     size="md"
                   />
-                  <p className="mt-2 font-display text-xs sm:text-sm font-black text-foreground truncate max-w-[130px]">
+                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-[130px]">
                     {homeTeam.short_name || homeTeam.name}
                   </p>
                 </>
@@ -251,7 +251,7 @@ export function QuickMatchModal({
 
             {/* VS & SWAP */}
             <div className="flex flex-col items-center gap-2">
-              <span className="font-display text-xl sm:text-2xl font-black tracking-widest text-primary/80 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
+              <span className="text-xl sm:text-2xl font-black tracking-widest text-primary/80 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
                 VS
               </span>
               {homeTeam && awayTeam && (
@@ -288,7 +288,7 @@ export function QuickMatchModal({
                     color={awayTeam.primary_color}
                     size="md"
                   />
-                  <p className="mt-2 font-display text-xs sm:text-sm font-black text-foreground truncate max-w-[130px]">
+                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-[130px]">
                     {awayTeam.short_name || awayTeam.name}
                   </p>
                 </>
@@ -313,7 +313,7 @@ export function QuickMatchModal({
                     {pendingMatches.length} partido(s) oficial(es) pendiente(s) en calendario
                   </Badge>
                 ) : playedMatches.length > 0 ? (
-                  <Badge variant="outline" className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-bold text-[11px]">
+                  <Badge variant="outline" className="gap-1 bg-[#30d158]/10 text-[#30d158] font-bold text-[11px]">
                     <Trophy className="size-3" />
                     Ya disputaron ida y vuelta ({playedMatches.map((m) => `${m.home_goals}-${m.away_goals}`).join(", ")})
                   </Badge>
@@ -453,7 +453,7 @@ export function QuickMatchModal({
             <div className="rounded-2xl border border-border bg-black/40 p-4 shadow-inner space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
-                  <Coins className="size-3 text-amber-400" /> 3. Marcador del Encuentro
+                  <Coins className="size-3 text-muted-foreground" /> 3. Marcador del Encuentro
                 </span>
                 <span className="text-[10px] text-muted-foreground">
                   Premio: +3M€ victoria · +1M€ empate
@@ -489,7 +489,7 @@ export function QuickMatchModal({
                         const val = parseInt(e.target.value, 10);
                         setHomeGoals(isNaN(val) ? 0 : Math.max(0, val));
                       }}
-                      className="w-14 rounded-xl border border-white/[0.15] bg-black/60 py-1.5 text-center font-display text-2xl font-black tabular-nums text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-14 rounded-xl border border-white/[0.15] bg-black/60 py-1.5 text-center text-2xl font-black tabular-nums text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
 
                     <button
@@ -549,7 +549,7 @@ export function QuickMatchModal({
                         const val = parseInt(e.target.value, 10);
                         setAwayGoals(isNaN(val) ? 0 : Math.max(0, val));
                       }}
-                      className="w-14 rounded-xl border border-white/[0.15] bg-black/60 py-1.5 text-center font-display text-2xl font-black tabular-nums text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-14 rounded-xl border border-white/[0.15] bg-black/60 py-1.5 text-center text-2xl font-black tabular-nums text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
 
                     <button
@@ -606,7 +606,7 @@ export function QuickMatchModal({
             size="lg"
             onClick={handleSave}
             disabled={loading || !homeTeamId || !awayTeamId}
-            className="min-h-[44px] gap-2 font-display font-bold shadow-lg shadow-primary/25"
+            className="min-h-[44px] gap-2 font-bold shadow-primary/25"
           >
             <Check className="size-5" />
             {loading ? "Guardando en el acta..." : "Confirmar y Guardar Marcador"}

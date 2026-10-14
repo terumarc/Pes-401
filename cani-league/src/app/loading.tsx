@@ -19,7 +19,7 @@ export default function Loading() {
           <div className="h-9 w-48 rounded-lg bg-white/[0.06] animate-pulse" />
         </div>
 
-        <div className="rounded-2xl border border-border/80 bg-card/30 p-6 backdrop-blur-md shadow-xs">
+        <div className="rounded-2xl border border-border/80 bg-card/30 p-6 shadow-xs">
           <div className="space-y-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
