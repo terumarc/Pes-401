@@ -118,10 +118,18 @@ function ResultSheet({ match, onClose }: { match: MatchWithTeams; onClose: () =>
   }
 
   return (
-    <DialogContent className="gap-0 border-0 bg-card p-5 sm:max-w-md">
-      <DialogTitle className="text-center text-[17px] font-semibold">
-        Jornada {match.matchday} · {match.round === 2 ? "Vuelta" : "Ida"}
-      </DialogTitle>
+    <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
+      {/* Asa y barra superior de hoja iOS: Cancelar a la izquierda, título centrado. */}
+      <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[17px] text-[#0a84ff] active:opacity-60">
+          Cancelar
+        </button>
+        <DialogTitle className="text-[17px] font-semibold">
+          Jornada {match.matchday} · {match.round === 2 ? "Vuelta" : "Ida"}
+        </DialogTitle>
+        <span />
+      </div>
       <DialogDescription className="sr-only">Marcador del partido</DialogDescription>
 
       <div className="mt-6 grid grid-cols-2 gap-4">
@@ -193,7 +201,8 @@ export function Scoreboard({ matches, records }: { matches: MatchWithTeams[]; re
                 aria-selected={active}
                 onClick={() => setDay(d)}
                 className={cn(
-                  "h-9 min-w-[3.25rem] rounded-full px-3.5 text-[15px] font-semibold tabular-nums transition-colors",
+                  // 36 px a la vista; el área táctil llega a 44 px con el pseudo-elemento.
+                  "relative h-9 min-w-[3.25rem] rounded-full px-3.5 after:absolute after:inset-x-0 after:-inset-y-1 after:content-[''] text-[15px] font-semibold tabular-nums transition-colors",
                   active ? "bg-white text-black" : done ? "bg-card text-muted-foreground" : "bg-card text-foreground",
                 )}
               >

@@ -69,7 +69,7 @@ export function MobileTabBar() {
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex h-full flex-col items-center justify-center gap-[3px] rounded-full text-[10px] font-medium tracking-[-0.01em] transition-colors duration-200 select-none active:bg-white/10",
+                    "flex h-full flex-col items-center justify-center gap-[3px] rounded-full text-[11px] font-medium tracking-[-0.01em] transition-colors duration-200 select-none active:bg-white/10",
                     active && "bg-white/[0.13]",
                   )}
                 >
@@ -86,7 +86,7 @@ export function MobileTabBar() {
               aria-haspopup="dialog"
               aria-expanded={moreOpen}
               className={cn(
-                "flex h-full w-full flex-col items-center justify-center gap-[3px] rounded-full text-[10px] font-medium tracking-[-0.01em] transition-colors duration-200 select-none active:bg-white/10",
+                "flex h-full w-full flex-col items-center justify-center gap-[3px] rounded-full text-[11px] font-medium tracking-[-0.01em] transition-colors duration-200 select-none active:bg-white/10",
                 moreActive && "bg-white/[0.13]",
               )}
             >
