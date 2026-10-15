@@ -1,15 +1,22 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
+import { SegmentedNav } from "@/components/layout/SegmentedNav";
 import { PlayerBrowser } from "@/components/players/PlayerBrowser";
-import {
-  getPlayers,
-  getPrimaryLeague,
-  getTeamsByLeague,
-} from "@/lib/data/league";
-import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { MarketBanner, TransferHistory, formatDay } from "@/components/market/MarketSections";
+import { OfferList, type OfferView } from "@/components/market/OfferList";
+import { getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { getOffers, getTransfers } from "@/lib/data/market";
+import { getMarketWindow } from "@/lib/data/season";
+import { createStaticClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
-export default async function MarketPage() {
+const SECTIONS = [
+  { href: "/market", label: "Jugadores" },
+  { href: "/market?s=ofertas", label: "Ofertas" },
+  { href: "/market?s=fichajes", label: "Fichajes" },
+];
+
+export default async function MarketPage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
   if (!isSupabaseConfigured()) {
     return <SetupNotice />;
   }
@@ -19,9 +26,16 @@ export default async function MarketPage() {
     return <p className="text-muted-foreground">No hay liga configurada.</p>;
   }
 
-  const [players, teams] = await Promise.all([
+  const { s } = await searchParams;
+  const section = s === "ofertas" || s === "fichajes" ? s : "jugadores";
+  const current = section === "jugadores" ? "/market" : `/market?s=${section}`;
+
+  const [players, teams, window, offers, transfers] = await Promise.all([
     getPlayers(),
     getTeamsByLeague(league.id),
+    getMarketWindow(createStaticClient(), league.id),
+    section === "ofertas" ? getOffers(league.id, { resolvedLimit: 15 }) : Promise.resolve([]),
+    section === "fichajes" ? getTransfers(league.id) : Promise.resolve([]),
   ]);
 
   // Equipos compradores elegibles (equipos reales de la liga)
@@ -31,10 +45,33 @@ export default async function MarketPage() {
       !t.name.toLowerCase().includes("sin equipo")
   );
 
+  const pendingCount = section === "ofertas" ? offers.filter((o) => o.status === "pending").length : 0;
+  const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "—";
+  const playerName = (id: string | null) => (id ? players.find((p) => p.id === id)?.name ?? "Jugador" : null);
+  const offerViews: OfferView[] = offers.map((o) => ({
+    id: o.id,
+    status: o.status,
+    playerId: o.player_id,
+    playerName: playerName(o.player_id) ?? "Jugador",
+    buyerName: teamName(o.buyer_team_id),
+    sellerName: teamName(o.seller_team_id),
+    amount: o.amount,
+    swapName: playerName(o.swap_player_id),
+    date: formatDay(o.resolved_at ?? o.created_at),
+  }));
+
   return (
     <div className="animate-fade-up pb-12">
       <PageHeader title="Mercado" />
-      <PlayerBrowser mode="market" players={players} teams={buyerTeams} />
+      <SegmentedNav
+        items={SECTIONS.map((x) => (x.label === "Ofertas" && pendingCount ? { ...x, label: `Ofertas (${pendingCount})` } : x))}
+        current={current}
+        label="Secciones del mercado"
+      />
+      <MarketBanner window={window} />
+      {section === "jugadores" && <PlayerBrowser mode="market" players={players} teams={buyerTeams} marketOpen={window.open} />}
+      {section === "ofertas" && <OfferList offers={offerViews} marketOpen={window.open} />}
+      {section === "fichajes" && <TransferHistory transfers={transfers} />}
     </div>
   );
 }

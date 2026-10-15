@@ -7,6 +7,15 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { recordMatchResultClient, resetMatchResultClient } from "@/lib/data/mutations";
 import { cn } from "@/lib/utils";
 import type { MatchWithTeams } from "@/types";
+import { headToHead, type GoalRow, type MatchLite } from "@/lib/stats";
+
+export type Roster = { id: string; name: string }[];
+type Extras = {
+  rosters: Record<string, Roster>;
+  goals: Record<string, GoalRow[]>;
+  history: MatchLite[];
+  teamNames: Record<string, string>;
+};
 
 type Side = MatchWithTeams["home_team"];
 
@@ -95,11 +104,38 @@ function Stepper({ value, onChange, label }: { value: number; onChange: (n: numb
   );
 }
 
-function ResultSheet({ match, onClose }: { match: MatchWithTeams; onClose: () => void }) {
+function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClose: () => void; extras: Extras }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [home, setHome] = useState(match.home_goals ?? 0);
   const [away, setAway] = useState(match.away_goals ?? 0);
+  // Un hueco por gol: id del jugador o "" sin asignar. Se rellena con lo ya guardado.
+  const initialPicks = (teamId: string) =>
+    (extras.goals[match.id] ?? [])
+      .filter((g) => g.team_id === teamId)
+      .flatMap((g) => Array<string>(g.goals).fill(g.player_id ?? ""));
+  const [picks, setPicks] = useState<Record<string, string[]>>(() => ({
+    [match.home_team_id]: initialPicks(match.home_team_id),
+    [match.away_team_id]: initialPicks(match.away_team_id),
+  }));
+
+  function scorersPayload() {
+    const out: { teamId: string; playerId: string | null; playerName: string; goals: number }[] = [];
+    for (const [teamId, count] of [
+      [match.home_team_id, home],
+      [match.away_team_id, away],
+    ] as const) {
+      const roster = extras.rosters[teamId] ?? [];
+      for (const pid of (picks[teamId] ?? []).slice(0, count)) {
+        const p = roster.find((r) => r.id === pid);
+        if (!p) continue;
+        const existing = out.find((o) => o.playerId === p.id);
+        if (existing) existing.goals++;
+        else out.push({ teamId, playerId: p.id, playerName: p.name, goals: 1 });
+      }
+    }
+    return out;
+  }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -145,13 +181,31 @@ function ResultSheet({ match, onClose }: { match: MatchWithTeams; onClose: () =>
         ))}
       </div>
 
+      <ScorerPickers
+        sides={[
+          { team: match.home_team, count: home },
+          { team: match.away_team, count: away },
+        ]}
+        rosters={extras.rosters}
+        picks={picks}
+        onPick={(teamId, i, pid) =>
+          setPicks((prev) => {
+            const next = [...(prev[teamId] ?? [])];
+            next[i] = pid;
+            return { ...prev, [teamId]: next };
+          })
+        }
+      />
+
+      <HeadToHeadBlock match={match} extras={extras} />
+
       {error && <p className="mt-4 text-center text-sm text-destructive">{error}</p>}
 
       <div className="mt-7 space-y-2">
         <button
           type="button"
           disabled={busy}
-          onClick={() => run(() => recordMatchResultClient(match.id, home, away))}
+          onClick={() => run(() => recordMatchResultClient(match.id, home, away, scorersPayload()))}
           className="h-[50px] w-full rounded-full bg-white text-[17px] font-semibold text-black transition-opacity active:opacity-80 disabled:opacity-50"
         >
           {match.played ? "Guardar cambios" : "Guardar resultado"}
@@ -171,8 +225,99 @@ function ResultSheet({ match, onClose }: { match: MatchWithTeams; onClose: () =>
   );
 }
 
+/** Un desplegable por gol para elegir quién marcó. */
+function ScorerPickers({
+  sides,
+  rosters,
+  picks,
+  onPick,
+}: {
+  sides: { team: Side; count: number }[];
+  rosters: Record<string, Roster>;
+  picks: Record<string, string[]>;
+  onPick: (teamId: string, index: number, playerId: string) => void;
+}) {
+  if (sides.every((s) => s.count === 0)) return null;
+  return (
+    <section aria-label="Goleadores" className="mt-6">
+      <h3 className="mb-1.5 px-1 text-[13px] text-muted-foreground">Goleadores</h3>
+      <div className="overflow-hidden rounded-[14px] bg-secondary">
+        {sides.flatMap(({ team, count }) =>
+          Array.from({ length: count }, (_, i) => (
+            <label key={`${team.id}-${i}`} className="flex min-h-11 items-center gap-3 border-b border-border px-3 last:border-b-0">
+              <Crest team={team} size={22} />
+              <span className="sr-only">
+                Gol {i + 1} de {team.name}
+              </span>
+              <select
+                value={picks[team.id]?.[i] ?? ""}
+                onChange={(e) => onPick(team.id, i, e.target.value)}
+                className="h-11 min-w-0 flex-1 bg-transparent text-[17px] outline-none"
+              >
+                <option value="">Sin asignar</option>
+                {(rosters[team.id] ?? []).map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )),
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** Historial entre los dos clubes en todas las temporadas. */
+function HeadToHeadBlock({ match, extras }: { match: MatchWithTeams; extras: Extras }) {
+  const a = match.home_team_id;
+  const b = match.away_team_id;
+  const h = headToHead(
+    extras.history.filter((m) => m.id !== match.id),
+    a,
+    b,
+  );
+  const nameOf = (id: string) => extras.teamNames[id] ?? "?";
+  if (h.games.length === 0) {
+    return <p className="mt-6 px-1 text-[13px] text-muted-foreground">Primer enfrentamiento entre estos clubes.</p>;
+  }
+  const line = (m: MatchLite) => `${nameOf(m.home_team_id)} ${m.home_goals}–${m.away_goals} ${nameOf(m.away_team_id)}`;
+  return (
+    <section aria-label="Historial" className="mt-6">
+      <h3 className="mb-1.5 px-1 text-[13px] text-muted-foreground">Historial · {h.games.length} partidos</h3>
+      <div className="overflow-hidden rounded-[14px] bg-secondary">
+        <div className="grid grid-cols-3 border-b border-border py-2.5 text-center">
+          {[
+            { v: h.winsA, l: `Gana ${nameOf(a)}` },
+            { v: h.draws, l: "Empates" },
+            { v: h.winsB, l: `Gana ${nameOf(b)}` },
+          ].map((x) => (
+            <div key={x.l}>
+              <p className="text-[20px] font-bold tabular-nums">{x.v}</p>
+              <p className="truncate px-1 text-[12px] text-muted-foreground">{x.l}</p>
+            </div>
+          ))}
+        </div>
+        {h.biggest && (
+          <p className="border-b border-border px-3 py-2.5 text-[15px]">
+            <span className="text-muted-foreground">Mayor victoria · </span>
+            {line(h.biggest)}
+          </p>
+        )}
+        {h.games.slice(0, 5).map((m) => (
+          <p key={m.id} className="flex justify-between gap-3 border-b border-border px-3 py-2 text-[15px] tabular-nums last:border-b-0">
+            <span>{line(m)}</span>
+            {m.season && <span className="shrink-0 text-muted-foreground">{m.season}</span>}
+          </p>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /** Marcador por jornadas: selector de jornada arriba y una tarjeta por partido. */
-export function Scoreboard({ matches, records }: { matches: MatchWithTeams[]; records: Record<string, string> }) {
+export function Scoreboard({ matches, records, extras }: { matches: MatchWithTeams[]; records: Record<string, string>; extras: Extras }) {
   const matchdays = useMemo(
     () => Array.from(new Set(matches.map((m) => m.matchday))).sort((a, b) => a - b),
     [matches],
@@ -224,7 +369,7 @@ export function Scoreboard({ matches, records }: { matches: MatchWithTeams[]; re
       </div>
 
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpenId(null)}>
-        {open && <ResultSheet key={open.id} match={open} onClose={() => setOpenId(null)} />}
+        {open && <ResultSheet key={open.id} match={open} extras={extras} onClose={() => setOpenId(null)} />}
       </Dialog>
     </section>
   );

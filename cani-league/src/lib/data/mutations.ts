@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { getLeagueSeason } from "./season";
 import type {
   Match,
   Player,
@@ -297,12 +298,13 @@ export async function recordMatchResultClient(
   matchId: string,
   homeGoals: number,
   awayGoals: number,
+  scorers?: { teamId: string; playerId: string | null; playerName: string; goals: number }[],
 ): Promise<Match> {
   try {
     const res = await fetch("/api/matches/record", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ matchId, homeGoals, awayGoals }),
+      body: JSON.stringify({ matchId, homeGoals, awayGoals, scorers }),
     });
     if (res.ok) {
       const json = await res.json();
@@ -345,11 +347,15 @@ export async function recordDirectMatchClient(
     return recordMatchResultClient(preferredMatchId, homeGoals, awayGoals);
   }
 
+  // Solo se buscan partidos de la temporada en curso.
+  const season = await getLeagueSeason(supabase, leagueId);
+
   // 1. Buscar si hay partido pendiente con este orden exacto (local/visitante)
   const { data: exactMatch } = await supabase
     .from("matches")
     .select("*")
     .eq("league_id", leagueId)
+    .eq("season", season)
     .eq("home_team_id", homeTeamId)
     .eq("away_team_id", awayTeamId)
     .eq("played", false)
@@ -366,6 +372,7 @@ export async function recordDirectMatchClient(
     .from("matches")
     .select("*")
     .eq("league_id", leagueId)
+    .eq("season", season)
     .eq("home_team_id", awayTeamId)
     .eq("away_team_id", homeTeamId)
     .eq("played", false)
@@ -399,6 +406,7 @@ export async function recordDirectMatchClient(
     .from("matches")
     .insert({
       league_id: leagueId,
+      season,
       home_team_id: homeTeamId,
       away_team_id: awayTeamId,
       matchday: 99,
@@ -419,6 +427,7 @@ export async function recordDirectMatchClient(
 
 export async function resetMatchResultClient(matchId: string): Promise<Match> {
   const supabase = createClient();
+  await supabase.from("match_goals").delete().eq("match_id", matchId);
   const { data, error } = await supabase
     .from("matches")
     .update({ home_goals: null, away_goals: null, played: false, played_at: null })

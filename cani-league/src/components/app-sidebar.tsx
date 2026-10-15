@@ -26,6 +26,9 @@ import {
   CalendarDays,
   Swords,
   ListOrdered,
+  Medal,
+  Goal,
+  History,
 } from "lucide-react"
 
 import { NAV_ITEMS } from "@/constants"
@@ -40,6 +43,9 @@ const ICONS = {
   CalendarDays,
   Swords,
   ListOrdered,
+  Medal,
+  Goal,
+  History,
 } as const;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

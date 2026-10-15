@@ -2,6 +2,7 @@ import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { safeCache, invalidateMemCache } from "./cache";
 import type { League, LeagueTableRow, Match, MatchWithTeams, Team } from "@/types";
+import { getLeagueSeason } from "./season";
 
 // ─── Queries ────────────────────────────────────────────────
 
@@ -10,6 +11,8 @@ async function fetchMatchesByLeague(
     options?: { matchday?: number; round?: number },
 ): Promise<MatchWithTeams[]> {
     const supabase = createStaticClient();
+    // Solo la temporada en curso; las anteriores quedan para el historial.
+    const season = await getLeagueSeason(supabase, leagueId);
     let query = supabase
         .from("matches")
         .select(
@@ -17,6 +20,7 @@ async function fetchMatchesByLeague(
            away_team:teams!matches_away_team_id_fkey(id,name,short_name,primary_color,logo_url)`,
         )
         .eq("league_id", leagueId)
+        .eq("season", season)
         .order("matchday", { ascending: true })
         .order("created_at", { ascending: true });
 
@@ -85,6 +89,7 @@ export async function generateFixtures(
             // Ida
             inserts.push({
                 league_id: league.id,
+                season: league.season,
                 home_team_id: home.id,
                 away_team_id: away.id,
                 matchday,
@@ -98,6 +103,7 @@ export async function generateFixtures(
             // Vuelta
             inserts.push({
                 league_id: league.id,
+                season: league.season,
                 home_team_id: away.id,
                 away_team_id: home.id,
                 matchday: rounds + matchday,

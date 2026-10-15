@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
 import type { Team, Match } from "@/types";
+import { getLeagueSeason } from "@/lib/data/season";
 
 export async function POST(request: Request) {
   try {
@@ -44,11 +45,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Eliminar cualquier calendario anterior de la liga
+    // 2. Eliminar el calendario de la temporada en curso (las anteriores se conservan)
+    const season = await getLeagueSeason(supabase, leagueId);
     const { error: delErr } = await supabase
       .from("matches")
       .delete()
-      .eq("league_id", leagueId);
+      .eq("league_id", leagueId)
+      .eq("season", season);
 
     if (delErr) {
       return NextResponse.json(
@@ -88,6 +91,7 @@ export async function POST(request: Request) {
         // Ida
         inserts.push({
           league_id: leagueId,
+          season,
           home_team_id: home.id,
           away_team_id: away.id,
           matchday,
@@ -101,6 +105,7 @@ export async function POST(request: Request) {
         // Vuelta
         inserts.push({
           league_id: leagueId,
+          season,
           home_team_id: away.id,
           away_team_id: home.id,
           matchday: rounds + matchday,

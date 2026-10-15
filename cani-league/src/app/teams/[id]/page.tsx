@@ -11,6 +11,10 @@ import { getPlayers, getPrimaryLeague, getTeamById, getTeamsByLeague } from "@/l
 import { getPlayerEffectiveRating, getPlayerFixedPrice } from "@/lib/players";
 import { formatMoney } from "@/lib/format/money";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { getGoals } from "@/lib/data/stats";
+import { getMatchesByLeague } from "@/lib/data/matches";
+import { teamForm } from "@/lib/stats";
+import { FormDots } from "@/components/league/FormDots";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -31,10 +35,15 @@ export default async function TeamDetailPage({ params }: Props) {
   if (!team) notFound();
 
   const league = await getPrimaryLeague();
-  const [players, teams] = await Promise.all([
+  const [players, teams, goals, matches] = await Promise.all([
     getPlayers({ teamId: team.id }),
     league ? getTeamsByLeague(league.id) : Promise.resolve([]),
+    league ? getGoals(league.id, league.season) : Promise.resolve([]),
+    league ? getMatchesByLeague(league.id).catch(() => []) : Promise.resolve([]),
   ]);
+  const goalsByPlayer: Record<string, number> = {};
+  for (const g of goals) if (g.player_id && g.team_id === team.id) goalsByPlayer[g.player_id] = (goalsByPlayer[g.player_id] ?? 0) + g.goals;
+  const form = teamForm(matches, team.id);
 
   const totalValue = players.reduce((sum, p) => sum + getPlayerFixedPrice(p), 0);
   const rated = players.filter((p) => p.overall != null);
@@ -61,6 +70,7 @@ export default async function TeamDetailPage({ params }: Props) {
           <TeamLogo name={team.name} logoUrl={team.logo_url} color={team.primary_color} size="xl" />
           <h1 className="mt-3 text-[28px] font-bold leading-tight tracking-tight">{team.name}</h1>
           <p className="text-[15px] text-muted-foreground">{team.owner_name?.trim() || "Sin propietario"}</p>
+          <FormDots form={form} className="mt-2" />
 
           <dl className="mt-5 grid w-full max-w-md grid-cols-3 rounded-[22px] bg-card py-3">
             {stats.map((s, i) => (
@@ -83,7 +93,7 @@ export default async function TeamDetailPage({ params }: Props) {
         </div>
       </header>
 
-      <ClubSections team={team} players={players} teams={teams} />
+      <ClubSections team={team} players={players} teams={teams} goals={goalsByPlayer} />
     </div>
   );
 }

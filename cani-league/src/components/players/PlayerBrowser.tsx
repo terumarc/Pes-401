@@ -91,7 +91,18 @@ function Segmented<T extends string>({
  * Buscador de jugadores al estilo iOS: campo de búsqueda, control segmentado por línea
  * y lista agrupada. En modo mercado cada fila lleva su precio y el botón de fichar.
  */
-export function PlayerBrowser({ players, teams, mode }: { players: Row[]; teams: Team[]; mode: "players" | "market" }) {
+export function PlayerBrowser({
+  players,
+  teams,
+  mode,
+  marketOpen = true,
+}: {
+  players: Row[];
+  teams: Team[];
+  mode: "players" | "market";
+  /** Con la ventana de fichajes cerrada los botones de fichar se desactivan. */
+  marketOpen?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<(typeof GROUPS)[number]["key"]>("all");
   const [tier, setTier] = useState<(typeof TIER_FILTERS)[number]["key"]>("all");
@@ -250,9 +261,10 @@ export function PlayerBrowser({ players, teams, mode }: { players: Row[]; teams:
                     <button
                       type="button"
                       onClick={() => setBuying(p)}
+                      disabled={!marketOpen}
                       aria-label={free ? `Fichar a ${p.name}` : `Pagar la cláusula de ${p.name}`}
                       className={cn(
-                        "relative h-8 shrink-0 rounded-full px-3.5 text-[15px] font-semibold active:opacity-70 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
+                        "relative h-8 shrink-0 rounded-full px-3.5 text-[15px] font-semibold active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
                         free ? "bg-white text-black" : "bg-secondary text-foreground",
                       )}
                     >

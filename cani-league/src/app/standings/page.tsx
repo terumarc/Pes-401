@@ -8,6 +8,8 @@ import {
   getStandingsWithTeams,
 } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { getMatchesByLeague } from "@/lib/data/matches";
+import { teamForm } from "@/lib/stats";
 
 export default async function StandingsPage() {
   if (!isSupabaseConfigured()) {
@@ -19,7 +21,11 @@ export default async function StandingsPage() {
     return <p className="text-ink-muted">No hay liga configurada.</p>;
   }
 
-  const standings = await getStandingsWithTeams(league.id);
+  const [standings, matches] = await Promise.all([
+    getStandingsWithTeams(league.id),
+    getMatchesByLeague(league.id).catch(() => []),
+  ]);
+  const forms = Object.fromEntries(standings.map((s) => [s.team_id, teamForm(matches, s.team_id)]));
 
   return (
     <div className="animate-fade-up pb-12">
@@ -29,6 +35,7 @@ export default async function StandingsPage() {
         key={standings.map((s) => `${s.team_id}:${s.position}`).join("|")}
         leagueId={league.id}
         initialItems={standings}
+        forms={forms}
       />
     </div>
   );

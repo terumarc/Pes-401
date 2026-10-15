@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { invalidatePlayersCache } from "@/lib/data/league";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
+import { getMarketWindow } from "@/lib/data/season";
 
 export async function POST(request: Request) {
   try {
@@ -44,6 +45,11 @@ export async function POST(request: Request) {
         { error: "El jugador ya es agente libre / está en el mercado" },
         { status: 400 }
       );
+    }
+
+    const window = await getMarketWindow(supabase, player.team?.league_id);
+    if (!window.open) {
+      return NextResponse.json({ error: `Mercado cerrado. ${window.reason}` }, { status: 409 });
     }
 
     // 3. Buscar el equipo de Agentes Libres

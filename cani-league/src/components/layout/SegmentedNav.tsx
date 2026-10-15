@@ -25,7 +25,8 @@ export function SegmentedNav({
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex h-full items-center justify-center rounded-[7px] text-[13px] font-semibold transition-colors",
+                  "flex h-full items-center justify-center rounded-[7px] px-1 font-semibold transition-colors",
+                  items.length > 3 ? "text-[12px] tracking-tight" : "text-[13px]",
                   active && "bg-[#636366] shadow-[0_3px_8px_rgba(0,0,0,0.12)]",
                 )}
               >
@@ -41,7 +42,14 @@ export function SegmentedNav({
 
 export const TABLE_SECTIONS = [
   { href: "/standings", label: "Clasificación" },
+  { href: "/scorers", label: "Goleadores" },
   { href: "/trophies", label: "Trofeos" },
+  { href: "/seasons", label: "Historial" },
+];
+
+export const MATCH_SECTIONS = [
+  { href: "/calendar", label: "Liga" },
+  { href: "/cups", label: "Copas" },
 ];
 
 export const TEAM_SECTIONS = [

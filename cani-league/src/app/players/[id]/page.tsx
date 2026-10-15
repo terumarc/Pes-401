@@ -6,12 +6,18 @@ import { PixelAvatar } from "@/components/fantasy/PixelAvatar";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { PlayerStats } from "@/components/players/PlayerStats";
-import { getPlayerById, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { getPlayerById, getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { getOffers } from "@/lib/data/market";
+import { getMarketWindow } from "@/lib/data/season";
+import { OfferSheet } from "@/components/market/OfferSheet";
+import { OfferList, type OfferView } from "@/components/market/OfferList";
+import { formatDay } from "@/components/market/MarketSections";
 import { formatMoney } from "@/lib/format/money";
 import { getPlayerTier, getPlayerEffectiveRating, getPlayerContractInfo } from "@/lib/players";
 import { getPlayerSalary, getSeasonsLeft, DEFAULT_SALARY_PERCENT } from "@/lib/contracts";
 import { getSalaryTable } from "@/lib/data/contracts";
-import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { getGoals } from "@/lib/data/stats";
+import { createStaticClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -35,9 +41,17 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
   if (!player) notFound();
 
   const league = await getPrimaryLeague();
-  const [teams, salaries] = league
-    ? await Promise.all([getTeamsByLeague(league.id), getSalaryTable(league.id)])
-    : [[], DEFAULT_SALARY_PERCENT];
+  const [teams, salaries, allGoals] = league
+    ? await Promise.all([getTeamsByLeague(league.id), getSalaryTable(league.id), getGoals(league.id)])
+    : [[], DEFAULT_SALARY_PERCENT, []];
+  const freeAgentEarly = !player.team || /libre|sin equipo/i.test(player.team.name);
+  const [offers, window, everyone] =
+    league && !freeAgentEarly
+      ? await Promise.all([getOffers(league.id, { playerId: player.id, resolvedLimit: 5 }), getMarketWindow(createStaticClient(), league.id), getPlayers()])
+      : [[], null, []];
+  const myGoals = allGoals.filter((g) => g.player_id === player.id);
+  const seasonGoals = myGoals.filter((g) => league && g.season === league.season).reduce((n, g) => n + g.goals, 0);
+  const careerGoals = myGoals.reduce((n, g) => n + g.goals, 0);
   const tier = getPlayerTier(player);
   const rating = getPlayerEffectiveRating(player);
   const contract = getPlayerContractInfo(player);
@@ -58,6 +72,20 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
     );
   }
 
+  const clubs = teams.filter((t) => !/libre|sin equipo/i.test(t.name));
+  const teamName = (tid: string) => teams.find((t) => t.id === tid)?.name ?? "—";
+  const offerViews: OfferView[] = offers.map((o) => ({
+    id: o.id,
+    status: o.status,
+    playerId: o.player_id,
+    playerName: player.name,
+    buyerName: teamName(o.buyer_team_id),
+    sellerName: teamName(o.seller_team_id),
+    amount: o.amount,
+    swapName: o.swap_player_id ? everyone.find((p) => p.id === o.swap_player_id)?.name ?? "Jugador" : null,
+    date: formatDay(o.resolved_at ?? o.created_at),
+  }));
+
   const facts: [string, React.ReactNode][] = [
     ["Precio", formatMoney(contract.price)],
     [
@@ -68,6 +96,7 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
     ],
     ["Sueldo", getPlayerSalary(player, salaries) > 0 ? `${formatMoney(getPlayerSalary(player, salaries))} por temporada` : "Sin sueldo"],
     ["Renovación", contract.renewalCost > 0 ? `${contract.renewalPercentLabel} · ${formatMoney(contract.renewalCost)}` : "Gratis"],
+    ["Goles", careerGoals ? `${seasonGoals} esta temporada · ${careerGoals} en total` : "Ninguno todavía"],
     ["En el mercado", player.available_in_market ? "Sí" : "No"],
   ];
 
@@ -148,6 +177,23 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
               ))}
             </ul>
           </section>
+
+          {!freeAgent && edit !== "1" && (
+            <section aria-labelledby="pl-offers">
+              <h2 id="pl-offers" className="mb-2 px-1 text-[20px] font-bold tracking-tight">
+                Ofertas
+              </h2>
+              <div className="space-y-4">
+                <OfferSheet
+                  player={{ id: player.id, name: player.name, team_id: player.team_id, teamName: team.name }}
+                  clubs={clubs.map((c) => ({ id: c.id, name: c.name, budget: c.budget }))}
+                  squads={everyone.filter((p) => p.team_id !== player.team_id).map((p) => ({ id: p.id, name: p.name, position: p.position, team_id: p.team_id }))}
+                  suggested={contract.price}
+                />
+                {offerViews.length > 0 && <OfferList offers={offerViews} marketOpen={window?.open ?? false} hidePlayer />}
+              </div>
+            </section>
+          )}
 
           <section aria-label="Acciones">
             <PlayerActions

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getLeagueSeason } from "@/lib/data/season";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
 
@@ -16,11 +17,13 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    // 1. Borrar todos los partidos de la liga
+    // 1. Borrar los partidos de la temporada en curso (las anteriores se conservan)
+    const season = await getLeagueSeason(supabase, leagueId);
     const { error: matchesErr } = await supabase
       .from("matches")
       .delete()
-      .eq("league_id", leagueId);
+      .eq("league_id", leagueId)
+      .eq("season", season);
 
     if (matchesErr) {
       return NextResponse.json(

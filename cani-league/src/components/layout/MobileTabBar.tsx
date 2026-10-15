@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
  * `also` son las pantallas que cuentan como esa pestaña.
  */
 export const TABS = [
-  { href: "/calendar", label: "Partidos", Icon: Swords, also: [] as string[] },
-  { href: "/standings", label: "Tabla", Icon: ListOrdered, also: ["/trophies"] },
+  { href: "/calendar", label: "Partidos", Icon: Swords, also: ["/cups"] },
+  { href: "/standings", label: "Tabla", Icon: ListOrdered, also: ["/scorers", "/trophies", "/seasons"] },
   { href: "/teams", label: "Equipos", Icon: Shield, also: ["/finances"] },
   { href: "/players", label: "Jugadores", Icon: Users, also: [] as string[] },
   { href: "/market", label: "Mercado", Icon: Store, also: [] as string[] },

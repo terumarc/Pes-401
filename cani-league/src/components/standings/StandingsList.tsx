@@ -19,15 +19,19 @@ import { useRouter } from "next/navigation";
 import { TeamLogo } from "@/components/teams/TeamCard";
 import { reorderStandingsClient } from "@/lib/data/mutations";
 import { formatPositionDelta } from "@/lib/format/stats";
+import { FormDots } from "@/components/league/FormDots";
+import type { FormResult } from "@/lib/stats";
 import { cn } from "@/lib/utils";
 import type { StandingWithTeam } from "@/types";
 
 type StandingsListProps = {
   leagueId: string;
   initialItems: StandingWithTeam[];
+  /** Racha de cada equipo (últimos 5 partidos de liga). */
+  forms?: Record<string, FormResult[]>;
 };
 
-export function StandingsList({ leagueId, initialItems }: StandingsListProps) {
+export function StandingsList({ leagueId, initialItems, forms = {} }: StandingsListProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [pending, startTransition] = useTransition();
@@ -79,7 +83,7 @@ export function StandingsList({ leagueId, initialItems }: StandingsListProps) {
           {/* Lista agrupada de iOS: un bloque redondeado con separadores interiores. */}
           <ul className="overflow-hidden rounded-[22px] bg-card">
             {items.map((item) => (
-              <SortableTeam key={item.team_id} item={item} />
+              <SortableTeam key={item.team_id} item={item} form={forms[item.team_id] ?? []} />
             ))}
           </ul>
         </SortableContext>
@@ -92,7 +96,7 @@ export function StandingsList({ leagueId, initialItems }: StandingsListProps) {
   );
 }
 
-function SortableTeam({ item }: { item: StandingWithTeam }) {
+function SortableTeam({ item, form }: { item: StandingWithTeam; form: FormResult[] }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.team_id,
   });
@@ -116,7 +120,10 @@ function SortableTeam({ item }: { item: StandingWithTeam }) {
         <div className="flex min-w-0 flex-1 items-center gap-2 self-stretch border-b border-border py-2.5 group-last:border-b-0">
           <div className="min-w-0 flex-1">
             <p className="truncate text-[17px] leading-tight">{item.team.name}</p>
-            <p className="truncate text-[13px] text-muted-foreground">{item.team.owner_name?.trim() || "Sin propietario"}</p>
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="truncate text-[13px] text-muted-foreground">{item.team.owner_name?.trim() || "Sin propietario"}</p>
+              <FormDots form={form} className="shrink-0" />
+            </div>
           </div>
           <span
             className={cn(

@@ -159,6 +159,8 @@ export type Match = {
   away_goals: number | null;
   played: boolean;
   played_at: string | null;
+  /** Temporada a la que pertenece (leagues.season). */
+  season?: string | null;
   created_at: string;
 };
 

@@ -4,13 +4,14 @@ import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { calculateMatchReward } from "@/lib/economy";
 import { applySeasonMultipliers } from "@/lib/data/budget";
+import { saveLeagueMatchGoals, type ScorerInput } from "@/lib/data/goals";
 import { calendarKeyOf, claimSeasonStage, closeSeasonContracts } from "@/lib/data/contracts";
 import { buildLeagueTable } from "@/lib/data/matches";
 import type { Team, MatchWithTeams } from "@/types";
 
 export async function POST(request: Request) {
   try {
-    const { matchId, homeGoals, awayGoals } = await request.json();
+    const { matchId, homeGoals, awayGoals, scorers } = await request.json();
 
     if (!matchId || homeGoals == null || awayGoals == null) {
       return NextResponse.json(
@@ -20,6 +21,10 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
+
+    // Si el partido ya estaba jugado (se corrige el resultado), no se vuelven a pagar las primas.
+    const { data: before } = await supabase.from("matches").select("played").eq("id", matchId).maybeSingle();
+    const wasPlayed = !!before?.played;
 
     // 1. Guardar resultado
     const { data: updatedMatch, error: updateErr } = await supabase
@@ -39,6 +44,11 @@ export async function POST(request: Request) {
         { error: "Error al actualizar el partido: " + (updateErr?.message || "") },
         { status: 500 },
       );
+    }
+
+    // 1b. Goleadores (opcional)
+    if (Array.isArray(scorers)) {
+      await saveLeagueMatchGoals(supabase, updatedMatch, scorers as ScorerInput[]);
     }
 
     // 2. Recompensas por partido
@@ -62,7 +72,7 @@ export async function POST(request: Request) {
       .select("id, budget, name")
       .in("id", [updatedMatch.home_team_id, updatedMatch.away_team_id]);
 
-    if (teamsData) {
+    if (teamsData && !wasPlayed) {
       const homeTeam = teamsData.find((t) => t.id === updatedMatch.home_team_id);
       const awayTeam = teamsData.find((t) => t.id === updatedMatch.away_team_id);
 
@@ -87,7 +97,8 @@ export async function POST(request: Request) {
       .select(
         "*, home_team:teams!matches_home_team_id_fkey(id,name,short_name,primary_color,logo_url), away_team:teams!matches_away_team_id_fkey(id,name,short_name,primary_color,logo_url)",
       )
-      .eq("league_id", updatedMatch.league_id);
+      .eq("league_id", updatedMatch.league_id)
+      .eq("season", updatedMatch.season ?? "");
 
     if (allLeagueMatches && allLeagueMatches.length > 0) {
       const round1 = allLeagueMatches.filter((m) => m.round === 1);

@@ -17,7 +17,7 @@ const LINES = [
 ] as const;
 
 /** Plantilla en listas agrupadas por línea, con el avatar pixel art de cada jugador. */
-function SquadList({ team, players, teams }: { team: Team; players: Player[]; teams: Team[] }) {
+function SquadList({ team, players, teams, goals }: { team: Team; players: Player[]; teams: Team[]; goals: Record<string, number> }) {
   return (
     <div className="space-y-6">
       {LINES.map(({ key, label }) => {
@@ -51,6 +51,7 @@ function SquadList({ team, players, teams }: { team: Team; players: Player[]; te
                         <span className="block text-[13px] text-muted-foreground">
                           {p.position}
                           {p.age ? ` · ${p.age} años` : ""}
+                          {goals[p.id] ? ` · ${goals[p.id]} ${goals[p.id] === 1 ? "gol" : "goles"}` : ""}
                           {p.available_in_market ? " · En venta" : ""}
                         </span>
                       </span>
@@ -76,7 +77,18 @@ function SquadList({ team, players, teams }: { team: Team; players: Player[]; te
 }
 
 /** Formación y plantilla del club, separadas con un control segmentado. */
-export function ClubSections({ team, players, teams }: { team: Team; players: Player[]; teams: Team[] }) {
+export function ClubSections({
+  team,
+  players,
+  teams,
+  goals = {},
+}: {
+  team: Team;
+  players: Player[];
+  teams: Team[];
+  /** Goles de cada jugador esta temporada. */
+  goals?: Record<string, number>;
+}) {
   const [view, setView] = useState<"formation" | "squad">("formation");
   return (
     <div>
@@ -114,7 +126,7 @@ export function ClubSections({ team, players, teams }: { team: Team; players: Pl
           <TeamFormation team={team} players={players} teamId={team.id} />
         </div>
       ) : (
-        <SquadList team={team} players={players} teams={teams} />
+        <SquadList team={team} players={players} teams={teams} goals={goals} />
       )}
     </div>
   );

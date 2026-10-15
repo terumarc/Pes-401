@@ -18,8 +18,11 @@ export const PLAYER_POSITIONS: PlayerPosition[] = [
 
 export const NAV_ITEMS = [
   { href: "/calendar", label: "Partidos", icon: "Swords" },
+  { href: "/cups", label: "Copas", icon: "Medal" },
   { href: "/standings", label: "Clasificación", icon: "ListOrdered" },
+  { href: "/scorers", label: "Goleadores", icon: "Goal" },
   { href: "/trophies", label: "Trofeos", icon: "Trophy" },
+  { href: "/seasons", label: "Historial", icon: "History" },
   { href: "/teams", label: "Equipos", icon: "Shield" },
   { href: "/players", label: "Jugadores", icon: "Users" },
   { href: "/market", label: "Mercado", icon: "Store" },

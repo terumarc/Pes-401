@@ -9,6 +9,174 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      match_goals: {
+        Row: {
+          id: string;
+          league_id: string;
+          season: string;
+          match_id: string | null;
+          cup_tie_id: string | null;
+          leg: number | null;
+          team_id: string;
+          player_id: string | null;
+          player_name: string;
+          goals: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          league_id: string;
+          season: string;
+          match_id?: string | null;
+          cup_tie_id?: string | null;
+          leg?: number | null;
+          team_id: string;
+          player_id?: string | null;
+          player_name: string;
+          goals?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          league_id?: string;
+          season?: string;
+          match_id?: string | null;
+          cup_tie_id?: string | null;
+          leg?: number | null;
+          team_id?: string;
+          player_id?: string | null;
+          player_name?: string;
+          goals?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      cup_ties: {
+        Row: {
+          id: string;
+          league_id: string;
+          season: string;
+          trophy: string;
+          round: number;
+          slot: number;
+          is_final: boolean;
+          home_team_id: string | null;
+          away_team_id: string | null;
+          leg1_home_goals: number | null;
+          leg1_away_goals: number | null;
+          leg2_home_goals: number | null;
+          leg2_away_goals: number | null;
+          penalty_winner_id: string | null;
+          winner_team_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          league_id: string;
+          season: string;
+          trophy: string;
+          round: number;
+          slot: number;
+          is_final?: boolean;
+          home_team_id?: string | null;
+          away_team_id?: string | null;
+          leg1_home_goals?: number | null;
+          leg1_away_goals?: number | null;
+          leg2_home_goals?: number | null;
+          leg2_away_goals?: number | null;
+          penalty_winner_id?: string | null;
+          winner_team_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          league_id?: string;
+          season?: string;
+          trophy?: string;
+          round?: number;
+          slot?: number;
+          is_final?: boolean;
+          home_team_id?: string | null;
+          away_team_id?: string | null;
+          leg1_home_goals?: number | null;
+          leg1_away_goals?: number | null;
+          leg2_home_goals?: number | null;
+          leg2_away_goals?: number | null;
+          penalty_winner_id?: string | null;
+          winner_team_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      seasons: {
+        Row: {
+          id: string;
+          league_id: string;
+          season: string;
+          standings: Json;
+          champions: Json;
+          top_scorers: Json;
+          closed_at: string;
+        };
+        Insert: {
+          id?: string;
+          league_id: string;
+          season: string;
+          standings?: Json;
+          champions?: Json;
+          top_scorers?: Json;
+          closed_at?: string;
+        };
+        Update: {
+          id?: string;
+          league_id?: string;
+          season?: string;
+          standings?: Json;
+          champions?: Json;
+          top_scorers?: Json;
+          closed_at?: string;
+        };
+        Relationships: [];
+      };
+      transfer_offers: {
+        Row: {
+          id: string;
+          league_id: string;
+          player_id: string;
+          buyer_team_id: string;
+          seller_team_id: string;
+          amount: number;
+          swap_player_id: string | null;
+          status: string;
+          created_at: string;
+          resolved_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          league_id: string;
+          player_id: string;
+          buyer_team_id: string;
+          seller_team_id: string;
+          amount?: number;
+          swap_player_id?: string | null;
+          status?: string;
+          created_at?: string;
+          resolved_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          league_id?: string;
+          player_id?: string;
+          buyer_team_id?: string;
+          seller_team_id?: string;
+          amount?: number;
+          swap_player_id?: string | null;
+          status?: string;
+          created_at?: string;
+          resolved_at?: string | null;
+        };
+        Relationships: [];
+      };
       contract_salaries: {
         Row: {
           league_id: string;
@@ -399,6 +567,7 @@ export type Database = {
           away_goals: number | null;
           played: boolean;
           played_at: string | null;
+          season: string | null;
           created_at: string;
         };
         Insert: {
@@ -412,6 +581,7 @@ export type Database = {
           away_goals?: number | null;
           played?: boolean;
           played_at?: string | null;
+          season?: string | null;
           created_at?: string;
         };
         Update: {
@@ -425,6 +595,7 @@ export type Database = {
           away_goals?: number | null;
           played?: boolean;
           played_at?: string | null;
+          season?: string | null;
           created_at?: string;
         };
         Relationships: [
