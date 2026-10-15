@@ -7,9 +7,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, ChevronRight, ChevronLeft, ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HeaderAssistantButton } from "@/components/assistant/header-assistant-button";
 import { CommandMenuButton } from "@/components/layout/CommandMenu";
-import { useAssistant } from "@/components/assistant/assistant-context";
 import { isRootScreen } from "@/components/layout/MobileTabBar";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +32,6 @@ const HOME = "/calendar";
 export function SiteHeader({ season }: { season?: string | null }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { openAssistant } = useAssistant();
   const detail = DETAIL_ROUTES.find((d) => pathname.startsWith(d.prefix));
   const currentRoute = ROUTE_LABELS[pathname] ??
     (detail ? { title: detail.title, parent: detail.parent } : {
@@ -110,18 +107,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
         >
           {currentRoute.title}
         </p>
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={openAssistant}
-            aria-label="Abrir el asistente David Villa"
-            className="flex size-11 items-center justify-center select-none active:opacity-50"
-          >
-            <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-[13px] font-bold text-white">
-              7
-            </span>
-          </button>
-        </div>
+        <div aria-hidden />
       </div>
 
       {/* ---------- Escritorio ---------- */}
@@ -159,7 +145,6 @@ export function SiteHeader({ season }: { season?: string | null }) {
 
         <div className="flex items-center gap-2.5">
           <CommandMenuButton />
-          <HeaderAssistantButton />
           {season && (
             <Badge
               variant="outline"

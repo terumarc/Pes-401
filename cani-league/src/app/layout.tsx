@@ -5,8 +5,6 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { AssistantProvider } from "@/components/assistant/assistant-context";
-import { AssistantSheet } from "@/components/assistant/assistant-sheet";
 import { RouteProgressBar } from "@/components/layout/RouteProgressBar";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { CommandMenu } from "@/components/layout/CommandMenu";
@@ -50,7 +48,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-screen bg-background font-sans antialiased">
         <RouteProgressBar />
         <TooltipProvider>
-          <AssistantProvider>
             <SidebarProvider
               style={
                 {
@@ -71,8 +68,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </SidebarProvider>
             <MobileTabBar />
             <CommandMenu />
-            <AssistantSheet />
-          </AssistantProvider>
         </TooltipProvider>
       </body>
     </html>
