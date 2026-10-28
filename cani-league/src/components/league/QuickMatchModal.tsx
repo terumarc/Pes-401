@@ -14,6 +14,8 @@ import {
   X,
   Coins,
   History,
+  Home,
+  Plane,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -225,7 +227,7 @@ export function QuickMatchModal({
               )}
             >
               <span className="mb-1 text-[length:min(0.7059rem,18px)] font-bold text-muted-foreground flex items-center gap-1">
-                🏠 Local
+                <Home className="size-3.5" aria-hidden /> Local
               </span>
               {homeTeam ? (
                 <>
@@ -278,7 +280,7 @@ export function QuickMatchModal({
               )}
             >
               <span className="mb-1 text-[length:min(0.7059rem,18px)] font-bold text-muted-foreground flex items-center gap-1">
-                ✈️ Visitante
+                <Plane className="size-3.5" aria-hidden /> Visitante
               </span>
               {awayTeam ? (
                 <>
@@ -362,7 +364,7 @@ export function QuickMatchModal({
                 </span>
                 {homeTeam && (
                   <span className="font-bold text-primary text-[length:min(0.7059rem,18px)] truncate max-w-[120px]">
-                    ✓ {homeTeam.short_name || homeTeam.name}
+                    <Check className="inline size-3.5 align-[-2px]" aria-hidden /> {homeTeam.short_name || homeTeam.name}
                   </span>
                 )}
               </div>
@@ -409,7 +411,7 @@ export function QuickMatchModal({
                 </span>
                 {awayTeam && (
                   <span className="font-bold text-primary text-[length:min(0.7059rem,18px)] truncate max-w-[120px]">
-                    ✓ {awayTeam.short_name || awayTeam.name}
+                    <Check className="inline size-3.5 align-[-2px]" aria-hidden /> {awayTeam.short_name || awayTeam.name}
                   </span>
                 )}
               </div>

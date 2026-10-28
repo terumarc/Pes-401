@@ -171,7 +171,15 @@ body {
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--primary) 22%, white);
+  /* Azul de la app a media opacidad: el texto blanco sigue leyéndose al seleccionarlo. */
+  background: rgb(10 132 255 / 0.45);
+  color: #fff;
+}
+
+/* Cursor de texto con el azul de la app, no el del navegador. */
+input,
+textarea {
+  caret-color: #0a84ff;
 }
 
 @layer base {

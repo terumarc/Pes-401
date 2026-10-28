@@ -110,7 +110,7 @@ export function TeamCard({ team }: TeamCardProps) {
                 )}
                 variant="outline"
               >
-                ★ {team.avg_overall} OVR
+                <Star className="size-3 fill-current" aria-hidden /> {team.avg_overall} OVR
               </Badge>
             </div>
           )}

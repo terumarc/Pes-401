@@ -4,6 +4,7 @@ import { useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { PixelAvatar } from "@/components/fantasy/PixelAvatar";
+import { PositionChip } from "@/components/fantasy/primitives";
 import { TransferModal } from "@/components/market/TransferModal";
 import { formatMoney } from "@/lib/format/money";
 import { getPlayerEffectiveRating, getPlayerFixedPrice, getPlayerTier, getPositionGroup } from "@/lib/players";
@@ -225,53 +226,16 @@ export function PlayerBrowser({
             const rating = getPlayerEffectiveRating(p);
             const tier = getPlayerTier(p);
             return (
-              <li key={p.id} className="group flex items-center gap-3 pl-4 large-text:items-start">
-                <Link href={`/players/${p.id}`} tabIndex={-1} aria-hidden className="shrink-0 large-text:pt-3">
-                  <span className="flex size-10 items-end justify-center overflow-hidden rounded-full bg-[#2c2c2e]">
-                    {p.photo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.photo_url} alt="" className="size-full object-cover" />
-                    ) : (
-                      <PixelAvatar
-                        seed={p.id}
-                        shirt={free ? "#5d6675" : p.team?.primary_color}
-                        trim={free ? undefined : p.team?.secondary_color}
-                        className="size-full translate-y-[12%] scale-110"
-                      />
-                    )}
-                  </span>
-                </Link>
-                <div className="flex min-h-[64px] min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border pr-3 group-last:border-b-0 large-text:flex-col large-text:items-start large-text:gap-0 large-text:pb-3">
-                  <Link href={`/players/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-2 large-text:w-full large-text:items-start large-text:pt-3">
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[length:min(1rem,25.5px)] leading-tight large-text:whitespace-normal">{p.name}</span>
-                      <span className="block truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground large-text:mt-0.5 large-text:whitespace-normal">
-                        {p.position} · {free ? "Agente libre" : p.team?.name}
-                        {mode === "players" && p.age ? ` · ${p.age} años` : ""}
-                      </span>
-                    </span>
-                    <span className="flex flex-col items-end leading-none">
-                      <span className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums">{rating || "–"}</span>
-                      <span className="mt-1 text-[length:min(0.7059rem,18px)] font-semibold tabular-nums text-muted-foreground">
-                        {mode === "market" ? compactMoney(getPlayerFixedPrice(p)) : tier.tier}
-                      </span>
-                    </span>
-                  </Link>
-                  {mode === "market" && (
-                    <button
-                      type="button"
-                      onClick={() => setBuying(p)}
-                      disabled={!marketOpen}
-                      aria-label={free ? `Fichar a ${p.name}` : `Pagar la cláusula de ${p.name}`}
-                      className={cn(
-                        "relative h-8 shrink-0 rounded-full px-3.5 text-[length:min(0.8824rem,22.5px)] font-semibold active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-[''] large-text:h-11 large-text:px-5",
-                        free ? "bg-white text-black" : "bg-secondary text-foreground",
-                      )}
-                    >
-                      {free ? "Fichar" : "Cláusula"}
-                    </button>
-                  )}
-                </div>
+              <li key={p.id} className="group">
+                <PlayerRow
+                  p={p}
+                  free={free}
+                  rating={rating}
+                  tier={tier.tier}
+                  mode={mode}
+                  marketOpen={marketOpen}
+                  onBuy={() => setBuying(p)}
+                />
               </li>
             );
           })}
@@ -297,6 +261,167 @@ export function PlayerBrowser({
           purchaseType={isFree(buying) ? "mercado" : "clausula"}
         />
       )}
+    </div>
+  );
+}
+
+/** Colores del nivel, como las cartas del FUT: oro para S, morado para S+… */
+const TIER_BOX: Record<string, string> = {
+  "S+": "bg-[#bf5af2] text-black",
+  S: "bg-[#ffd60a] text-black",
+  A: "bg-[#0a84ff] text-black",
+  B: "bg-[#30d158] text-black",
+  C: "bg-[#48484a] text-white",
+  D: "bg-[#2c2c2e] text-white ring-1 ring-inset ring-white/15",
+};
+
+function Avatar({ p, free, size }: { p: Row; free: boolean; size: number }) {
+  return (
+    <span
+      className="flex shrink-0 items-end justify-center overflow-hidden rounded-full bg-[#2c2c2e] ring-1 ring-white/10"
+      style={{ width: size, height: size }}
+    >
+      {p.photo_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={p.photo_url} alt="" className="size-full object-cover" />
+      ) : (
+        <PixelAvatar
+          seed={p.id}
+          shirt={free ? "#5d6675" : p.team?.primary_color}
+          trim={free ? undefined : p.team?.secondary_color}
+          className="size-full translate-y-[12%] scale-110"
+        />
+      )}
+    </span>
+  );
+}
+
+/** Caja de la media con el nivel debajo, del color del nivel. */
+function RatingBox({ rating, tier, big }: { rating: number; tier: string; big?: boolean }) {
+  return (
+    <span
+      className={cn(
+        "flex shrink-0 flex-col items-center justify-center rounded-[12px] leading-none tabular-nums",
+        big ? "size-[60px]" : "size-11",
+        TIER_BOX[tier] ?? TIER_BOX.D,
+      )}
+      aria-label={`Media ${rating || "sin datos"}, nivel ${tier}`}
+    >
+      <span className={cn("font-extrabold", big ? "text-[26px]" : "text-[19px]")}>{rating || "–"}</span>
+      <span className={cn("mt-0.5 font-bold", big ? "text-[13px]" : "text-[12px]")}>{tier}</span>
+    </span>
+  );
+}
+
+/** Escudo pequeño del club (o el icono de libre) + nombre. */
+function ClubLine({ p, free, showAge, price, className }: { p: Row; free: boolean; showAge: boolean; price?: string; className?: string }) {
+  const crest = !free && p.team?.logo_url;
+  return (
+    <span className={cn("flex min-w-0 items-center gap-1.5 text-[length:min(0.7647rem,19.5px)] text-muted-foreground", className)}>
+      {crest ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={crest} alt="" className="size-4 shrink-0 rounded-full object-cover" />
+      ) : (
+        <span
+          aria-hidden
+          className="size-2.5 shrink-0 rounded-full"
+          style={{ background: free ? "#30d158" : p.team?.primary_color ?? "#636366" }}
+        />
+      )}
+      <span className="flex min-w-0 items-baseline gap-1">
+        <span className="min-w-0 truncate large-text:whitespace-normal">
+          {free ? "Libre" : p.team?.short_name || p.team?.name}
+          {showAge && p.age ? ` · ${p.age} años` : ""}
+        </span>
+        {price && <span className="shrink-0 font-semibold tabular-nums text-foreground">· {price}</span>}
+      </span>
+    </span>
+  );
+}
+
+function BuyButton({ free, name, disabled, onBuy, wide }: { free: boolean; name: string; disabled: boolean; onBuy: () => void; wide?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onBuy}
+      disabled={disabled}
+      aria-label={free ? `Fichar a ${name}` : `Pagar la cláusula de ${name}`}
+      className={cn(
+        "relative shrink-0 rounded-full font-semibold active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
+        wide ? "h-11 px-6 text-[length:min(1rem,25.5px)]" : "h-8 px-3.5 text-[length:min(0.8824rem,22.5px)]",
+        free ? "bg-white text-black" : "bg-secondary text-foreground",
+      )}
+    >
+      {free ? "Fichar" : "Cláusula"}
+    </button>
+  );
+}
+
+/**
+ * Fila de jugador al estilo de las apps de fantasy (Biwenger, Fantasy LaLiga, FUT):
+ * foto con la posición encima, nombre y club con su escudo, y la media en una caja
+ * del color del nivel. En el mercado, precio y botón de fichar juntos.
+ * Con letra grande se apila: foto, nombre y media arriba; club debajo; precio y botón al final.
+ */
+function PlayerRow({
+  p,
+  free,
+  rating,
+  tier,
+  mode,
+  marketOpen,
+  onBuy,
+}: {
+  p: Row;
+  free: boolean;
+  rating: number;
+  tier: string;
+  mode: "players" | "market";
+  marketOpen: boolean;
+  onBuy: () => void;
+}) {
+  const price = compactMoney(getPlayerFixedPrice(p));
+  const market = mode === "market";
+  const href = `/players/${p.id}`;
+
+  return (
+    <div className="border-b border-border group-last:border-b-0">
+      {/* Letra normal */}
+      <div className="flex min-h-[68px] items-center gap-3 px-4 py-2.5 transition-colors lg:hover:bg-white/[0.03] large-text:hidden">
+        <Link href={href} className="flex min-w-0 flex-1 items-center gap-3 rounded-[14px] outline-offset-4">
+          <span className="relative shrink-0">
+            <Avatar p={p} free={free} size={44} />
+            <PositionChip position={p.position} className="absolute -bottom-1 left-1/2 -translate-x-1/2 shadow" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="line-clamp-2 text-[length:min(1rem,25.5px)] font-semibold leading-tight">{p.name}</span>
+            <ClubLine p={p} free={free} showAge={!market} price={market ? price : undefined} className="mt-1" />
+          </span>
+          <RatingBox rating={rating} tier={tier} />
+        </Link>
+        {market && <BuyButton free={free} name={p.name} disabled={!marketOpen} onBuy={onBuy} />}
+      </div>
+
+      {/* Letra grande */}
+      <div className="hidden px-4 py-4 large-text:block">
+        <Link href={href} className="flex items-start gap-3 rounded-[14px] outline-offset-4">
+          <span className="relative shrink-0">
+            <Avatar p={p} free={free} size={56} />
+            <PositionChip position={p.position} className="absolute -bottom-1 left-1/2 -translate-x-1/2 shadow" />
+          </span>
+          <span className="min-w-0 flex-1 pt-0.5">
+            <span className="block text-[length:min(1rem,25.5px)] font-semibold leading-tight">{p.name}</span>
+            <ClubLine p={p} free={free} showAge className="mt-1.5" />
+          </span>
+          <RatingBox rating={rating} tier={tier} big />
+        </Link>
+        {market && (
+          <div className="mt-3 flex items-center justify-between gap-3 pl-[68px]">
+            <span className="text-[length:min(1rem,25.5px)] font-semibold tabular-nums">{price}</span>
+            <BuyButton free={free} name={p.name} disabled={!marketOpen} onBuy={onBuy} wide />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
