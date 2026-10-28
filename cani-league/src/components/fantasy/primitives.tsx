@@ -26,7 +26,7 @@ export function PositionChip({ position, className }: { position: string; classN
   return (
     <span
       className={cn(
-        "inline-flex h-[18px] min-w-8 items-center justify-center rounded-[5px] px-1 text-[10px] font-bold leading-none tracking-wide tabular-nums",
+        "inline-flex h-[18px] min-w-8 items-center justify-center rounded-[5px] px-1 text-[12px] font-bold leading-none tracking-wide tabular-nums",
         tone.chip,
         className,
       )}
@@ -77,7 +77,7 @@ export function RatingValue({ player, className }: { player: Parameters<typeof g
       <span className={cn("text-[22px] font-bold tabular-nums tracking-tight", rating >= 88 ? "text-primary" : "text-foreground")}>
         {rating || "–"}
       </span>
-      <span className={cn("mt-1 text-[10px] font-semibold", tier.color)}>{tier.tier}</span>
+      <span className={cn("mt-1 text-[12px] font-semibold", tier.color)}>{tier.tier}</span>
     </span>
   );
 }
@@ -154,9 +154,9 @@ export function StatStrip({ items }: { items: { label: string; value: ReactNode;
       <dl className="flex gap-2 sm:grid sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {items.map((it) => (
           <div key={it.label} className="min-w-[8.5rem] shrink-0 rounded-2xl border border-border/80 bg-card/60 px-3.5 py-3">
-            <dt className="text-[11px] font-medium text-muted-foreground">{it.label}</dt>
+            <dt className="text-[12px] font-medium text-muted-foreground">{it.label}</dt>
             <dd className="mt-1 text-lg font-bold tabular-nums tracking-tight">{it.value}</dd>
-            {it.hint && <dd className="mt-0.5 text-[11px] text-muted-foreground">{it.hint}</dd>}
+            {it.hint && <dd className="mt-0.5 text-[12px] text-muted-foreground">{it.hint}</dd>}
           </div>
         ))}
       </dl>

@@ -151,7 +151,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
           {season && (
             <Badge
               variant="outline"
-              className="border-border bg-white/[0.03] text-[11px] font-medium text-muted-foreground"
+              className="border-border bg-white/[0.03] text-[12px] font-medium text-muted-foreground"
             >
               Temporada {season}
             </Badge>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { arrangeCupTieAction, drawCupsAction, recordCupLegAction } from "@/app/actions/cups";
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { useConfirm } from "@/components/ui/use-confirm";
 import { CUP_LABELS, currentTieOf, planCupMatch, roundName, tieState, type CupTie, type CupTrophy } from "@/lib/cups";
 import { cn } from "@/lib/utils";
+import { NEW_CUP_MATCH_EVENT } from "./NewCupMatchButton";
 
 export type CupTeam = { id: string; name: string; short_name: string | null; logo_url: string | null; primary_color: string | null };
 
@@ -220,10 +221,15 @@ function PickMatchSheet({
   const [away, setAway] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // Mismo nombre que en los botones (el corto), y en ese orden.
+  const shortName = (t: CupTeam) => t.short_name || t.name;
   const alive = [...teams.values()]
     .filter((t) => currentTieOf(ties, t.id))
-    .sort((a, b) => a.name.localeCompare(b.name, "es"));
-  const name = (id: string) => teams.get(id)?.name ?? "Ese equipo";
+    .sort((a, b) => shortName(a).localeCompare(shortName(b), "es"));
+  const name = (id: string) => {
+    const t = teams.get(id);
+    return t ? shortName(t) : "Ese equipo";
+  };
   const plan = home && away ? planCupMatch(ties, home, away, name) : null;
   const rounds = ties.length ? Math.max(...ties.map((t) => t.round)) : 0;
 
@@ -265,7 +271,7 @@ function PickMatchSheet({
             )}
           >
             <Crest team={t} size={22} />
-            <span className="truncate">{t.short_name ?? t.name}</span>
+            <span className="truncate">{shortName(t)}</span>
           </button>
         ))}
       </div>
@@ -279,7 +285,7 @@ function PickMatchSheet({
         <button type="button" onClick={onClose} className="h-11 justify-self-start text-[17px] text-[#0a84ff] active:opacity-60">
           Cancelar
         </button>
-        <DialogTitle className="text-[17px] font-semibold">Apuntar partido</DialogTitle>
+        <DialogTitle className="text-[17px] font-semibold">Nuevo partido</DialogTitle>
         <span />
       </div>
       <DialogDescription className="px-1 text-[15px] text-muted-foreground">
@@ -329,8 +335,14 @@ export function CupBracket({
   const [openId, setOpenId] = useState<string | null>(null);
   const [openLeg, setOpenLeg] = useState<1 | 2 | undefined>(undefined);
   const [picking, setPicking] = useState(false);
-  // Cruce recién preparado desde «Apuntar partido», hasta que llegue el cuadro actualizado.
+  // Cruce recién preparado desde «Nuevo partido», hasta que llegue el cuadro actualizado.
   const [arranged, setArranged] = useState<{ tie: CupTie; leg: 1 | 2 } | null>(null);
+  // El botón «Nuevo partido» vive en la cabecera de la página.
+  useEffect(() => {
+    const open = () => setPicking(true);
+    window.addEventListener(NEW_CUP_MATCH_EVENT, open);
+    return () => window.removeEventListener(NEW_CUP_MATCH_EVENT, open);
+  }, []);
   const [error, setError] = useState<string | null>(null);
   const byId = new Map(teams.map((t) => [t.id, t]));
   const rounds = ties.length ? Math.max(...ties.map((t) => t.round)) : 0;
@@ -340,7 +352,6 @@ export function CupBracket({
   // Cada eliminatoria con los dos equipos ya decididos se convierte en sus partidos (ida y vuelta, o la final).
   const legs: CupLeg[] = ties
     .filter((t) => t.home_team_id && t.away_team_id)
-    .sort((x, y) => x.round - y.round || x.slot - y.slot)
     .flatMap((t) => {
       const st = tieState(t);
       const name = roundName(t.round, rounds);
@@ -353,7 +364,9 @@ export function CupBracket({
         out.push({ tie: t, leg, played, label, needsPenalties: last && st.needsPenalties });
       }
       return out;
-    });
+    })
+    // Por ronda, primero todas las idas y luego todas las vueltas.
+    .sort((x, y) => x.tie.round - y.tie.round || x.leg - y.leg || x.tie.slot - y.tie.slot);
   const waiting = ties.filter((t) => !t.home_team_id || (!t.away_team_id && t.round > 1)).length;
   const closeTie = () => {
     setOpenId(null);
@@ -395,15 +408,6 @@ export function CupBracket({
 
   return (
     <div className="space-y-7">
-      {!champion && (
-        <button
-          type="button"
-          onClick={() => setPicking(true)}
-          className="flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-white text-[17px] font-semibold text-black active:opacity-80"
-        >
-          <Plus className="size-5" aria-hidden /> Apuntar partido
-        </button>
-      )}
       {champion && (
         <div className="flex items-center gap-3 rounded-[22px] bg-card px-4 py-3">
           <Crest team={champion} size={40} />

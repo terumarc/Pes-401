@@ -186,7 +186,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 overflow-hidden">
-                  <span className="flex h-5 min-w-8 items-center justify-center rounded bg-white/[0.08] px-1 font-mono text-[10px] font-bold text-muted-foreground">
+                  <span className="flex h-5 min-w-8 items-center justify-center rounded bg-white/[0.08] px-1 font-mono text-[12px] font-bold text-muted-foreground">
                     {def.shortLabel}
                   </span>
                   <div className="truncate">

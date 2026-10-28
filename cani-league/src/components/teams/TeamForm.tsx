@@ -91,12 +91,12 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6 pt-2">
       {/* TARJETA DE PREVISUALIZACIÓN EN VIVO (LIVE PREVIEW) */}
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground">
+        <div className="flex items-center justify-between text-[12px] font-bold text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <Sparkles className="size-3.5 text-muted-foreground" />
             Vista previa en directo
           </span>
-          <span className="text-[10px] lowercase text-muted-foreground/80">
+          <span className="text-[12px] lowercase text-muted-foreground/80">
             se actualiza al editar
           </span>
         </div>
@@ -112,7 +112,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
             <div className="flex items-center justify-between">
               <Badge
                 variant="outline"
-                className="bg-black/40 text-[10px] font-extrabold text-white/90 border-white/20 backdrop-blur-xs"
+                className="bg-black/40 text-[12px] font-extrabold text-white/90 border-white/20 backdrop-blur-xs"
               >
                 {form.short_name || "TAG"}
               </Badge>
@@ -208,18 +208,18 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
         {/* SELECCIÓN DE COLORES */}
         <div className="space-y-2 rounded-xl border border-border/80 bg-white/[0.02] p-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground">
               <Palette className="size-3.5 text-primary" />
               <span>Colores del Club</span>
             </div>
-            <span className="text-[10px] text-muted-foreground font-mono">
+            <span className="text-[12px] text-muted-foreground font-mono">
               {form.primary_color} · {form.secondary_color}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-1">
             <div className="space-y-1">
-              <Label className="text-[10px] font-semibold text-muted-foreground">
+              <Label className="text-[12px] font-semibold text-muted-foreground">
                 Color Primario
               </Label>
               <div className="flex items-center gap-2">
@@ -243,7 +243,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-[10px] font-semibold text-muted-foreground">
+              <Label className="text-[12px] font-semibold text-muted-foreground">
                 Color Secundario
               </Label>
               <div className="flex items-center gap-2">
@@ -269,7 +269,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
 
           {/* PALETAS RÁPIDAS DE FÚTBOL */}
           <div className="pt-2 border-t border-border/60">
-            <span className="text-[10px] font-semibold text-muted-foreground block mb-1.5">
+            <span className="text-[12px] font-semibold text-muted-foreground block mb-1.5">
               Paletas Clásicas
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -284,7 +284,7 @@ export function TeamForm({ team, onSaved }: TeamFormProps) {
                       secondary_color: preset.secondary,
                     }))
                   }
-                  className="flex items-center gap-1.5 rounded-lg border border-border/80 bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-white/[0.08] hover:text-foreground transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 rounded-lg border border-border/80 bg-white/[0.03] px-2 py-1 text-[12px] font-medium text-muted-foreground hover:bg-white/[0.08] hover:text-foreground transition-all cursor-pointer"
                 >
                   <span className="flex items-center -space-x-1">
                     <span
@@ -353,7 +353,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+      <Label className="flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground">
         {icon}
         <span>{label}</span>
       </Label>

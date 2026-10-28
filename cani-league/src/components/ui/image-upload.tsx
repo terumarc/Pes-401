@@ -163,7 +163,7 @@ export function ImageUpload({
   return (
     <div className={cn("space-y-2.5", className)}>
       {label && (
-        <Label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+        <Label className="text-[12px] font-bold tracking-wider text-muted-foreground uppercase">
           {label}
         </Label>
       )}
@@ -264,7 +264,7 @@ export function ImageUpload({
             )}
           </div>
 
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[12px] text-muted-foreground">
             Elige una foto desde tu PC, arrástrala directamente al recuadro o pega un enlace.
           </p>
         </div>

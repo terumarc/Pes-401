@@ -18,7 +18,8 @@ export const teamSchema = z.object({
         !v ||
         v === "" ||
         /^https?:\/\//i.test(v) ||
-        v.startsWith("data:image/"),
+        v.startsWith("data:image/") ||
+        v.startsWith("/api/logo/"),
       "URL de logo o imagen no válida",
     ),
   primary_color: z.string().min(1),

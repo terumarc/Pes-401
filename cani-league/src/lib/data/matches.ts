@@ -3,6 +3,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { safeCache, invalidateMemCache } from "./cache";
 import type { League, LeagueTableRow, Match, MatchWithTeams, Team } from "@/types";
 import { getLeagueSeason } from "./season";
+import { withLogoUrls } from "@/lib/logo";
 
 // ─── Queries ────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ async function fetchMatchesByLeague(
 
     const { data, error } = await query;
     if (error) throw error;
-    return (data ?? []) as MatchWithTeams[];
+    return withLogoUrls((data ?? []) as MatchWithTeams[]);
 }
 
 export const getMatchesByLeague = safeCache(

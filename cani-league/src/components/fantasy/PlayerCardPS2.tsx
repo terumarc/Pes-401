@@ -81,10 +81,10 @@ export function PlayerCardPS2({
             className="-skew-x-12 border-l-[3px] bg-black/45 px-1.5 py-[1px]"
             style={{ borderColor: stripe }}
           >
-            <span className="block skew-x-12 text-[10px] font-black italic tracking-wide text-white">{player.position}</span>
+            <span className="block skew-x-12 text-[12px] font-black italic tracking-wide text-white">{player.position}</span>
           </span>
           <span className="-skew-x-12 border border-[#ffe680] px-1.5" style={{ background: YELLOW }}>
-            <span className="block skew-x-12 text-[10px] font-black italic text-[#0a1430]">{tier.tier}</span>
+            <span className="block skew-x-12 text-[12px] font-black italic text-[#0a1430]">{tier.tier}</span>
           </span>
         </div>
 
@@ -142,7 +142,7 @@ export function PlayerCardPS2({
             </span>
           </span>
           {price && (
-            <span className="shrink-0 text-[10px] font-black italic tabular-nums text-[#ffd12e]">{price}</span>
+            <span className="shrink-0 text-[12px] font-black italic tabular-nums text-[#ffd12e]">{price}</span>
           )}
         </div>
       </div>

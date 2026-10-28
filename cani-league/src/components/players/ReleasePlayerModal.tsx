@@ -108,7 +108,7 @@ export function ReleasePlayerModal({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h4 className="truncate text-base font-bold">{player.name}</h4>
-                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-extrabold uppercase">
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-[12px] font-extrabold uppercase">
                     {player.position}
                   </span>
                 </div>

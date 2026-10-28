@@ -156,10 +156,10 @@ export function TransferModal({
                                     <h4 className="truncate font-display text-sm font-bold text-foreground">
                                         {player.name}
                                     </h4>
-                                    <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide">
+                                    <span className="rounded bg-muted px-1.5 py-0.5 text-[12px] font-extrabold uppercase tracking-wide">
                                         {player.position}
                                     </span>
-                                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-extrabold ${tierInfo.bgColor} ${tierInfo.color}`}>
+                                    <span className={`rounded px-1.5 py-0.5 text-[12px] font-extrabold ${tierInfo.bgColor} ${tierInfo.color}`}>
                                         T{tierInfo.tier} · {rating}
                                     </span>
                                 </div>
@@ -175,7 +175,7 @@ export function TransferModal({
                                 </p>
                             </div>
                             <div className="text-right shrink-0">
-                                <span className="text-[10px] font-bold text-muted-foreground block">
+                                <span className="text-[12px] font-bold text-muted-foreground block">
                                     {isClausula ? "Cláusula" : "Precio"}
                                 </span>
                                 <BudgetDisplay amount={price} size="sm" className="font-bold text-foreground" />

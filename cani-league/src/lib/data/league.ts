@@ -1,6 +1,7 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { safeCache, invalidateMemCache } from "./cache";
+import { LOGO_ROUTE, withLogoUrls } from "@/lib/logo";
 import { getOrEstimatePesStats } from "@/lib/data/pes_stats";
 import { getPlayerFixedPrice } from "@/lib/players";
 import type {
@@ -43,10 +44,12 @@ async function fetchTeamsByLeague(leagueId: string): Promise<Team[]> {
 
   if (error) throw error;
   // Excluir Agentes Libres y equipos de sistema de la lista de equipos de liga
-  return (data ?? []).filter(
-    (t) =>
-      !t.name.toLowerCase().includes("libre") &&
-      !t.name.toLowerCase().includes("sin equipo")
+  return withLogoUrls(
+    (data ?? []).filter(
+      (t) =>
+        !t.name.toLowerCase().includes("libre") &&
+        !t.name.toLowerCase().includes("sin equipo")
+    ),
   );
 }
 
@@ -83,7 +86,7 @@ async function fetchStandingsWithTeams(leagueId: string): Promise<StandingWithTe
     .order("position", { ascending: true });
 
   if (error) throw error;
-  return (data ?? []) as StandingWithTeam[];
+  return withLogoUrls((data ?? []) as StandingWithTeam[]);
 }
 
 export const getStandingsWithTeams = safeCache(
@@ -174,6 +177,11 @@ export async function updateTeam(
   input: TeamUpdateInput,
 ): Promise<Team> {
   const supabase = await createClient();
+  // Si el formulario devuelve la dirección corta del escudo, es que no ha cambiado: no se toca.
+  if (typeof input.logo_url === "string" && input.logo_url.startsWith(LOGO_ROUTE)) {
+    input = { ...input };
+    delete input.logo_url;
+  }
   const { data, error } = await supabase
     .from("teams")
     .update(input)
@@ -240,7 +248,7 @@ async function fetchAllPlayersInParallel(
     }
   }
 
-  return allPlayers;
+  return withLogoUrls(allPlayers);
 }
 
 let memoryAllPlayers: { data: (Player & { team: Team })[]; expires: number } | null = null;
@@ -292,7 +300,7 @@ export async function getPlayers(options?: {
       .order("overall", { ascending: false, nullsFirst: false });
 
     if (error) throw error;
-    return (data ?? []) as (Player & { team: Team })[];
+    return withLogoUrls((data ?? []) as (Player & { team: Team })[]);
   }
 
   // If requesting all market players, use cached parallel loader

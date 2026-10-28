@@ -347,7 +347,7 @@ function Standings({ ranking }: { ranking: TeamTrophyCabinet[] }) {
   return (
     <Card className={CARD}>
       <h2 className="px-5 pt-5 text-[20px] font-bold tracking-tight">Palmarés</h2>
-      <div className={cn(cols, "mt-3 border-b border-border px-5 pb-2 text-[11px] text-muted-foreground")}>
+      <div className={cn(cols, "mt-3 border-b border-border px-5 pb-2 text-[12px] text-muted-foreground")}>
         <span>#</span>
         <span>Club</span>
         {TROPHIES.map((t) => (
@@ -452,7 +452,7 @@ function PrizesCard({
                 />
                 <span
                   className={cn(
-                    "text-[11px] tabular-nums",
+                    "text-[12px] tabular-nums",
                     value === null ? "text-destructive" : "text-muted-foreground",
                   )}
                 >

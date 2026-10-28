@@ -245,6 +245,27 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .trophy-spin { animation: none; }
+
+  /* «Reducir movimiento» del sistema: sin animaciones de entrada, barras ni transiciones. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Tampoco el «encogerse» de los botones al pulsar. */
+  [class*="active:scale"]:active {
+    scale: none !important;
+  }
+}
+
+/* Foco visible con teclado en todo lo que no tenga ya su propio anillo de foco. */
+:where(a, button, input, select, textarea, summary, [role="button"], [role="tab"], [role="radio"], [tabindex]):focus-visible:not([class*="focus-visible:ring"]):not([class*="focus:ring"]) {
+  outline: 2px solid #0a84ff;
+  outline-offset: 2px;
 }
 
 /* ---------- Sensación de app nativa en móvil ---------- */

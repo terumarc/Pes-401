@@ -59,7 +59,7 @@ export function TeamCard({ team }: TeamCardProps) {
             {rankDelta !== null && (
               <span
                 className={cn(
-                  "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold backdrop-blur-md",
+                  "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[12px] font-bold backdrop-blur-md",
                   rankDelta > 0
                     ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                     : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
@@ -76,7 +76,7 @@ export function TeamCard({ team }: TeamCardProps) {
             )}
           </div>
 
-          <span className="rounded-md bg-black/40 px-2 py-0.5 font-display text-[11px] font-bold tracking-widest text-white/90 uppercase border border-white/10 backdrop-blur-xs">
+          <span className="rounded-md bg-black/40 px-2 py-0.5 font-display text-[12px] font-bold tracking-widest text-white/90 uppercase border border-white/10 backdrop-blur-xs">
             {team.short_name}
           </span>
         </div>
@@ -96,7 +96,7 @@ export function TeamCard({ team }: TeamCardProps) {
 
           {team.avg_overall && (
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-bold text-muted-foreground">
+              <span className="text-[12px] font-bold text-muted-foreground">
                 Media Plantilla
               </span>
               <Badge
@@ -133,7 +133,7 @@ export function TeamCard({ team }: TeamCardProps) {
         {/* GRID DE ESTADÍSTICAS VISUALES */}
         <div className="grid grid-cols-2 gap-2 rounded-xl border border-border/80 bg-white/[0.02] p-3 text-xs">
           <div>
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1 text-[12px] font-semibold text-muted-foreground">
               <Wallet className="size-3 text-primary shrink-0" />
               <span>Presupuesto</span>
             </div>
@@ -143,7 +143,7 @@ export function TeamCard({ team }: TeamCardProps) {
           </div>
 
           <div>
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1 text-[12px] font-semibold text-muted-foreground">
               <Coins className="size-3 text-emerald-400 shrink-0" />
               <span>Valor Plantilla</span>
             </div>
@@ -157,7 +157,7 @@ export function TeamCard({ team }: TeamCardProps) {
           </div>
 
           <div className="col-span-2 border-t border-border/60 pt-2 flex items-center justify-between">
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1 text-[12px] font-semibold text-muted-foreground">
               <Users className="size-3 text-primary shrink-0" />
               <span>Plantilla:</span>
             </div>
@@ -169,7 +169,7 @@ export function TeamCard({ team }: TeamCardProps) {
           {team.top_player && (
             <div className="col-span-2 border-t border-border/60 pt-2">
               <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground shrink-0">
+                <span className="flex items-center gap-1 text-[12px] font-semibold text-muted-foreground shrink-0">
                   <Star className="size-3 text-amber-400" />
                   <span>Estrella:</span>
                 </span>
@@ -213,7 +213,7 @@ export function TeamLogo({
 }) {
   const sizeClass =
     size === "xs"
-      ? "size-7 text-[10px]"
+      ? "size-7 text-[12px]"
       : size === "sm"
       ? "size-9 text-xs"
       : size === "lg"

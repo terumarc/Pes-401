@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { CupBracket } from "@/components/cups/CupBracket";
+import { NewCupMatchButton } from "@/components/cups/NewCupMatchButton";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MATCH_SECTIONS, SegmentedNav } from "@/components/layout/SegmentedNav";
 import { SetupNotice } from "@/components/layout/SetupNotice";
@@ -24,7 +25,7 @@ export default async function CupsPage({ searchParams }: Props) {
 
   return (
     <div className="animate-fade-up pb-12">
-      <PageHeader title="Partidos" />
+      <PageHeader title="Partidos" actions={ties.some((t) => t.trophy === trophy) ? <NewCupMatchButton /> : undefined} />
       <SegmentedNav label="Competiciones" items={MATCH_SECTIONS} current="/cups" />
 
       <div className="-mx-4 mb-5 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0">

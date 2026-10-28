@@ -131,12 +131,12 @@ function TokenFace({ player, team, outOfPlace }: { player: Player; team: Kit; ou
             />
           )}
         </span>
-        <span className="absolute -right-1.5 -top-1 rounded-md bg-primary px-1 text-[11px] font-bold tabular-nums text-primary-foreground shadow">
+        <span className="absolute -right-1.5 -top-1 rounded-md bg-primary px-1 text-[12px] font-bold tabular-nums text-primary-foreground shadow">
           {rating || "–"}
         </span>
       </span>
       <span className="mt-1 w-full overflow-hidden rounded-md bg-background/95 text-center shadow ring-1 ring-black/30">
-        <span className="block truncate px-1 pt-0.5 text-[11px] font-semibold leading-tight">{lastName(player.name)}</span>
+        <span className="block truncate px-1 pt-0.5 text-[12px] font-semibold leading-tight">{lastName(player.name)}</span>
         {outOfPlace ? (
           <span className="block bg-zinc-800 text-[9px] font-bold leading-[14px] text-amber-300" title="Fuera de su posición">
             {player.position} → {outOfPlace}
@@ -230,7 +230,7 @@ function PitchSlot({
           <span className="flex size-12 items-center justify-center rounded-full border-2 border-dashed border-white/35 bg-white/[0.06] text-white/70">
             <Plus className="size-5" aria-hidden />
           </span>
-          <span className="mt-1 rounded-md bg-black/30 px-2 text-[10px] font-semibold leading-5 text-white/70">
+          <span className="mt-1 rounded-md bg-black/30 px-2 text-[12px] font-semibold leading-5 text-white/70">
             {GROUP_LABEL[group]}
           </span>
         </span>

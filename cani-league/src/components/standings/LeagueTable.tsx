@@ -5,74 +5,99 @@ import type { FormResult } from "@/lib/stats";
 import { cn } from "@/lib/utils";
 import type { LeagueTableRow } from "@/types";
 
+const COLUMNS = [
+  { short: "PJ", long: "Partidos jugados", key: "played" },
+  { short: "G", long: "Ganados", key: "won" },
+  { short: "E", long: "Empatados", key: "drawn" },
+  { short: "P", long: "Perdidos", key: "lost" },
+  { short: "GF", long: "Goles a favor", key: "goals_for", wide: true },
+  { short: "GC", long: "Goles en contra", key: "goals_against", wide: true },
+] as const;
+
 /**
  * Clasificación como la del PES: puesto, equipo y las columnas de siempre
  * (PJ, G, E, P, GF, GC, DG, Pts), calculada con los resultados de la temporada.
  * GF y GC se esconden en pantallas estrechas; la DG ya resume los dos.
+ * Lleva los roles de tabla para que VoiceOver la lea por filas y columnas.
  */
 export function LeagueTable({ rows, forms = {} }: { rows: LeagueTableRow[]; forms?: Record<string, FormResult[]> }) {
   const num = "w-7 shrink-0 text-center tabular-nums";
   const wide = "hidden sm:block";
+  const header = (short: string, long: string, className?: string) => (
+    <span key={short} role="columnheader" className={cn(num, className)}>
+      <span aria-hidden>{short}</span>
+      <span className="sr-only">{long}</span>
+    </span>
+  );
 
   return (
     <div>
-      <div className="overflow-hidden rounded-[22px] bg-card">
-        <div
-          role="row"
-          className="flex h-9 items-center gap-1 border-b border-border pl-3 pr-3 text-[12px] font-semibold uppercase text-muted-foreground"
-        >
-          <span className="w-6 shrink-0 text-center">#</span>
-          <span className="min-w-0 flex-1 pl-8">Equipo</span>
-          <span className={num} title="Partidos jugados">PJ</span>
-          <span className={num} title="Ganados">G</span>
-          <span className={num} title="Empatados">E</span>
-          <span className={num} title="Perdidos">P</span>
-          <span className={cn(num, wide)} title="Goles a favor">GF</span>
-          <span className={cn(num, wide)} title="Goles en contra">GC</span>
-          <span className={cn(num, "w-8")} title="Diferencia de goles">DG</span>
-          <span className={cn(num, "w-9 text-foreground")} title="Puntos">Pts</span>
+      <div role="table" aria-label="Clasificación de la liga" className="overflow-hidden rounded-[22px] bg-card">
+        <div role="rowgroup">
+          <div
+            role="row"
+            className="flex h-9 items-center gap-1 border-b border-border pl-3 pr-3 text-[12px] font-semibold uppercase text-muted-foreground"
+          >
+            {header("#", "Puesto", "w-6")}
+            <span role="columnheader" className="min-w-0 flex-1 pl-8">Equipo</span>
+            {COLUMNS.map((c) => header(c.short, c.long, "wide" in c ? wide : undefined))}
+            {header("DG", "Diferencia de goles", "w-8")}
+            {header("Pts", "Puntos", "w-9 text-foreground")}
+          </div>
         </div>
 
-        <ol>
+        <div role="rowgroup">
           {rows.map((r, i) => {
             const pos = i + 1;
+            const first = pos === 1;
+            const last = pos === rows.length && rows.length > 2;
             const form = forms[r.team.id] ?? [];
             return (
-              <li key={r.team.id} className="border-b border-border last:border-b-0">
-                <Link
-                  href={`/teams/${r.team.id}`}
-                  className="flex min-h-[56px] items-center gap-1 pl-3 pr-3 transition-colors active:bg-white/5"
+              <div
+                key={r.team.id}
+                role="row"
+                className="relative flex min-h-[56px] items-center gap-1 border-b border-border pl-3 pr-3 transition-colors last:border-b-0 has-[a:active]:bg-white/5"
+              >
+                <span
+                  role="cell"
+                  className={cn(
+                    "w-6 shrink-0 text-center text-[15px] font-bold tabular-nums",
+                    first ? "text-[#30d158]" : last ? "text-[#ff453a]" : "text-muted-foreground",
+                  )}
                 >
-                  <span
-                    className={cn(
-                      "w-6 shrink-0 text-center text-[15px] font-bold tabular-nums",
-                      pos === 1 ? "text-[#30d158]" : pos === rows.length && rows.length > 2 ? "text-[#ff453a]" : "text-muted-foreground",
-                    )}
-                  >
-                    {pos}
-                  </span>
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <TeamLogo name={r.team.name} logoUrl={r.team.logo_url} color={r.team.primary_color} size="xs" />
-                    <div className="min-w-0">
-                      <p className="truncate text-[15px] font-semibold leading-tight">{r.team.short_name || r.team.name}</p>
-                      <FormDots form={form} className="mt-0.5 hidden scale-90 origin-left min-[400px]:inline-flex" />
-                    </div>
+                  {pos}
+                  {first && <span className="sr-only">, líder</span>}
+                  {last && <span className="sr-only">, último</span>}
+                </span>
+                <div role="cell" className="flex min-w-0 flex-1 items-center gap-2">
+                  <TeamLogo name={r.team.name} logoUrl={r.team.logo_url} color={r.team.primary_color} size="xs" />
+                  <div className="min-w-0">
+                    {/* El enlace cubre toda la fila; el nombre es lo que se lee. */}
+                    <Link
+                      href={`/teams/${r.team.id}`}
+                      className="block truncate text-[15px] font-semibold leading-tight after:absolute after:inset-0 after:content-['']"
+                    >
+                      <span className="sm:hidden">{r.team.short_name || r.team.name}</span>
+                      <span className="hidden sm:inline">{r.team.name}</span>
+                    </Link>
+                    <FormDots form={form} className="mt-0.5 hidden origin-left scale-90 min-[400px]:inline-flex" />
                   </div>
-                  <span className={cn(num, "text-[15px]")}>{r.played}</span>
-                  <span className={cn(num, "text-[15px]")}>{r.won}</span>
-                  <span className={cn(num, "text-[15px]")}>{r.drawn}</span>
-                  <span className={cn(num, "text-[15px]")}>{r.lost}</span>
-                  <span className={cn(num, wide, "text-[15px]")}>{r.goals_for}</span>
-                  <span className={cn(num, wide, "text-[15px]")}>{r.goals_against}</span>
-                  <span className={cn(num, "w-8 text-[15px] text-muted-foreground")}>
-                    {r.goal_diff > 0 ? `+${r.goal_diff}` : r.goal_diff}
+                </div>
+                {COLUMNS.map((c) => (
+                  <span key={c.key} role="cell" className={cn(num, "wide" in c && wide, "text-[15px]")}>
+                    {r[c.key]}
                   </span>
-                  <span className={cn(num, "w-9 text-[17px] font-bold")}>{r.points}</span>
-                </Link>
-              </li>
+                ))}
+                <span role="cell" className={cn(num, "w-8 text-[15px] text-muted-foreground")}>
+                  {r.goal_diff > 0 ? `+${r.goal_diff}` : r.goal_diff < 0 ? `−${-r.goal_diff}` : 0}
+                </span>
+                <span role="cell" className={cn(num, "w-9 text-[17px] font-bold")}>
+                  {r.points}
+                </span>
+              </div>
             );
           })}
-        </ol>
+        </div>
       </div>
       <p className="mt-2 px-4 text-[13px] text-muted-foreground">
         Se ordena sola: puntos, diferencia de goles y goles a favor.
