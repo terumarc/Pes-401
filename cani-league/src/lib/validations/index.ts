@@ -46,7 +46,8 @@ export const playerSchema = z.object({
         !v ||
         v === "" ||
         /^https?:\/\//i.test(v) ||
-        v.startsWith("data:image/"),
+        v.startsWith("data:image/") ||
+        v.startsWith("/api/photo/"),
       "URL de foto no válida",
     ),
   overall: optionalStat,

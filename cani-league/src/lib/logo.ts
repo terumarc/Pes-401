@@ -4,6 +4,8 @@
  * Aquí se cambian por una dirección corta (/api/logo/<id>) que el navegador descarga una vez y guarda.
  */
 export const LOGO_ROUTE = "/api/logo/";
+/** Lo mismo para las fotos de jugador incrustadas. */
+export const PHOTO_ROUTE = "/api/photo/";
 
 /** Huella corta del contenido, para que al cambiar el escudo cambie la dirección y no se vea el viejo. */
 function fingerprint(s: string): string {
@@ -18,7 +20,13 @@ export function logoSrc(teamId: string, logoUrl: string | null | undefined): str
   return `${LOGO_ROUTE}${teamId}?v=${fingerprint(logoUrl)}`;
 }
 
-/** Recorre lo que devuelve una consulta y cambia cada escudo incrustado por su dirección corta. */
+export function photoSrc(playerId: string, photoUrl: string | null | undefined): string | null {
+  if (!photoUrl) return null;
+  if (!photoUrl.startsWith("data:")) return photoUrl;
+  return `${PHOTO_ROUTE}${playerId}?v=${fingerprint(photoUrl)}`;
+}
+
+/** Recorre lo que devuelve una consulta y cambia cada escudo y foto incrustados por su dirección corta. */
 export function withLogoUrls<T>(value: T): T {
   if (Array.isArray(value)) {
     for (const item of value) withLogoUrls(item);
@@ -26,6 +34,9 @@ export function withLogoUrls<T>(value: T): T {
     const obj = value as Record<string, unknown>;
     if (typeof obj.logo_url === "string" && typeof obj.id === "string" && obj.logo_url.startsWith("data:")) {
       obj.logo_url = logoSrc(obj.id, obj.logo_url);
+    }
+    if (typeof obj.photo_url === "string" && typeof obj.id === "string" && obj.photo_url.startsWith("data:")) {
+      obj.photo_url = photoSrc(obj.id, obj.photo_url);
     }
     for (const v of Object.values(obj)) if (v && typeof v === "object") withLogoUrls(v);
   }
