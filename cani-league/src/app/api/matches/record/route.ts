@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { invalidateMemCache } from "@/lib/data/cache";
-import { revalidateTag, revalidatePath } from "next/cache";
-import { applySeasonMultipliers } from "@/lib/data/budget";
-import { saveLeagueMatchGoals, type ScorerInput } from "@/lib/data/goals";
-import { calendarKeyOf, claimSeasonStage, closeSeasonContracts } from "@/lib/data/contracts";
-import { buildLeagueTable } from "@/lib/data/matches";
-import type { Team, MatchWithTeams } from "@/types";
+import { recordLeagueMatch } from "@/lib/data/record-match";
+import { authErrorResponse, requireOneOf } from "@/lib/auth";
+import type { ScorerInput } from "@/lib/data/goals";
 
 export async function POST(request: Request) {
   try {
@@ -20,126 +16,26 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
-
-    // 1. Guardar resultado
-    const { data: updatedMatch, error: updateErr } = await supabase
+    const { data: match } = await supabase
       .from("matches")
-      .update({
-        home_goals: Number(homeGoals),
-        away_goals: Number(awayGoals),
-        played: true,
-        played_at: new Date().toISOString(),
-      })
+      .select("home_team_id, away_team_id")
       .eq("id", matchId)
-      .select("*")
       .single();
+    if (!match) return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
+    await requireOneOf([match.home_team_id, match.away_team_id]);
 
-    if (updateErr || !updatedMatch) {
-      return NextResponse.json(
-        { error: "Error al actualizar el partido: " + (updateErr?.message || "") },
-        { status: 500 },
-      );
-    }
+    const result = await recordLeagueMatch(
+      supabase,
+      matchId,
+      Number(homeGoals),
+      Number(awayGoals),
+      Array.isArray(scorers) ? (scorers as ScorerInput[]) : undefined,
+    );
 
-    // 1b. Goleadores (opcional)
-    if (Array.isArray(scorers)) {
-      await saveLeagueMatchGoals(supabase, updatedMatch, scorers as ScorerInput[]);
-    }
-
-    // 2. Premios por posición: al acabar la ida (mitad de temporada) y al acabar la vuelta. Ganar partidos no da dinero.
-    let seasonStageApplied: "mid" | "end" | null = null;
-    const { data: allLeagueMatches } = await supabase
-      .from("matches")
-      .select(
-        "*, home_team:teams!matches_home_team_id_fkey(id,name,short_name,primary_color,logo_url), away_team:teams!matches_away_team_id_fkey(id,name,short_name,primary_color,logo_url)",
-      )
-      .eq("league_id", updatedMatch.league_id)
-      .eq("season", updatedMatch.season ?? "");
-
-    if (allLeagueMatches && allLeagueMatches.length > 0) {
-      const round1 = allLeagueMatches.filter((m) => m.round === 1);
-      const round2 = allLeagueMatches.filter((m) => m.round === 2);
-
-      const round1Complete = round1.length > 0 && round1.every((m) => m.played);
-      const round2Complete = round2.length > 0 && round2.every((m) => m.played);
-
-      // Si este partido completó la vuelta completa (final de temporada)
-      if (round2Complete) {
-        const { data: leagueTeams } = await supabase
-          .from("teams")
-          .select("*")
-          .eq("league_id", updatedMatch.league_id);
-
-        if (leagueTeams) {
-          const playableTeams = (leagueTeams as Team[]).filter(
-            (t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo")
-          );
-          const table = buildLeagueTable(
-            playableTeams,
-            allLeagueMatches as unknown as MatchWithTeams[],
-          );
-          const standings = table.map((row, idx) => ({
-            team_id: row.team.id,
-            position: idx + 1,
-          }));
-          // Una sola vez por calendario: corregir un resultado después no vuelve a pagar ni cobrar.
-          const calendarKey = calendarKeyOf(allLeagueMatches);
-          if (await claimSeasonStage(supabase, updatedMatch.league_id, calendarKey, "end")) {
-            await applySeasonMultipliers(updatedMatch.league_id, standings, "end");
-            seasonStageApplied = "end";
-          }
-          // Después de cobrar los premios, se pagan sueldos y renovaciones.
-          await closeSeasonContracts(updatedMatch.league_id, calendarKey);
-        }
-      } else if (round1Complete && updatedMatch.round === 1) {
-        // Completó todos los partidos de ida (mitad de temporada)
-        const { data: leagueTeams } = await supabase
-          .from("teams")
-          .select("*")
-          .eq("league_id", updatedMatch.league_id);
-
-        if (leagueTeams) {
-          const playableTeams = (leagueTeams as Team[]).filter(
-            (t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo")
-          );
-          const table = buildLeagueTable(
-            playableTeams,
-            round1 as unknown as MatchWithTeams[],
-          );
-          const standings = table.map((row, idx) => ({
-            team_id: row.team.id,
-            position: idx + 1,
-          }));
-          if (await claimSeasonStage(supabase, updatedMatch.league_id, calendarKeyOf(allLeagueMatches), "mid")) {
-            await applySeasonMultipliers(updatedMatch.league_id, standings, "mid");
-            seasonStageApplied = "mid";
-          }
-        }
-      }
-    }
-
-    // 3. Invalidación de caché
-    invalidateMemCache();
-    try {
-      revalidateTag("matches", "max");
-      revalidateTag("standings", "max");
-      revalidateTag("teams", "max");
-    } catch {}
-
-    try {
-      revalidatePath("/calendar");
-      revalidatePath("/standings");
-      revalidatePath("/league");
-      revalidatePath("/teams");
-      revalidatePath("/finances");
-    } catch {}
-
-    return NextResponse.json({
-      success: true,
-      match: updatedMatch,
-      seasonStageApplied,
-    });
+    return NextResponse.json({ success: true, ...result });
   } catch (err) {
+    const denied = authErrorResponse(err);
+    if (denied) return denied;
     const msg = err instanceof Error ? err.message : "Error al procesar el partido";
     return NextResponse.json({ error: msg }, { status: 500 });
   }

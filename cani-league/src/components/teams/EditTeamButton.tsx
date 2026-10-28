@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { canActFor, useViewer } from "@/components/auth/ViewerProvider";
 import { Pencil } from "lucide-react";
 import { TeamForm } from "@/components/teams/TeamForm";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,9 @@ export function EditTeamButton({
   className,
 }: EditTeamButtonProps) {
   const [open, setOpen] = useState(false);
+  const viewer = useViewer();
+  // Editar el club: su dueño o un admin.
+  if (!canActFor(viewer, team.id)) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

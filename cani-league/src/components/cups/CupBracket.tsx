@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { arrangeCupTieAction, drawCupsAction, recordCupLegAction } from "@/app/actions/cups";
+import { useViewer } from "@/components/auth/ViewerProvider";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useConfirm } from "@/components/ui/use-confirm";
 import { CUP_LABELS, currentTieOf, planCupMatch, roundName, tieState, type CupTie, type CupTrophy } from "@/lib/cups";
@@ -329,6 +330,7 @@ export function CupBracket({
   ties: CupTie[];
   teams: CupTeam[];
 }) {
+  const isAdmin = !!useViewer()?.isAdmin;
   const router = useRouter();
   const [confirm, confirmDialog] = useConfirm();
   const [pending, startTransition] = useTransition();
@@ -393,14 +395,18 @@ export function CupBracket({
         <p className="mx-auto mt-1 max-w-xs text-[15px] text-muted-foreground">
           Entran todos los clubes. Eliminatorias a ida y vuelta y final a un partido.
         </p>
-        <button
-          type="button"
-          onClick={() => draw(true)}
-          disabled={pending}
-          className="mt-5 h-11 rounded-full bg-white px-6 text-[17px] font-semibold text-black disabled:opacity-50"
-        >
-          {pending ? "Sorteando…" : "Sortear las tres copas"}
-        </button>
+        {isAdmin ? (
+          <button
+            type="button"
+            onClick={() => draw(true)}
+            disabled={pending}
+            className="mt-5 h-11 rounded-full bg-white px-6 text-[17px] font-semibold text-black disabled:opacity-50"
+          >
+            {pending ? "Sorteando…" : "Sortear las tres copas"}
+          </button>
+        ) : (
+          <p className="mt-4 text-[13px] text-muted-foreground">El sorteo lo hace un admin.</p>
+        )}
         {error && <p className="mt-3 text-[15px] text-destructive">{error}</p>}
       </div>
     );
@@ -450,7 +456,7 @@ export function CupBracket({
         </p>
       )}
 
-      <div className="px-1">
+      {isAdmin && <div className="px-1">
         <button
           type="button"
           disabled={pending}
@@ -468,7 +474,7 @@ export function CupBracket({
           Volver a sortear esta copa
         </button>
         {error && <p className="mt-2 text-[15px] text-destructive">{error}</p>}
-      </div>
+      </div>}
 
       <Dialog open={!!open} onOpenChange={(o) => !o && closeTie()}>
         {open && (

@@ -89,6 +89,15 @@ export async function applySeasonMultipliers(
       .update({ budget: newBudget })
       .eq("id", team.id);
 
+    // Queda en los movimientos del club y le llega un aviso.
+    await supabase.rpc("log_app_event", {
+      p_kind: "prize_position",
+      p_team: team.id,
+      p_amount: reward,
+      p_title: `${pos}º al acabar la ${stage === "mid" ? "ida" : "temporada"}`,
+      p_payload: { position: pos, stage },
+    });
+
     results.push({
       teamId: team.id,
       oldBudget: team.budget,

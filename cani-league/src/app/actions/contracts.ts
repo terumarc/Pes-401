@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { TIERS } from "@/lib/contracts";
@@ -10,6 +11,7 @@ export async function setContractSalaryAction(leagueId: string, tier: string, pe
   if (!TIERS.includes(tier as TierName)) throw new Error("Nivel no válido.");
   if (!Number.isFinite(percent) || percent < 0 || percent > 100) throw new Error("El sueldo debe estar entre 0 y 100 %.");
   const value = Math.round(percent * 100) / 100;
+  await requireAdmin();
 
   const supabase = await createClient();
   const { error } = await supabase

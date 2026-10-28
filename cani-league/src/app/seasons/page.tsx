@@ -9,6 +9,7 @@ import { suggestNextSeason } from "@/app/actions/seasons";
 import { getPrimaryLeague } from "@/lib/data/league";
 import { getSeasons } from "@/lib/data/stats";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { getViewer } from "@/lib/auth";
 
 const TITLES: [string, string][] = [
   ["league", "Liga"],
@@ -22,7 +23,11 @@ export default async function SeasonsPage() {
   const league = await getPrimaryLeague();
   if (!league) return <p className="text-muted-foreground">No hay liga configurada.</p>;
 
-  const [seasons, suggested] = await Promise.all([getSeasons(league.id), suggestNextSeason(league.season)]);
+  const [seasons, suggested, viewer] = await Promise.all([
+    getSeasons(league.id),
+    suggestNextSeason(league.season),
+    getViewer(),
+  ]);
 
   return (
     <div className="animate-fade-up pb-12">
@@ -32,7 +37,11 @@ export default async function SeasonsPage() {
       <section aria-label="Temporada en curso" className="mb-8 rounded-[22px] bg-card p-4">
         <p className="text-[13px] text-muted-foreground">Temporada en curso</p>
         <p className="mb-4 text-[28px] font-bold tracking-tight">{league.season}</p>
-        <NewSeason leagueId={league.id} current={league.season} suggested={suggested} />
+        {viewer?.isAdmin ? (
+          <NewSeason leagueId={league.id} current={league.season} suggested={suggested} />
+        ) : (
+          <p className="text-[15px] text-muted-foreground">Un admin abre la temporada siguiente cuando acaba esta.</p>
+        )}
       </section>
 
       <h2 className="mb-2 px-1 text-[20px] font-bold tracking-tight">Temporadas anteriores</h2>

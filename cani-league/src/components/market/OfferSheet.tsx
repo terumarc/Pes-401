@@ -6,6 +6,7 @@ import { createOfferAction } from "@/app/actions/offers";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { MoneyInput } from "@/components/finances/MoneyInput";
 import { formatMoney } from "@/lib/format/money";
+import { useViewer } from "@/components/auth/ViewerProvider";
 
 type Club = { id: string; name: string; budget: number };
 type SquadPlayer = { id: string; name: string; position: string; team_id: string };
@@ -23,9 +24,15 @@ export function OfferSheet({
   suggested: number;
 }) {
   const router = useRouter();
-  const buyers = useMemo(() => clubs.filter((c) => c.id !== player.team_id), [clubs, player.team_id]);
+  const viewer = useViewer();
+  // Cada uno oferta con su club; un admin puede ofertar en nombre de cualquiera.
+  const buyers = useMemo(
+    () => clubs.filter((c) => c.id !== player.team_id && (viewer?.isAdmin || c.id === viewer?.teamId)),
+    [clubs, player.team_id, viewer],
+  );
+  const ownBuyer = buyers.find((c) => c.id === viewer?.teamId)?.id ?? "";
   const [open, setOpen] = useState(false);
-  const [buyerId, setBuyerId] = useState("");
+  const [buyerId, setBuyerId] = useState(ownBuyer);
   const [amount, setAmount] = useState(suggested);
   const [swapId, setSwapId] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +67,9 @@ export function OfferSheet({
   const selectCls =
     "h-11 w-full rounded-[10px] bg-input px-3 text-[17px] outline-none focus-visible:ring-2 focus-visible:ring-ring/60";
 
+  // Sin club propio (y sin ser admin), o el jugador ya es suyo: no hay oferta que hacer.
+  if (buyers.length === 0) return null;
+
   return (
     <>
       <button
@@ -91,15 +101,22 @@ export function OfferSheet({
               </DialogDescription>
 
               <label className="mt-5 block">
-                <span className="mb-1.5 block px-1 text-[13px] text-muted-foreground">Club que oferta</span>
-                <select value={buyerId} onChange={(e) => { setBuyerId(e.target.value); setSwapId(""); }} className={selectCls}>
-                  <option value="">Elige un club</option>
-                  {buyers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                <span className="mb-1.5 block px-1 text-[13px] text-muted-foreground">
+                  {viewer?.isAdmin ? "Club que oferta (como admin puedes elegir cualquiera)" : "Club que oferta"}
+                </span>
+                {viewer?.isAdmin ? (
+                  <select value={buyerId} onChange={(e) => { setBuyerId(e.target.value); setSwapId(""); }} className={selectCls}>
+                    <option value="">Elige un club</option>
+                    {buyers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                        {c.id === viewer.teamId ? " (tu club)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className={`${selectCls} flex items-center`}>{buyer?.name}</p>
+                )}
                 {buyer && (
                   <span className={`mt-1.5 block px-1 text-[13px] ${short ? "text-[#ff453a]" : "text-muted-foreground"}`}>
                     Presupuesto: {formatMoney(buyer.budget)}

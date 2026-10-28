@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { authErrorResponse, requireAdmin } from "@/lib/auth";
 import { getLeagueSeason } from "@/lib/data/season";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
       );
     }
 
+    await requireAdmin();
     const supabase = await createClient();
 
     // 1. Borrar los partidos de la temporada en curso (las anteriores se conservan)
@@ -83,6 +85,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, mode });
   } catch (err) {
+    const denied = authErrorResponse(err);
+    if (denied) return denied;
     const msg = err instanceof Error ? err.message : "Error desconocido";
     return NextResponse.json({ error: msg }, { status: 500 });
   }

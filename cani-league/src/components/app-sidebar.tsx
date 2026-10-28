@@ -29,9 +29,13 @@ import {
   Medal,
   Goal,
   History,
+  Activity,
+  UserCog,
 } from "lucide-react"
 
-import { NAV_ITEMS } from "@/constants"
+import { ADMIN_NAV_ITEMS, NAV_ITEMS } from "@/constants"
+import { useViewer } from "@/components/auth/ViewerProvider"
+import { UserMenu } from "@/components/auth/UserMenu"
 
 const ICONS = {
   LayoutDashboard,
@@ -46,18 +50,22 @@ const ICONS = {
   Medal,
   Goal,
   History,
+  Activity,
+  UserCog,
 } as const;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const { setOpenMobile } = useSidebar()
+  const viewer = useViewer()
 
   // Auto-close mobile sidebar on route change
   React.useEffect(() => {
     setOpenMobile(false)
   }, [pathname, setOpenMobile])
 
-  const navMain = NAV_ITEMS.map((item) => {
+  const items = viewer?.isAdmin ? [...NAV_ITEMS, ...ADMIN_NAV_ITEMS] : NAV_ITEMS;
+  const navMain = items.map((item) => {
     const Icon = ICONS[item.icon as keyof typeof ICONS] || Trophy;
     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
     return {
@@ -95,9 +103,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <p className="px-2 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-          PES 6 · Cani Patch
-        </p>
+        <UserMenu />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

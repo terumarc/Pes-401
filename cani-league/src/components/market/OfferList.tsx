@@ -8,12 +8,15 @@ import { acceptOfferAction, cancelOfferAction, rejectOfferAction } from "@/app/a
 import { useConfirm } from "@/components/ui/use-confirm";
 import { formatMoney } from "@/lib/format/money";
 import { cn } from "@/lib/utils";
+import { canActFor, useViewer } from "@/components/auth/ViewerProvider";
 
 export type OfferView = {
   id: string;
   status: "pending" | "accepted" | "rejected" | "cancelled";
   playerId: string;
   playerName: string;
+  buyerId: string;
+  sellerId: string;
   buyerName: string;
   sellerName: string;
   amount: number;
@@ -36,6 +39,7 @@ function what(o: OfferView) {
 /** Lista de ofertas: las pendientes con Aceptar / Rechazar / Retirar y las últimas resueltas. */
 export function OfferList({ offers, marketOpen, hidePlayer = false }: { offers: OfferView[]; marketOpen: boolean; hidePlayer?: boolean }) {
   const router = useRouter();
+  const viewer = useViewer();
   const [confirm, confirmDialog] = useConfirm();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<{ id: string; msg: string } | null>(null);
@@ -100,33 +104,43 @@ export function OfferList({ offers, marketOpen, hidePlayer = false }: { offers: 
                   Decide {o.sellerName} · {o.date}
                 </p>
                 {error?.id === o.id && <p className="mt-2 text-[15px] text-destructive">{error.msg}</p>}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    disabled={!marketOpen || busy === o.id}
-                    onClick={() => accept(o)}
-                    className="h-9 rounded-full bg-[#30d158] px-4 text-[15px] font-semibold text-black disabled:opacity-40"
-                  >
-                    {busy === o.id ? "…" : "Aceptar"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy === o.id}
-                    onClick={() => run(o.id, () => rejectOfferAction(o.id))}
-                    className="h-9 rounded-full bg-secondary px-4 text-[15px] font-semibold text-[#ff453a] disabled:opacity-40"
-                  >
-                    Rechazar
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy === o.id}
-                    onClick={() => run(o.id, () => cancelOfferAction(o.id))}
-                    className="h-9 rounded-full px-3 text-[15px] text-[#0a84ff] disabled:opacity-40"
-                  >
-                    Retirar
-                  </button>
-                </div>
-                {!marketOpen && <p className="mt-2 text-[13px] text-muted-foreground">Se podrá aceptar cuando abra el mercado.</p>}
+                {(canActFor(viewer, o.sellerId) || canActFor(viewer, o.buyerId)) && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {canActFor(viewer, o.sellerId) && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={!marketOpen || busy === o.id}
+                          onClick={() => accept(o)}
+                          className="h-9 rounded-full bg-[#30d158] px-4 text-[15px] font-semibold text-black disabled:opacity-40"
+                        >
+                          {busy === o.id ? "…" : "Aceptar"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy === o.id}
+                          onClick={() => run(o.id, () => rejectOfferAction(o.id))}
+                          className="h-9 rounded-full bg-secondary px-4 text-[15px] font-semibold text-[#ff453a] disabled:opacity-40"
+                        >
+                          Rechazar
+                        </button>
+                      </>
+                    )}
+                    {canActFor(viewer, o.buyerId) && (
+                      <button
+                        type="button"
+                        disabled={busy === o.id}
+                        onClick={() => run(o.id, () => cancelOfferAction(o.id))}
+                        className="h-9 rounded-full px-3 text-[15px] text-[#0a84ff] disabled:opacity-40"
+                      >
+                        Retirar
+                      </button>
+                    )}
+                  </div>
+                )}
+                {!marketOpen && canActFor(viewer, o.sellerId) && (
+                  <p className="mt-2 text-[13px] text-muted-foreground">Se podrá aceptar cuando abra el mercado.</p>
+                )}
               </li>
             ))}
           </ul>

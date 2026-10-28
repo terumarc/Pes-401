@@ -27,7 +27,11 @@ export const NAV_ITEMS = [
   { href: "/players", label: "Jugadores", icon: "Users" },
   { href: "/market", label: "Mercado", icon: "Store" },
   { href: "/finances", label: "Finanzas", icon: "Wallet" },
+  { href: "/movimientos", label: "Movimientos", icon: "Activity" },
 ] as const;
+
+/** Solo para admins. */
+export const ADMIN_NAV_ITEMS = [{ href: "/usuarios", label: "Usuarios", icon: "UserCog" }] as const;
 
 export const STAT_LABELS = [
   { key: "speed", label: "Velocidad" },

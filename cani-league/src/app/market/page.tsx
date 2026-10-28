@@ -53,6 +53,8 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
     status: o.status,
     playerId: o.player_id,
     playerName: playerName(o.player_id) ?? "Jugador",
+    buyerId: o.buyer_team_id,
+    sellerId: o.seller_team_id,
     buyerName: teamName(o.buyer_team_id),
     sellerName: teamName(o.seller_team_id),
     amount: o.amount,

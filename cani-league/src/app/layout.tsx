@@ -1,13 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { RouteProgressBar } from "@/components/layout/RouteProgressBar";
-import { MobileTabBar } from "@/components/layout/MobileTabBar";
-import { CommandMenu } from "@/components/layout/CommandMenu";
+import { AppChrome } from "@/components/layout/AppChrome";
+import { ViewerProvider, type ClientViewer } from "@/components/auth/ViewerProvider";
+import { getViewer } from "@/lib/auth";
 import { getPrimaryLeague } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import "./globals.css";
@@ -41,33 +40,36 @@ async function getSeason(): Promise<string | null> {
   }
 }
 
+async function getClientViewer(): Promise<ClientViewer | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const viewer = await getViewer();
+    if (!viewer) return null;
+    return {
+      userId: viewer.userId,
+      memberId: viewer.memberId,
+      name: viewer.name,
+      email: viewer.email,
+      teamId: viewer.teamId,
+      teamName: viewer.teamName,
+      isAdmin: viewer.isAdmin,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const season = await getSeason();
+  const [season, viewer] = await Promise.all([getSeason(), getClientViewer()]);
   return (
     <html lang="es" className={cn("dark antialiased", "font-sans", geist.variable)} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <RouteProgressBar />
         <TooltipProvider>
-            <SidebarProvider
-              style={
-                {
-                  "--sidebar-width": "calc(var(--spacing) * 72)",
-                  "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-              }
-            >
-              <AppSidebar variant="inset" />
-              <SidebarInset>
-                <SiteHeader season={season} />
-                <div className="flex flex-1 flex-col">
-                  <main className="flex-1 w-full overflow-x-hidden px-4 pt-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:p-4 lg:p-6">
-                    <div className="w-full">{children}</div>
-                  </main>
-                </div>
-              </SidebarInset>
-            </SidebarProvider>
-            <MobileTabBar />
-            <CommandMenu />
+          <ViewerProvider viewer={viewer}>
+            <AppChrome season={season}>{children}</AppChrome>
+          </ViewerProvider>
+          <Toaster theme="dark" position="top-center" />
         </TooltipProvider>
       </body>
     </html>

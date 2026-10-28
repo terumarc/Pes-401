@@ -4,6 +4,7 @@ import { invalidatePlayersCache } from "@/lib/data/league";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getMarketWindow } from "@/lib/data/season";
+import { authErrorResponse, requireTeam } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -46,6 +47,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    await requireTeam(player.team_id);
 
     const window = await getMarketWindow(supabase, player.team?.league_id);
     if (!window.open) {
@@ -147,6 +150,8 @@ export async function POST(request: Request) {
       releaseFee,
     });
   } catch (err) {
+    const denied = authErrorResponse(err);
+    if (denied) return denied;
     const message = err instanceof Error ? err.message : "Error interno del servidor";
     return NextResponse.json({ error: message }, { status: 500 });
   }

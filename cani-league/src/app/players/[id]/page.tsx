@@ -18,6 +18,7 @@ import { getPlayerSalary, getSeasonsLeft, DEFAULT_SALARY_PERCENT } from "@/lib/c
 import { getSalaryTable } from "@/lib/data/contracts";
 import { getGoals } from "@/lib/data/stats";
 import { createStaticClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { getViewer } from "@/lib/auth";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -58,7 +59,7 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
   const team = player.team;
   const freeAgent = !team || /libre|sin equipo/i.test(team.name);
 
-  if (edit === "1") {
+  if (edit === "1" && (await getViewer())?.isAdmin) {
     return (
       <div className="animate-fade-up mx-auto max-w-2xl pb-12">
         <h1 className="mb-5 text-[34px] font-bold tracking-tight">Editar jugador</h1>
@@ -79,6 +80,8 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
     status: o.status,
     playerId: o.player_id,
     playerName: player.name,
+    buyerId: o.buyer_team_id,
+    sellerId: o.seller_team_id,
     buyerName: teamName(o.buyer_team_id),
     sellerName: teamName(o.seller_team_id),
     amount: o.amount,

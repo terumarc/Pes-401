@@ -9,6 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      members: {
+        Row: {
+          id: string;
+          email: string;
+          display_name: string;
+          team_id: string | null;
+          is_admin: boolean;
+          user_id: string | null;
+          created_at: string;
+          last_seen_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          display_name: string;
+          team_id?: string | null;
+          is_admin?: boolean;
+          user_id?: string | null;
+          created_at?: string;
+          last_seen_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          display_name?: string;
+          team_id?: string | null;
+          is_admin?: boolean;
+          user_id?: string | null;
+          created_at?: string;
+          last_seen_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "members_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      activity_log: {
+        Row: {
+          id: string;
+          created_at: string;
+          league_id: string | null;
+          kind: string;
+          team_id: string | null;
+          other_team_id: string | null;
+          player_id: string | null;
+          title: string;
+          amount: number | null;
+          payload: Json;
+          actor_id: string | null;
+          actor_name: string | null;
+          as_admin: boolean;
+          private: boolean;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          league_id?: string | null;
+          kind: string;
+          team_id?: string | null;
+          other_team_id?: string | null;
+          player_id?: string | null;
+          title: string;
+          amount?: number | null;
+          payload?: Json;
+          actor_id?: string | null;
+          actor_name?: string | null;
+          as_admin?: boolean;
+          private?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["activity_log"]["Insert"]>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          created_at: string;
+          user_id: string;
+          activity_id: string | null;
+          kind: string | null;
+          title: string;
+          body: string | null;
+          link: string | null;
+          read_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          user_id: string;
+          activity_id?: string | null;
+          kind?: string | null;
+          title: string;
+          body?: string | null;
+          link?: string | null;
+          read_at?: string | null;
+        };
+        Update: {
+          read_at?: string | null;
+        };
+        Relationships: [];
+      };
       match_goals: {
         Row: {
           id: string;
@@ -624,7 +729,26 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      is_invited: { Args: { p_email: string }; Returns: boolean };
+      is_member: { Args: Record<string, never>; Returns: boolean };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      my_team_id: { Args: Record<string, never>; Returns: string | null };
+      claim_membership: {
+        Args: Record<string, never>;
+        Returns: Database["public"]["Tables"]["members"]["Row"] | null;
+      };
+      log_app_event: {
+        Args: {
+          p_kind: string;
+          p_team: string | null;
+          p_amount: number | null;
+          p_title: string;
+          p_payload?: Json;
+        };
+        Returns: string;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

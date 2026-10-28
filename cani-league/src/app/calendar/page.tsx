@@ -12,11 +12,12 @@ import type { GoalRow } from "@/lib/stats";
 import { getMatchesByLeague, buildLeagueTable } from "@/lib/data/matches";
 import { getLeagueSquads, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { getViewer } from "@/lib/auth";
 
 export default async function CalendarPage() {
   if (!isSupabaseConfigured()) return <SetupNotice />;
 
-  const league = await getPrimaryLeague();
+  const [league, viewer] = await Promise.all([getPrimaryLeague(), getViewer()]);
   if (!league) return <p className="text-muted-foreground">No hay liga configurada.</p>;
 
   const [allTeams, rawMatches, players, goals, history] = await Promise.all([
@@ -71,13 +72,15 @@ export default async function CalendarPage() {
         </div>
       )}
 
-      <section aria-label="Calendario" className="mt-10 space-y-2">
-        <h2 className="text-[13px] font-medium text-muted-foreground">Calendario</h2>
-        <div className="flex flex-wrap gap-2">
-          <GenerateFixturesBtn leagueId={league.id} teams={teams} hasExisting={matches.length > 0} />
-          <ResetLeagueBtn leagueId={league.id} />
-        </div>
-      </section>
+      {viewer?.isAdmin && (
+        <section aria-label="Calendario" className="mt-10 space-y-2">
+          <h2 className="text-[13px] font-medium text-muted-foreground">Calendario · admin</h2>
+          <div className="flex flex-wrap gap-2">
+            <GenerateFixturesBtn leagueId={league.id} teams={teams} hasExisting={matches.length > 0} />
+            <ResetLeagueBtn leagueId={league.id} />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

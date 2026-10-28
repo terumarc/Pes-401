@@ -1,6 +1,7 @@
 "use client";
 
 import { useConfirm } from "@/components/ui/use-confirm";
+import { canActFor, useViewer } from "@/components/auth/ViewerProvider";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -72,6 +73,10 @@ export function PlayerActions({
   const [moving, setMoving] = useState(false);
   const [releasing, setReleasing] = useState(false);
   const [teamId, setTeamId] = useState(currentTeamId);
+  const viewer = useViewer();
+  const isAdmin = !!viewer?.isAdmin;
+  // Poner en el mercado o liberar: su club o un admin. Editar, mover y borrar: solo admins.
+  const owns = canActFor(viewer, currentTeamId);
 
   const currentTeam = teams.find((t) => t.id === currentTeamId);
   const isFreeAgent =
@@ -126,6 +131,7 @@ export function PlayerActions({
           </Button>
         )}
 
+        {(isAdmin || owns) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -137,6 +143,8 @@ export function PlayerActions({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52 p-1.5">
+            {isAdmin && (
+            <>
             <DropdownMenuItem asChild>
               <Link
                 href={`/players/${playerId}?edit=1`}
@@ -154,7 +162,10 @@ export function PlayerActions({
               <ArrowRightLeft className="size-4 text-muted-foreground" />
               <span>Mover de equipo</span>
             </DropdownMenuItem>
+            </>
+            )}
 
+            {owns && (
             <DropdownMenuItem
               onClick={toggleMarket}
               className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px]"
@@ -162,8 +173,9 @@ export function PlayerActions({
               <Store className="size-4 text-muted-foreground" />
               <span>{availableInMarket ? "Retirar de mercado" : "Poner en mercado"}</span>
             </DropdownMenuItem>
+            )}
 
-            {!isFreeAgent && (
+            {!isFreeAgent && owns && (
               <DropdownMenuItem
                 onClick={() => setReleasing(true)}
                 className="flex items-center gap-2.5 cursor-pointer py-2 text-[15px]"
@@ -173,6 +185,8 @@ export function PlayerActions({
               </DropdownMenuItem>
             )}
 
+            {isAdmin && (
+            <>
             <DropdownMenuSeparator className="my-1 bg-white/[0.08]" />
 
             <DropdownMenuItem
@@ -182,8 +196,11 @@ export function PlayerActions({
               <Trash2 className="size-3.5" />
               <span>Eliminar jugador</span>
             </DropdownMenuItem>
+            </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
 
         {/* Modal de Mover Equipo Accesible */}
         <Dialog open={moving} onOpenChange={setMoving}>
@@ -250,8 +267,12 @@ export function PlayerActions({
   }
 
   // --- MODO DEFAULT (Para la página de perfil /players/[id]) ---
+  if (!isAdmin && !owns) return null;
+
   return (
     <div className="grid grid-cols-2 gap-2">
+      {isAdmin && (
+      <>
       <Button
         variant="outline"
         className="px-4 gap-2  font-medium"
@@ -272,6 +293,8 @@ export function PlayerActions({
         <ArrowRightLeft className="size-4 text-muted-foreground" />
         Mover de equipo
       </Button>
+      </>
+      )}
 
       <MarketToggle
         playerId={playerId}
@@ -291,6 +314,7 @@ export function PlayerActions({
         </Button>
       )}
 
+      {isAdmin && (
       <Button
         type="button"
         variant="destructive"
@@ -306,6 +330,7 @@ export function PlayerActions({
         )}
         Eliminar
       </Button>
+      )}
 
       {/* Modal de Mover Equipo Accesible */}
       <Dialog open={moving} onOpenChange={setMoving}>

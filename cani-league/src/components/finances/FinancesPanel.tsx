@@ -10,6 +10,7 @@ import { updateTeamClient } from "@/lib/data/mutations";
 import { formatMoney, getBudgetPercentage } from "@/lib/format/money";
 import { calculatePositionReward } from "@/lib/economy";
 import { cn } from "@/lib/utils";
+import { useViewer } from "@/components/auth/ViewerProvider";
 import type { TeamWithStanding } from "@/types";
 
 const STEPS = [-10_000_000, -1_000_000, 1_000_000, 10_000_000];
@@ -101,6 +102,8 @@ export function FinancesPanel({
   extra?: ReactNode;
 }) {
   const [editId, setEditId] = useState<string | null>(null);
+  // Cambiar presupuestos a mano: solo admins.
+  const canEdit = !!useViewer()?.isAdmin;
   const [showRewards, setShowRewards] = useState(false);
   const sorted = [...teams].sort((a, b) => (b.budget || 0) - (a.budget || 0));
   const maxBudget = Math.max(...teams.map((t) => t.budget || 0), 1);
@@ -119,9 +122,10 @@ export function FinancesPanel({
               <li key={t.id} className="group">
                 <button
                   type="button"
-                  onClick={() => setEditId(t.id)}
-                  className="flex min-h-[68px] w-full items-center gap-3 pl-4 text-left transition-colors active:bg-white/[0.06]"
-                  aria-label={`${t.name}: ${formatMoney(t.budget || 0)}. Cambiar presupuesto`}
+                  onClick={() => canEdit && setEditId(t.id)}
+                  disabled={!canEdit}
+                  className="flex min-h-[68px] w-full items-center gap-3 pl-4 text-left transition-colors active:bg-white/[0.06] disabled:active:bg-transparent"
+                  aria-label={canEdit ? `${t.name}: ${formatMoney(t.budget || 0)}. Cambiar presupuesto` : `${t.name}: ${formatMoney(t.budget || 0)}`}
                 >
                   <TeamLogo name={t.name} logoUrl={t.logo_url} color={t.primary_color} size="sm" />
                   <div className="flex min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border py-3 pr-3 group-last:border-b-0">
@@ -140,7 +144,7 @@ export function FinancesPanel({
                         </p>
                       )}
                     </div>
-                    <ChevronRight className="size-4 shrink-0 text-[#5a5a5f]" aria-hidden />
+                    {canEdit && <ChevronRight className="size-4 shrink-0 text-[#5a5a5f]" aria-hidden />}
                   </div>
                 </button>
               </li>

@@ -1,7 +1,6 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { getLeagueSeason } from "./season";
 import type {
   Match,
   Player,
@@ -130,68 +129,36 @@ export async function updateTeamClient(
   id: string,
   input: TeamUpdateInput,
 ): Promise<Team> {
-  try {
-    const { updateTeamAction } = await import("@/app/actions/teams");
-    return await updateTeamAction(id, input);
-  } catch {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("teams")
-      .update(input)
-      .eq("id", id)
-      .select("*")
-      .single();
-
-    if (error) throw error;
-    await triggerServerRevalidate("teams");
-    return data;
-  }
+  const { updateTeamAction } = await import("@/app/actions/teams");
+  return updateTeamAction(id, input);
 }
 
 export async function createPlayerClient(
   input: PlayerCreateInput,
 ): Promise<Player> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("players")
-    .insert(input)
-    .select("*")
-    .single();
-
-  if (error) throw error;
-  await triggerServerRevalidate("players");
-  return data;
+  const { createPlayerAction } = await import("@/app/actions/players");
+  return createPlayerAction(input);
 }
 
 export async function updatePlayerClient(
   id: string,
   input: PlayerUpdateInput,
 ): Promise<Player> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("players")
-    .update(input)
-    .eq("id", id)
-    .select("*")
-    .single();
-
-  if (error) throw error;
-  await triggerServerRevalidate("players");
-  return data;
+  const { updatePlayerAction } = await import("@/app/actions/players");
+  return updatePlayerAction(id, input);
 }
 
 export async function deletePlayerClient(id: string): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase.from("players").delete().eq("id", id);
-  if (error) throw error;
-  await triggerServerRevalidate("players");
+  const { deletePlayerAction } = await import("@/app/actions/players");
+  await deletePlayerAction(id);
 }
 
 export async function setPlayerMarketClient(
   id: string,
   available: boolean,
 ): Promise<Player> {
-  return updatePlayerClient(id, { available_in_market: available });
+  const { setPlayerMarketAction } = await import("@/app/actions/players");
+  return setPlayerMarketAction(id, available);
 }
 
 export async function reorderStandingsClient(
@@ -253,35 +220,14 @@ export async function recordMatchResultClient(
   awayGoals: number,
   scorers?: { teamId: string; playerId: string | null; playerName: string; goals: number }[],
 ): Promise<Match> {
-  try {
-    const res = await fetch("/api/matches/record", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ matchId, homeGoals, awayGoals, scorers }),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.match) return json.match as Match;
-    }
-  } catch {}
-
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("matches")
-    .update({
-      home_goals: homeGoals,
-      away_goals: awayGoals,
-      played: true,
-      played_at: new Date().toISOString(),
-    })
-    .eq("id", matchId)
-    .select("*")
-    .single();
-  if (error) throw error;
-
-  await triggerServerRevalidate();
-
-  return data as Match;
+  const res = await fetch("/api/matches/record", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ matchId, homeGoals, awayGoals, scorers }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json.match) throw new Error(json.error || "No se pudo guardar el resultado.");
+  return json.match as Match;
 }
 
 export async function recordDirectMatchClient(
@@ -292,100 +238,13 @@ export async function recordDirectMatchClient(
   awayGoals: number,
   preferredMatchId?: string,
 ): Promise<Match> {
-  const supabase = createClient();
-
-  if (preferredMatchId) {
-    return recordMatchResultClient(preferredMatchId, homeGoals, awayGoals);
-  }
-
-  // Solo se buscan partidos de la temporada en curso.
-  const season = await getLeagueSeason(supabase, leagueId);
-
-  // 1. Buscar si hay partido pendiente con este orden exacto (local/visitante)
-  const { data: exactMatch } = await supabase
-    .from("matches")
-    .select("*")
-    .eq("league_id", leagueId)
-    .eq("season", season)
-    .eq("home_team_id", homeTeamId)
-    .eq("away_team_id", awayTeamId)
-    .eq("played", false)
-    .order("matchday", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (exactMatch) {
-    return recordMatchResultClient(exactMatch.id, homeGoals, awayGoals);
-  }
-
-  // 2. Buscar si hay partido pendiente invertido
-  const { data: reverseMatch } = await supabase
-    .from("matches")
-    .select("*")
-    .eq("league_id", leagueId)
-    .eq("season", season)
-    .eq("home_team_id", awayTeamId)
-    .eq("away_team_id", homeTeamId)
-    .eq("played", false)
-    .order("matchday", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (reverseMatch) {
-    const { data: updatedMatch, error: updateErr } = await supabase
-      .from("matches")
-      .update({
-        home_team_id: homeTeamId,
-        away_team_id: awayTeamId,
-        home_goals: homeGoals,
-        away_goals: awayGoals,
-        played: true,
-        played_at: new Date().toISOString(),
-      })
-      .eq("id", reverseMatch.id)
-      .select("*")
-      .single();
-
-    if (updateErr) throw updateErr;
-    await triggerServerRevalidate();
-    return updatedMatch as Match;
-  }
-
-  // 3. Si no hay fixture previo, crear y guardar el partido jugado
-  const { data: newMatch, error: insertErr } = await supabase
-    .from("matches")
-    .insert({
-      league_id: leagueId,
-      season,
-      home_team_id: homeTeamId,
-      away_team_id: awayTeamId,
-      matchday: 99,
-      round: 1,
-      home_goals: homeGoals,
-      away_goals: awayGoals,
-      played: true,
-      played_at: new Date().toISOString(),
-    })
-    .select("*")
-    .single();
-
-  if (insertErr) throw insertErr;
-  await triggerServerRevalidate();
-  return newMatch as Match;
+  const { recordDirectMatchAction } = await import("@/app/actions/matches");
+  return recordDirectMatchAction(leagueId, homeTeamId, awayTeamId, homeGoals, awayGoals, preferredMatchId);
 }
 
 export async function resetMatchResultClient(matchId: string): Promise<Match> {
-  const supabase = createClient();
-  await supabase.from("match_goals").delete().eq("match_id", matchId);
-  const { data, error } = await supabase
-    .from("matches")
-    .update({ home_goals: null, away_goals: null, played: false, played_at: null })
-    .eq("id", matchId)
-    .select("*")
-    .single();
-  if (error) throw error;
-  await triggerServerRevalidate("matches");
-  return data as Match;
+  const { resetMatchResultAction } = await import("@/app/actions/matches");
+  return resetMatchResultAction(matchId);
 }
 
 export async function generateFixturesClient(

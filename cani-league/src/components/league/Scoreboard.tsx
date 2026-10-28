@@ -8,6 +8,7 @@ import { recordMatchResultClient, resetMatchResultClient } from "@/lib/data/muta
 import { cn } from "@/lib/utils";
 import type { MatchWithTeams } from "@/types";
 import { headToHead, type GoalRow, type MatchLite } from "@/lib/stats";
+import { canActFor, useViewer } from "@/components/auth/ViewerProvider";
 
 export type Roster = { id: string; name: string }[];
 type Extras = {
@@ -138,6 +139,9 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
   }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const viewer = useViewer();
+  // Apuntar o corregir el resultado: los dos clubes del partido o un admin.
+  const canRecord = canActFor(viewer, match.home_team.id) || canActFor(viewer, match.away_team.id);
 
   async function run(fn: () => Promise<unknown>) {
     setBusy(true);
@@ -201,7 +205,13 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
 
       {error && <p className="mt-4 text-center text-sm text-destructive">{error}</p>}
 
-      <div className="mt-7 space-y-2">
+      {!canRecord && (
+        <p className="mt-6 text-center text-[13px] text-muted-foreground">
+          Solo pueden apuntar este partido {match.home_team.name}, {match.away_team.name} o un admin.
+        </p>
+      )}
+
+      {canRecord && <div className="mt-7 space-y-2">
         <button
           type="button"
           disabled={busy}
@@ -220,7 +230,7 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
             Borrar resultado
           </button>
         )}
-      </div>
+      </div>}
     </DialogContent>
   );
 }

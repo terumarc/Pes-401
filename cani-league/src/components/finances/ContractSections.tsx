@@ -6,6 +6,7 @@ import { TIERS, type SalaryTable } from "@/lib/contracts";
 import { formatMoney } from "@/lib/format/money";
 import { TIER_CONTRACT_DURATIONS, TIER_FIXED_PRICES, TIER_RENEWAL_PERCENTAGES } from "@/lib/players";
 import type { ContractEvent } from "@/lib/data/contracts";
+import { useViewer } from "@/components/auth/ViewerProvider";
 
 function short(v: number) {
   if (v >= 1_000_000) {
@@ -17,6 +18,7 @@ function short(v: number) {
 
 /** Sueldo por temporada de cada nivel, editable. */
 export function SalariesEditor({ leagueId, initial }: { leagueId: string; initial: SalaryTable }) {
+  const canEdit = !!useViewer()?.isAdmin;
   const [saved, setSaved] = useState(initial);
   const [draft, setDraft] = useState<Record<string, string>>(() =>
     Object.fromEntries(TIERS.map((t) => [t, String(initial[t])])),
@@ -78,6 +80,7 @@ export function SalariesEditor({ leagueId, initial }: { leagueId: string; initia
                 <span className="sr-only">Sueldo de nivel {t} en % del precio</span>
                 <input
                   inputMode="decimal"
+                  readOnly={!canEdit}
                   value={draft[t]}
                   aria-invalid={pct === null || undefined}
                   onChange={(e) => {
@@ -99,14 +102,14 @@ export function SalariesEditor({ leagueId, initial }: { leagueId: string; initia
               ? "Escribe un porcentaje entre 0 y 100."
               : "% del precio del jugador. Se cobra al acabar cada temporada; si el club no puede pagar, el jugador queda libre.")}
         </p>
-        <button
+        {canEdit && <button
           type="button"
           onClick={save}
           disabled={pending || invalid || !dirty}
           className="h-11 shrink-0 rounded-full bg-white px-5 text-[15px] font-semibold text-black disabled:opacity-40"
         >
           {pending ? "Guardando…" : "Guardar"}
-        </button>
+        </button>}
       </div>
     </section>
   );

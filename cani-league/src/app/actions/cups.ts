@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { changeTeamTrophyAction } from "@/app/actions/trophies";
+import { applyTrophyChange } from "@/lib/data/trophy-change";
+import { requireAdmin, requireOneOf } from "@/lib/auth";
 import {
   CUP_TROPHIES,
   firstRoundPairs,
@@ -30,6 +31,7 @@ function revalidateCups() {
  * Borra los cuadros que hubiera de esta temporada.
  */
 export async function drawCupsAction(leagueId: string, only?: CupTrophy): Promise<void> {
+  await requireAdmin();
   const supabase = await createClient();
   const { data: league } = await supabase.from("leagues").select("season").eq("id", leagueId).single();
   if (!league) throw new Error("Liga no encontrada.");
@@ -84,8 +86,8 @@ async function resolveTie(tieId: string): Promise<void> {
 
   if (t.is_final) {
     // Campeón: suma el título (y su premio). Si se corrige el resultado, se le quita al anterior.
-    if (previousWinner) await changeTeamTrophyAction(previousWinner, t.trophy, -1);
-    if (winner) await changeTeamTrophyAction(winner, t.trophy, 1);
+    if (previousWinner) await applyTrophyChange(previousWinner, t.trophy, -1);
+    if (winner) await applyTrophyChange(winner, t.trophy, 1);
     return;
   }
 
@@ -110,6 +112,9 @@ export async function recordCupLegAction(
 ): Promise<void> {
   const clean = (n: number | null) => (n == null ? null : Math.max(0, Math.min(30, Math.trunc(n))));
   const supabase = await createClient();
+  const { data: current } = await supabase.from("cup_ties").select("home_team_id, away_team_id").eq("id", tieId).single();
+  if (!current) throw new Error("Cruce no encontrado.");
+  await requireOneOf([current.home_team_id, current.away_team_id]);
   const patch =
     leg === 1
       ? { leg1_home_goals: clean(homeGoals), leg1_away_goals: clean(awayGoals), penalty_winner_id: penaltyWinnerId }
@@ -130,6 +135,7 @@ export async function arrangeCupTieAction(
   homeId: string,
   awayId: string,
 ): Promise<{ tie: CupTie; leg: 1 | 2 }> {
+  await requireOneOf([homeId, awayId]);
   const supabase = await createClient();
   const { data: league } = await supabase.from("leagues").select("season").eq("id", leagueId).single();
   if (!league) throw new Error("Liga no encontrada.");

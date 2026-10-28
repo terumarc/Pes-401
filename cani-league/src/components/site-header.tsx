@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { CommandMenuButton } from "@/components/layout/CommandMenu";
 import { isRootScreen } from "@/components/layout/MobileTabBar";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/auth/NotificationBell";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 const ROUTE_LABELS: Record<string, { title: string; parent?: string }> = {
   "/calendar": { title: "Partidos", parent: "Competición" },
@@ -22,6 +24,8 @@ const ROUTE_LABELS: Record<string, { title: string; parent?: string }> = {
   "/players": { title: "Jugadores", parent: "Base de datos" },
   "/market": { title: "Mercado", parent: "Transferencias" },
   "/finances": { title: "Finanzas", parent: "Economía" },
+  "/movimientos": { title: "Movimientos", parent: "Liga" },
+  "/usuarios": { title: "Usuarios", parent: "Admin" },
 };
 
 /** Pantallas de detalle: a qué listado pertenecen. */
@@ -110,7 +114,10 @@ export function SiteHeader({ season }: { season?: string | null }) {
         >
           {currentRoute.title}
         </p>
-        <div aria-hidden />
+        <div className="flex items-center justify-end">
+          <NotificationBell />
+          <UserMenu compact />
+        </div>
       </div>
 
       {/* ---------- Escritorio ---------- */}
@@ -147,6 +154,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <NotificationBell />
           <CommandMenuButton />
           {season && (
             <Badge

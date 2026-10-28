@@ -30,6 +30,7 @@ import { TeamLogo } from "@/components/teams/TeamCard";
 import { recordDirectMatchClient } from "@/lib/data/mutations";
 import { cn } from "@/lib/utils";
 import type { MatchWithTeams, Team } from "@/types";
+import { canActFor, useViewer } from "@/components/auth/ViewerProvider";
 
 type QuickMatchModalProps = {
   leagueId: string;
@@ -46,7 +47,10 @@ export function QuickMatchModal({
 }: QuickMatchModalProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [homeTeamId, setHomeTeamId] = useState<string>("");
+  const viewer = useViewer();
+  // Sin ser admin, uno de los dos equipos es el tuyo: se elige de entrada como local.
+  const ownTeam = !viewer?.isAdmin && viewer?.teamId ? viewer.teamId : "";
+  const [homeTeamId, setHomeTeamId] = useState<string>(ownTeam);
   const [awayTeamId, setAwayTeamId] = useState<string>("");
   const [homeGoals, setHomeGoals] = useState<number>(0);
   const [awayGoals, setAwayGoals] = useState<number>(0);
@@ -101,7 +105,7 @@ export function QuickMatchModal({
   }, [homeTeamId, awayTeamId, playedMatches]);
 
   function resetSelection() {
-    setHomeTeamId("");
+    setHomeTeamId(ownTeam);
     setAwayTeamId("");
     setHomeGoals(0);
     setAwayGoals(0);
@@ -126,6 +130,10 @@ export function QuickMatchModal({
     }
     if (homeTeamId === awayTeamId) {
       setError("Un equipo no puede jugar contra sí mismo.");
+      return;
+    }
+    if (!canActFor(viewer, homeTeamId) && !canActFor(viewer, awayTeamId)) {
+      setError("Solo puedes apuntar partidos de tu club.");
       return;
     }
 

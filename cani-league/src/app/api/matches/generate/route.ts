@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { authErrorResponse, requireAdmin } from "@/lib/auth";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
 import type { Team, Match } from "@/types";
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
       );
     }
 
+    await requireAdmin();
     const supabase = await createClient();
 
     // 1. Obtener solo los equipos reales de la liga (excluyendo Agentes Libres / Sin equipo)
@@ -152,6 +154,8 @@ export async function POST(request: Request) {
       teamsCount: validTeams.length,
     });
   } catch (err) {
+    const denied = authErrorResponse(err);
+    if (denied) return denied;
     const msg = err instanceof Error ? err.message : "Error desconocido";
     return NextResponse.json({ error: msg }, { status: 500 });
   }

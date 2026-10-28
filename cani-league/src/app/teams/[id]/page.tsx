@@ -15,6 +15,9 @@ import { getGoals } from "@/lib/data/stats";
 import { getMatchesByLeague } from "@/lib/data/matches";
 import { teamForm } from "@/lib/stats";
 import { FormDots } from "@/components/league/FormDots";
+import { ActivityList } from "@/components/activity/ActivityList";
+import { getActivity } from "@/lib/data/activity";
+import { getViewer } from "@/lib/auth";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -35,11 +38,13 @@ export default async function TeamDetailPage({ params }: Props) {
   if (!team) notFound();
 
   const league = await getPrimaryLeague();
-  const [players, teams, goals, matches] = await Promise.all([
+  const [players, teams, goals, matches, viewer, activity] = await Promise.all([
     getPlayers({ teamId: team.id }),
     league ? getTeamsByLeague(league.id) : Promise.resolve([]),
     league ? getGoals(league.id, league.season) : Promise.resolve([]),
     league ? getMatchesByLeague(league.id).catch(() => []) : Promise.resolve([]),
+    getViewer(),
+    getActivity({ teamId: team.id, limit: 5 }),
   ]);
   const goalsByPlayer: Record<string, number> = {};
   for (const g of goals) if (g.player_id && g.team_id === team.id) goalsByPlayer[g.player_id] = (goalsByPlayer[g.player_id] ?? 0) + g.goals;
@@ -81,19 +86,33 @@ export default async function TeamDetailPage({ params }: Props) {
             ))}
           </dl>
 
-          <div className="mt-4 flex w-full max-w-md gap-2">
-            <Button asChild variant="secondary" className="flex-1 gap-1.5">
-              <Link href={`/players?new=1&team=${team.id}`}>
-                <UserPlus className="size-4" aria-hidden />
-                Añadir jugador
-              </Link>
-            </Button>
+          <div className="mt-4 flex w-full max-w-md gap-2 empty:hidden">
+            {viewer?.isAdmin && (
+              <Button asChild variant="secondary" className="flex-1 gap-1.5">
+                <Link href={`/players?new=1&team=${team.id}`}>
+                  <UserPlus className="size-4" aria-hidden />
+                  Añadir jugador
+                </Link>
+              </Button>
+            )}
             <EditTeamButton team={team} className="flex-1" />
           </div>
         </div>
       </header>
 
       <ClubSections team={team} players={players} teams={teams} goals={goalsByPlayer} />
+
+      <section aria-labelledby="club-activity" className="mt-10">
+        <div className="mb-2 flex items-baseline justify-between px-1">
+          <h2 id="club-activity" className="text-[20px] font-bold tracking-tight">
+            Últimos movimientos
+          </h2>
+          <Link href={`/movimientos?club=${team.id}`} className="text-[15px] text-[#0a84ff] active:opacity-50">
+            Ver todos
+          </Link>
+        </div>
+        <ActivityList rows={activity} teamId={team.id} />
+      </section>
     </div>
   );
 }

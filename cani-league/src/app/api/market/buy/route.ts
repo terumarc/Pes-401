@@ -4,6 +4,7 @@ import { invalidatePlayersCache } from "@/lib/data/league";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getMarketWindow } from "@/lib/data/season";
+import { authErrorResponse, requireTeam } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
       );
     }
 
+    await requireTeam(buyerTeamId);
     const supabase = await createClient();
 
     // 1. Obtener jugador y su equipo actual
@@ -182,6 +184,8 @@ export async function POST(request: Request) {
       type,
     });
   } catch (err) {
+    const denied = authErrorResponse(err);
+    if (denied) return denied;
     const message = err instanceof Error ? err.message : "Error interno del servidor";
     return NextResponse.json({ error: message }, { status: 500 });
   }

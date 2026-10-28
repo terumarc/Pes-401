@@ -11,6 +11,7 @@ import { Plus } from "lucide-react";
 
 import { getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { getViewer } from "@/lib/auth";
 
 type Props = {
   searchParams: Promise<{
@@ -32,27 +33,31 @@ export default async function PlayersPage({ searchParams }: Props) {
     return <p className="text-muted-foreground">No hay liga configurada.</p>;
   }
 
-  const [players, teams] = await Promise.all([
+  const [players, teams, viewer] = await Promise.all([
     getPlayers(),
     getTeamsByLeague(league.id),
+    getViewer(),
   ]);
+  const isAdmin = !!viewer?.isAdmin;
 
   return (
     <div className="animate-fade-up pb-12">
       <PageHeader
         title="Jugadores"
         actions={
-          <Button asChild variant="secondary" className="gap-1.5">
-            <Link href="/players?new=1">
-              <Plus className="size-[18px]" strokeWidth={2.4} aria-hidden /> Nuevo jugador
-            </Link>
-          </Button>
+          isAdmin ? (
+            <Button asChild variant="secondary" className="gap-1.5">
+              <Link href="/players?new=1">
+                <Plus className="size-[18px]" strokeWidth={2.4} aria-hidden /> Nuevo jugador
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 
       <PlayersPageClient
         teams={teams}
-        showForm={params.new === "1"}
+        showForm={isAdmin && params.new === "1"}
         defaultTeamId={params.team}
       />
 

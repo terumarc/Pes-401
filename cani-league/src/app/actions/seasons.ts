@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { invalidateMemCache } from "@/lib/data/cache";
@@ -29,6 +30,7 @@ export async function suggestNextSeason(current: string): Promise<string> {
  * Los partidos anteriores se conservan para el historial.
  */
 export async function startNewSeasonAction(leagueId: string, nextSeason: string): Promise<void> {
+  await requireAdmin();
   const label = nextSeason.trim();
   if (!label) throw new Error("Escribe el nombre de la nueva temporada.");
 

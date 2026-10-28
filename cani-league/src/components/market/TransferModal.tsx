@@ -24,6 +24,7 @@ import { PlayerAvatar } from "@/components/players/PlayerCard";
 import { getPlayerTier, getPlayerEffectiveRating } from "@/lib/players";
 import { formatMoney } from "@/lib/format/money";
 import type { Player, Team } from "@/types";
+import { useViewer } from "@/components/auth/ViewerProvider";
 
 type TransferModalProps = {
     player: Player & { team?: Pick<Team, "id" | "name"> | null };
@@ -44,7 +45,9 @@ export function TransferModal({
 }: TransferModalProps) {
     const router = useRouter();
     const [, startTransition] = useTransition();
-    const [buyerTeamId, setBuyerTeamId] = useState<string>("");
+    const viewer = useViewer();
+    const ownTeamId = viewer?.teamId && viewer.teamId !== player.team_id ? viewer.teamId : "";
+    const [buyerTeamId, setBuyerTeamId] = useState<string>(ownTeamId);
     const [status, setStatus] = useState<Status>("idle");
     const [errorMsg, setErrorMsg] = useState("");
 
@@ -55,11 +58,13 @@ export function TransferModal({
             : player.transfer_price;
 
     // Equipos disponibles (excluye el equipo actual del jugador y equipos de agentes libres)
+    // Cada uno ficha para su club; un admin puede fichar para cualquiera.
     const availableTeams = teams.filter(
         (t) =>
             t.id !== player.team_id &&
             !t.name.toLowerCase().includes("libre") &&
-            !t.name.toLowerCase().includes("sin equipo")
+            !t.name.toLowerCase().includes("sin equipo") &&
+            (viewer?.isAdmin || t.id === viewer?.teamId)
     );
     const selectedBuyer = teams.find((t) => t.id === buyerTeamId);
     const canAfford = selectedBuyer != null && selectedBuyer.budget >= price;
@@ -97,7 +102,7 @@ export function TransferModal({
     function handleClose(open: boolean) {
         if (!open) {
             setStatus("idle");
-            setBuyerTeamId("");
+            setBuyerTeamId(ownTeamId);
             setErrorMsg("");
         }
         onOpenChange(open);

@@ -9,6 +9,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { PixelTrophy } from "@/components/trophies/PixelTrophy";
 import { changeTeamTrophyAction, setTrophyPrizeAction } from "@/app/actions/trophies";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { useViewer } from "@/components/auth/ViewerProvider";
 import { TROPHIES } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { TeamTrophyCabinet, TrophyCounts, TrophyType } from "@/types";
@@ -57,6 +58,8 @@ export function TrophyRoom({
   const [prizes, setPrizes] = useState(initialPrizes);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [pending, startTransition] = useTransition();
+  // Sumar o quitar títulos y fijar premios: solo admins.
+  const isAdmin = !!useViewer()?.isAdmin;
 
   const ranking = useMemo(() => sortByTotal(cabinets), [cabinets]);
 
@@ -128,21 +131,26 @@ export function TrophyRoom({
               prize={prizes[t.key]}
               cabinets={cabinets}
               disabled={pending}
+              canEdit={isAdmin}
               onRemove={(teamId) => changeTitles(teamId, t.key, -1)}
             />
           ))}
         </div>
       </Card>
 
-      <AddTitle
-        cabinets={ranking}
-        prizes={prizes}
-        pending={pending}
-        feedback={feedback}
-        onAdd={(teamId, trophy) => changeTitles(teamId, trophy, 1)}
-      />
+      {isAdmin && (
+        <>
+          <AddTitle
+            cabinets={ranking}
+            prizes={prizes}
+            pending={pending}
+            feedback={feedback}
+            onAdd={(teamId, trophy) => changeTitles(teamId, trophy, 1)}
+          />
 
-      <PrizesCard prizes={prizes} onSave={savePrizes} />
+          <PrizesCard prizes={prizes} onSave={savePrizes} />
+        </>
+      )}
 
       <Standings ranking={ranking} />
     </div>
@@ -158,6 +166,7 @@ function TrophyColumn({
   prize,
   cabinets,
   disabled,
+  canEdit,
   onRemove,
 }: {
   index: number;
@@ -166,6 +175,7 @@ function TrophyColumn({
   prize: number;
   cabinets: TeamTrophyCabinet[];
   disabled: boolean;
+  canEdit: boolean;
   onRemove: (teamId: string) => void;
 }) {
   const winners = cabinets
@@ -227,7 +237,7 @@ function TrophyColumn({
                 />
                 <span className="min-w-0 flex-1 text-[15px] leading-tight">{c.team.name}</span>
                 <span className="shrink-0 text-[15px] font-semibold tabular-nums">×{c.trophies[type]}</span>
-                <Button
+                {canEdit && <Button
                   variant="ghost"
                   size="icon-xs"
                   aria-label={`Quitar un título de ${label} a ${c.team.name}`}
@@ -237,7 +247,7 @@ function TrophyColumn({
                   className="text-muted-foreground opacity-60 hover:text-destructive focus-visible:opacity-100 sm:opacity-0 sm:group-hover/row:opacity-100"
                 >
                   <Minus />
-                </Button>
+                </Button>}
               </li>
             ))}
           </ul>

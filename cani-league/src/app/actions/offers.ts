@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { invalidatePlayersCache } from "@/lib/data/league";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { getMarketWindow } from "@/lib/data/season";
+import { requireTeam } from "@/lib/auth";
 
 const isSystemTeam = (name: string | null | undefined) => /libre|sin equipo/i.test(name ?? "");
 
@@ -31,6 +32,7 @@ export type OfferInput = {
 /** Un club ofrece dinero (y si quiere, un jugador suyo) por un jugador de otro club. */
 export async function createOfferAction(input: OfferInput): Promise<void> {
   const amount = Math.max(0, Math.round(Number(input.amount) || 0));
+  await requireTeam(input.buyerTeamId);
   const supabase = await createClient();
 
   const { data: player } = await supabase.from("players").select("id, name, team_id, team:teams(id, name, league_id)").eq("id", input.playerId).single();
@@ -81,13 +83,26 @@ async function closeOffer(offerId: string, status: "rejected" | "cancelled") {
   refresh();
 }
 
+async function offerTeams(offerId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("transfer_offers")
+    .select("buyer_team_id, seller_team_id")
+    .eq("id", offerId)
+    .single();
+  if (!data) throw new Error("Oferta no encontrada.");
+  return data;
+}
+
 /** El dueño del jugador rechaza la oferta. */
 export async function rejectOfferAction(offerId: string): Promise<void> {
+  await requireTeam((await offerTeams(offerId)).seller_team_id);
   await closeOffer(offerId, "rejected");
 }
 
 /** El club que ofertó la retira. */
 export async function cancelOfferAction(offerId: string): Promise<void> {
+  await requireTeam((await offerTeams(offerId)).buyer_team_id);
   await closeOffer(offerId, "cancelled");
 }
 
@@ -100,6 +115,7 @@ export async function acceptOfferAction(offerId: string): Promise<void> {
   const supabase = await createClient();
   const { data: offer } = await supabase.from("transfer_offers").select("*").eq("id", offerId).single();
   if (!offer || offer.status !== "pending") throw new Error("Esta oferta ya no está pendiente.");
+  await requireTeam(offer.seller_team_id);
 
   const window = await getMarketWindow(supabase, offer.league_id);
   if (!window.open) throw new Error(`Mercado cerrado. ${window.reason}`);
