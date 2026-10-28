@@ -316,57 +316,67 @@ function HeadToHeadBlock({ match, extras }: { match: MatchWithTeams; extras: Ext
   );
 }
 
-/** Marcador por jornadas: selector de jornada arriba y una tarjeta por partido. */
+/** Partidos de la ida y de la vuelta, cada fase con todos sus partidos juntos: primero los que faltan por jugar. */
 export function Scoreboard({ matches, records, extras }: { matches: MatchWithTeams[]; records: Record<string, string>; extras: Extras }) {
-  const matchdays = useMemo(
-    () => Array.from(new Set(matches.map((m) => m.matchday))).sort((a, b) => a - b),
-    [matches],
+  const byRound = useMemo(() => {
+    const order = (x: MatchWithTeams, y: MatchWithTeams) => x.matchday - y.matchday;
+    return {
+      1: matches.filter((m) => m.round !== 2).sort(order),
+      2: matches.filter((m) => m.round === 2).sort(order),
+    } as const;
+  }, [matches]);
+  // Por defecto, la ida si aún le quedan partidos; si no, la vuelta.
+  const [round, setRound] = useState<1 | 2>(
+    byRound[1].some((m) => !m.played) || !byRound[2].length ? 1 : 2,
   );
-  // Por defecto, la primera jornada con partidos pendientes (o la última si ya está todo jugado).
-  const firstPending = matchdays.find((d) => matches.some((m) => m.matchday === d && !m.played));
-  const [day, setDay] = useState<number>(firstPending ?? matchdays[matchdays.length - 1] ?? 1);
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const list = matches.filter((m) => m.matchday === day);
+  const list = byRound[round];
+  const pending = list.filter((m) => !m.played);
+  const played = list.filter((m) => m.played);
   const open = matches.find((m) => m.id === openId) ?? null;
-  const phase = list[0]?.round === 2 ? "Vuelta" : "Ida";
+
+  const group = (title: string, items: MatchWithTeams[]) =>
+    items.length > 0 && (
+      <section aria-label={title} className="space-y-3">
+        <h2 className="px-1 text-[20px] font-bold tracking-tight">
+          {title} <span className="text-muted-foreground tabular-nums">{items.length}</span>
+        </h2>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {items.map((m) => (
+            <ScoreCard key={m.id} match={m} records={records} onOpen={() => setOpenId(m.id)} />
+          ))}
+        </div>
+      </section>
+    );
 
   return (
-    <section aria-label="Partidos por jornada" className="space-y-4">
-      <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0">
-        <div role="tablist" aria-label="Jornada" className="flex w-max gap-2">
-          {matchdays.map((d) => {
-            const done = matches.filter((m) => m.matchday === d).every((m) => m.played);
-            const active = d === day;
-            return (
-              <button
-                key={d}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setDay(d)}
-                className={cn(
-                  // 36 px a la vista; el área táctil llega a 44 px con el pseudo-elemento.
-                  "relative h-9 min-w-[3.25rem] rounded-full px-3.5 after:absolute after:inset-x-0 after:-inset-y-1 after:content-[''] text-[15px] font-semibold tabular-nums transition-colors",
-                  active ? "bg-white text-black" : done ? "bg-card text-muted-foreground" : "bg-card text-foreground",
-                )}
-              >
-                J{d}
-              </button>
-            );
-          })}
-        </div>
+    <section aria-label="Partidos de liga" className="space-y-6">
+      <div role="tablist" aria-label="Fase" className="flex h-9 w-full rounded-[9px] bg-input p-[2px] sm:max-w-xs">
+        {([1, 2] as const).map((r) => {
+          const all = byRound[r];
+          const done = all.filter((m) => m.played).length;
+          return (
+            <button
+              key={r}
+              type="button"
+              role="tab"
+              aria-selected={round === r}
+              onClick={() => setRound(r)}
+              className={cn(
+                "flex-1 rounded-[7px] text-[13px] font-semibold tabular-nums transition-colors",
+                round === r ? "bg-[#636366] text-white" : "text-[#ebebf5]/60",
+              )}
+            >
+              {r === 1 ? "Ida" : "Vuelta"} · {done}/{all.length}
+            </button>
+          );
+        })}
       </div>
 
-      <h2 className="text-[22px] font-bold tracking-tight">
-        Jornada {day} <span className="text-muted-foreground">· {phase}</span>
-      </h2>
-
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {list.map((m) => (
-          <ScoreCard key={m.id} match={m} records={records} onOpen={() => setOpenId(m.id)} />
-        ))}
-      </div>
+      {list.length === 0 && <p className="px-1 text-[15px] text-muted-foreground">No hay partidos en esta fase.</p>}
+      {group("Por jugar", pending)}
+      {group("Jugados", played)}
 
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpenId(null)}>
         {open && <ResultSheet key={open.id} match={open} extras={extras} onClose={() => setOpenId(null)} />}
