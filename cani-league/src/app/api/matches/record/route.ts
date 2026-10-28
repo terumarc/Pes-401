@@ -46,8 +46,8 @@ export async function POST(request: Request) {
       await saveLeagueMatchGoals(supabase, updatedMatch, scorers as ScorerInput[]);
     }
 
-    // 2. Fin de temporada: el dinero de la liga solo se cobra al acabar la vuelta.
-    let seasonStageApplied: "end" | null = null;
+    // 2. Premios por posición: al acabar la ida (mitad de temporada) y al acabar la vuelta. Ganar partidos no da dinero.
+    let seasonStageApplied: "mid" | "end" | null = null;
     const { data: allLeagueMatches } = await supabase
       .from("matches")
       .select(
@@ -57,8 +57,10 @@ export async function POST(request: Request) {
       .eq("season", updatedMatch.season ?? "");
 
     if (allLeagueMatches && allLeagueMatches.length > 0) {
+      const round1 = allLeagueMatches.filter((m) => m.round === 1);
       const round2 = allLeagueMatches.filter((m) => m.round === 2);
 
+      const round1Complete = round1.length > 0 && round1.every((m) => m.played);
       const round2Complete = round2.length > 0 && round2.every((m) => m.played);
 
       // Si este partido completó la vuelta completa (final de temporada)
@@ -88,6 +90,30 @@ export async function POST(request: Request) {
           }
           // Después de cobrar los premios, se pagan sueldos y renovaciones.
           await closeSeasonContracts(updatedMatch.league_id, calendarKey);
+        }
+      } else if (round1Complete && updatedMatch.round === 1) {
+        // Completó todos los partidos de ida (mitad de temporada)
+        const { data: leagueTeams } = await supabase
+          .from("teams")
+          .select("*")
+          .eq("league_id", updatedMatch.league_id);
+
+        if (leagueTeams) {
+          const playableTeams = (leagueTeams as Team[]).filter(
+            (t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo")
+          );
+          const table = buildLeagueTable(
+            playableTeams,
+            round1 as unknown as MatchWithTeams[],
+          );
+          const standings = table.map((row, idx) => ({
+            team_id: row.team.id,
+            position: idx + 1,
+          }));
+          if (await claimSeasonStage(supabase, updatedMatch.league_id, calendarKeyOf(allLeagueMatches), "mid")) {
+            await applySeasonMultipliers(updatedMatch.league_id, standings, "mid");
+            seasonStageApplied = "mid";
+          }
         }
       }
     }

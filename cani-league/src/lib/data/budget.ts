@@ -55,7 +55,7 @@ export async function initTeamBudgets(leagueId: string): Promise<void> {
 
 /**
  * Aplica las inyecciones económicas de posición a los presupuestos de los equipos según la clasificación.
- * Se aplica solo al acabar la temporada (todos los partidos de vuelta jugados).
+ * Se aplica a mitad de temporada (tras disputar todos los partidos de ida) y al final (todos los de vuelta).
  * El 1º clasificado recibe 25M y se incrementa en +5M por puesto hasta el último.
  */
 export async function applySeasonMultipliers(

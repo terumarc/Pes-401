@@ -8,7 +8,7 @@ export const ECONOMY_CONFIG = {
   STARTING_BUDGET_MIN: 50_000_000,
   STARTING_BUDGET_MAX: 50_000_000,
   
-  // Premio por posición en la liga (se cobra solo al acabar la temporada)
+  // Premio por posición en la liga (se cobra al acabar la ida y al acabar la vuelta)
   POSITION_REWARDS: {
     BASE: 25_000_000,
     INCREMENT: 5_000_000,
