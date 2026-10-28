@@ -20,53 +20,45 @@ function Crest({ team, size = 28 }: { team?: CupTeam; size?: number }) {
   return <span className="shrink-0 rounded-full" style={{ width: size, height: size, background: team.primary_color ?? "#3a3a3c" }} aria-hidden />;
 }
 
-function TieCard({ tie, teams, onOpen }: { tie: CupTie; teams: Map<string, CupTeam>; onOpen: () => void }) {
-  const st = tieState(tie);
-  const home = tie.home_team_id ? teams.get(tie.home_team_id) : undefined;
-  const away = tie.away_team_id ? teams.get(tie.away_team_id) : undefined;
-  const bye = !!home && !tie.away_team_id && tie.round === 1;
-  const ready = !!home && !!away;
-  const legs = (side: "home" | "away") =>
-    st.legs === 1
-      ? [side === "home" ? tie.leg1_home_goals : tie.leg1_away_goals]
-      : [side === "home" ? tie.leg1_home_goals : tie.leg1_away_goals, side === "home" ? tie.leg2_home_goals : tie.leg2_away_goals];
+/** Un partido de copa (ida, vuelta o final) con el mismo aspecto que los de Partidos. */
+type CupLeg = { tie: CupTie; leg: 1 | 2; played: boolean; label: string; needsPenalties: boolean };
 
-  const row = (team: CupTeam | undefined, side: "home" | "away") => {
-    const won = st.winner && team && st.winner === team.id;
-    const lost = st.winner && team && st.winner !== team.id;
-    return (
-      <div className={cn("flex min-h-11 items-center gap-3", lost && "text-muted-foreground")}>
-        <Crest team={team} />
-        <span className={cn("min-w-0 flex-1 truncate text-[17px]", won && "font-semibold")}>
-          {team?.name ?? (bye && side === "away" ? "Pasa directo" : "Por decidir")}
-        </span>
-        {!bye &&
-          legs(side).map((g, i) => (
-            <span key={i} className="w-6 text-center text-[17px] tabular-nums text-muted-foreground">
-              {g ?? "–"}
-            </span>
-          ))}
-        {st.legs === 2 && !bye && (
-          <span className="w-7 text-right text-[17px] font-bold tabular-nums">{side === "home" ? st.aggHome ?? "" : st.aggAway ?? ""}</span>
-        )}
-      </div>
-    );
-  };
-
+function LegCard({ item, teams, onOpen }: { item: CupLeg; teams: Map<string, CupTeam>; onOpen: () => void }) {
+  const { tie, leg } = item;
+  // En la vuelta juega en casa el segundo equipo; los goles se guardan desde el punto de vista del primero.
+  const homeId = leg === 2 ? tie.away_team_id! : tie.home_team_id!;
+  const awayId = leg === 2 ? tie.home_team_id! : tie.away_team_id!;
+  const h = leg === 1 ? tie.leg1_home_goals : tie.leg2_away_goals;
+  const a = leg === 1 ? tie.leg1_away_goals : tie.leg2_home_goals;
+  const home = teams.get(homeId);
+  const away = teams.get(awayId);
+  const side = (team?: CupTeam) => (
+    <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
+      <Crest team={team} size={48} />
+      <p className="max-w-full truncate text-[15px] font-semibold leading-tight">{team?.short_name || team?.name || "—"}</p>
+    </div>
+  );
   return (
     <button
       type="button"
-      disabled={!ready}
       onClick={onOpen}
-      className="w-full min-w-0 rounded-[22px] bg-card px-4 py-2 text-left transition-transform active:scale-[0.99] disabled:active:scale-100"
+      className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-[22px] bg-card px-3 py-4 text-left transition-transform duration-150 active:scale-[0.98]"
+      aria-label={`${item.label}: ${home?.name ?? ""} contra ${away?.name ?? ""}${item.played ? `, ${h} a ${a}` : ", pendiente"}`}
     >
-      {row(home, "home")}
-      <div className="ml-10 border-t border-border" />
-      {row(away, "away")}
-      {st.needsPenalties && <p className="pb-1 text-[13px] text-[#ff9f0a]">Empate en el global: elige quién pasa en los penaltis.</p>}
-      {st.winner && tie.penalty_winner_id === st.winner && !bye && (
-        <p className="pb-1 text-[13px] text-muted-foreground">Pasa {teams.get(st.winner)?.name} en los penaltis.</p>
-      )}
+      {side(home)}
+      <div className="flex min-w-[6.5rem] flex-col items-center">
+        {item.played ? (
+          <p className="flex items-baseline gap-3 text-[34px] font-bold leading-none tabular-nums tracking-tight">
+            <span className={cn((h ?? 0) < (a ?? 0) && "text-muted-foreground")}>{h}</span>
+            <span className={cn((a ?? 0) < (h ?? 0) && "text-muted-foreground")}>{a}</span>
+          </p>
+        ) : (
+          <p className="text-[17px] font-semibold text-muted-foreground">vs</p>
+        )}
+        <p className="mt-1.5 text-center text-[12px] font-medium text-muted-foreground">{item.label}</p>
+        {item.needsPenalties && <p className="mt-0.5 text-[12px] font-medium text-[#ff9f0a]">Faltan penaltis</p>}
+      </div>
+      {side(away)}
     </button>
   );
 }
@@ -335,6 +327,7 @@ export function CupBracket({
   const [confirm, confirmDialog] = useConfirm();
   const [pending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [openLeg, setOpenLeg] = useState<1 | 2 | undefined>(undefined);
   const [picking, setPicking] = useState(false);
   // Cruce recién preparado desde «Apuntar partido», hasta que llegue el cuadro actualizado.
   const [arranged, setArranged] = useState<{ tie: CupTie; leg: 1 | 2 } | null>(null);
@@ -344,8 +337,27 @@ export function CupBracket({
   const final = ties.find((t) => t.is_final);
   const champion = final?.winner_team_id ? byId.get(final.winner_team_id) : undefined;
   const open = arranged?.tie ?? ties.find((t) => t.id === openId) ?? null;
+  // Cada eliminatoria con los dos equipos ya decididos se convierte en sus partidos (ida y vuelta, o la final).
+  const legs: CupLeg[] = ties
+    .filter((t) => t.home_team_id && t.away_team_id)
+    .sort((x, y) => x.round - y.round || x.slot - y.slot)
+    .flatMap((t) => {
+      const st = tieState(t);
+      const name = roundName(t.round, rounds);
+      const out: CupLeg[] = [];
+      for (const leg of (t.is_final ? [1] : [1, 2]) as (1 | 2)[]) {
+        const played = leg === 1 ? t.leg1_home_goals != null && t.leg1_away_goals != null : t.leg2_home_goals != null && t.leg2_away_goals != null;
+        const label = t.is_final ? "Final" : `${name} · ${leg === 1 ? "Ida" : "Vuelta"}`;
+        // Los penaltis se eligen en el último partido de la eliminatoria.
+        const last = t.is_final || leg === 2;
+        out.push({ tie: t, leg, played, label, needsPenalties: last && st.needsPenalties });
+      }
+      return out;
+    });
+  const waiting = ties.filter((t) => !t.home_team_id || (!t.away_team_id && t.round > 1)).length;
   const closeTie = () => {
     setOpenId(null);
+    setOpenLeg(undefined);
     setArranged(null);
   };
 
@@ -402,21 +414,37 @@ export function CupBracket({
         </div>
       )}
 
-      {Array.from({ length: rounds }, (_, i) => i + 1).map((r) => (
-        <section key={r} aria-label={roundName(r, rounds)}>
-          <h2 className="mb-2 px-1 text-[20px] font-bold tracking-tight">
-            {roundName(r, rounds)}
-            {r < rounds && <span className="text-muted-foreground"> · ida y vuelta</span>}
-          </h2>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {ties
-              .filter((t) => t.round === r)
-              .map((t) => (
-                <TieCard key={t.id} tie={t} teams={byId} onOpen={() => setOpenId(t.id)} />
-              ))}
-          </div>
-        </section>
-      ))}
+      {[
+        { title: "Por jugar", items: legs.filter((l) => !l.played || l.needsPenalties) },
+        { title: "Jugados", items: legs.filter((l) => l.played && !l.needsPenalties) },
+      ].map(
+        (g) =>
+          g.items.length > 0 && (
+            <section key={g.title} aria-label={g.title} className="space-y-3">
+              <h2 className="px-1 text-[20px] font-bold tracking-tight">
+                {g.title} <span className="text-muted-foreground tabular-nums">{g.items.length}</span>
+              </h2>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {g.items.map((l) => (
+                  <LegCard
+                    key={`${l.tie.id}:${l.leg}`}
+                    item={l}
+                    teams={byId}
+                    onOpen={() => {
+                      setOpenLeg(l.leg);
+                      setOpenId(l.tie.id);
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+          ),
+      )}
+      {waiting > 0 && (
+        <p className="px-1 text-[15px] text-muted-foreground">
+          {waiting === 1 ? "Queda 1 cruce" : `Quedan ${waiting} cruces`} por decidir hasta que acaben las rondas anteriores.
+        </p>
+      )}
 
       <div className="px-1">
         <button
@@ -444,7 +472,7 @@ export function CupBracket({
             key={`${open.id}:${open.home_team_id}:${open.away_team_id}`}
             tie={open}
             teams={byId}
-            initialLeg={arranged?.leg}
+            initialLeg={arranged?.leg ?? openLeg}
             onClose={closeTie}
           />
         )}
