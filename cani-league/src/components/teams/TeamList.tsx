@@ -30,7 +30,7 @@ export function TeamList({ teams }: { teams: TeamWithStanding[] }) {
                   <p className="line-clamp-2 text-[length:min(1rem,25.5px)] font-semibold leading-tight">{t.name}</p>
                   <p className="line-clamp-2 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">{t.owner_name?.trim() || "Sin propietario"}</p>
                   {/* Con letra grande el dinero va como tercera línea, bajo el nombre. */}
-                  <p className="mt-1 hidden text-[length:min(0.8824rem,22.5px)] tabular-nums large-text:block lg:!hidden">{formatMoney(t.budget || 0)}</p>
+                  <p className="mt-2 hidden w-fit rounded-full bg-white/[0.08] px-3 py-1 text-[length:min(0.8824rem,22.5px)] font-semibold tabular-nums large-text:block lg:!hidden">{formatMoney(t.budget || 0)}</p>
                 </div>
                 <span className="shrink-0 text-right text-[length:min(0.8824rem,22.5px)] tabular-nums large-text:hidden lg:!block">
                   {formatMoney(t.budget || 0)}
