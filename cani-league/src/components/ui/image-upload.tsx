@@ -163,7 +163,7 @@ export function ImageUpload({
   return (
     <div className={cn("space-y-2.5", className)}>
       {label && (
-        <Label className="text-[12px] font-bold tracking-wider text-muted-foreground uppercase">
+        <Label className="text-[length:min(0.7059rem,18px)] font-bold tracking-wider text-muted-foreground uppercase">
           {label}
         </Label>
       )}
@@ -214,7 +214,7 @@ export function ImageUpload({
           ) : (
             <div className="flex flex-col items-center justify-center gap-1 text-muted-foreground/60 group-hover:text-primary transition-colors">
               <Upload className="size-6" />
-              <span className="text-[9px] font-medium uppercase tracking-tight">Subir</span>
+              <span className="text-[length:min(0.7059rem,18px)] font-medium uppercase tracking-tight">Subir</span>
             </div>
           )}
 
@@ -264,7 +264,7 @@ export function ImageUpload({
             )}
           </div>
 
-          <p className="text-[12px] text-muted-foreground">
+          <p className="text-[length:min(0.7059rem,18px)] text-muted-foreground">
             Elige una foto desde tu PC, arrástrala directamente al recuadro o pega un enlace.
           </p>
         </div>

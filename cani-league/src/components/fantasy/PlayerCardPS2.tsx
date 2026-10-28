@@ -81,17 +81,17 @@ export function PlayerCardPS2({
             className="-skew-x-12 border-l-[3px] bg-black/45 px-1.5 py-[1px]"
             style={{ borderColor: stripe }}
           >
-            <span className="block skew-x-12 text-[12px] font-black italic tracking-wide text-white">{player.position}</span>
+            <span className="block skew-x-12 text-[length:min(0.7059rem,18px)] font-black italic tracking-wide text-white">{player.position}</span>
           </span>
           <span className="-skew-x-12 border border-[#ffe680] px-1.5" style={{ background: YELLOW }}>
-            <span className="block skew-x-12 text-[12px] font-black italic text-[#0a1430]">{tier.tier}</span>
+            <span className="block skew-x-12 text-[length:min(0.7059rem,18px)] font-black italic text-[#0a1430]">{tier.tier}</span>
           </span>
         </div>
 
         {/* media + avatar */}
         <div className="relative flex flex-1 items-center justify-between gap-1 px-2">
           <span
-            className="text-[34px] font-black italic leading-none tabular-nums text-white"
+            className="text-[length:min(2rem,51px)] font-black italic leading-none tabular-nums text-white"
             style={{ textShadow: "0 2px 0 #06143a, 0 0 12px rgba(90,170,255,0.85)" }}
           >
             {rating || "–"}
@@ -123,7 +123,7 @@ export function PlayerCardPS2({
           className="relative mx-1 -skew-x-6 border-y border-[#7fb0ff]/60 px-1 py-[3px]"
           style={{ background: BAR, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)" }}
         >
-          <p className="skew-x-6 truncate text-center text-[13px] font-black italic tracking-tight text-white drop-shadow-[0_1px_0_#06143a]">
+          <p className="skew-x-6 truncate text-center text-[length:min(0.7647rem,19.5px)] font-black italic tracking-tight text-white drop-shadow-[0_1px_0_#06143a]">
             {name}
           </p>
         </div>
@@ -137,12 +137,12 @@ export function PlayerCardPS2({
             ) : club ? (
               <span className="size-3.5 shrink-0 rounded-full ring-1 ring-white/30" style={{ background: club.primary_color ?? "#888" }} />
             ) : null}
-            <span className="truncate text-[9px] font-bold italic uppercase tracking-wide text-[#b9d6ff]">
+            <span className="truncate text-[length:min(0.7059rem,18px)] font-bold italic uppercase tracking-wide text-[#b9d6ff]">
               {clubLabel ?? club?.short_name ?? club?.name ?? player.nationality}
             </span>
           </span>
           {price && (
-            <span className="shrink-0 text-[12px] font-black italic tabular-nums text-[#ffd12e]">{price}</span>
+            <span className="shrink-0 text-[length:min(0.7059rem,18px)] font-black italic tabular-nums text-[#ffd12e]">{price}</span>
           )}
         </div>
       </div>

@@ -75,7 +75,7 @@ function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.key)}
             className={cn(
-              "flex-1 rounded-[7px] text-[13px] font-semibold transition-colors",
+              "flex-1 rounded-[7px] text-[length:min(0.7647rem,19.5px)] font-semibold transition-colors",
               active ? "bg-[#636366] text-white" : "text-[#ebebf5]/60",
             )}
           >
@@ -151,7 +151,7 @@ export function PlayerBrowser({
             setLimit(PAGE);
           }}
           placeholder="Nombre, club o país"
-          className="h-11 w-full rounded-[10px] bg-input pl-10 pr-10 text-[17px] outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/60 [&::-webkit-search-cancel-button]:hidden"
+          className="h-11 w-full rounded-[10px] bg-input pl-10 pr-10 text-[length:min(1rem,25.5px)] outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/60 [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
@@ -186,7 +186,7 @@ export function PlayerBrowser({
                 aria-pressed={origin === k}
                 onClick={() => { setOrigin(k); setLimit(PAGE); }}
                 className={cn(
-                  "relative h-8 rounded-full px-3.5 text-[15px] font-semibold after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
+                  "relative h-8 rounded-full px-3.5 text-[length:min(0.8824rem,22.5px)] font-semibold after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
                   origin === k ? "bg-white text-black" : "bg-card text-foreground",
                 )}
               >
@@ -195,14 +195,14 @@ export function PlayerBrowser({
             ))}
           </div>
         ) : (
-          <p className="text-[15px] text-muted-foreground tabular-nums">{list.length} jugadores</p>
+          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground tabular-nums">{list.length} jugadores</p>
         )}
-        <label className="flex items-center gap-1.5 text-[15px] text-muted-foreground">
+        <label className="flex items-center gap-1.5 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
           <span className={mode === "market" ? "sr-only" : undefined}>Ordenar por</span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as typeof sort)}
-            className="h-8 rounded-full bg-card px-3 text-[15px] font-semibold text-foreground outline-none"
+            className="h-8 rounded-full bg-card px-3 text-[length:min(0.8824rem,22.5px)] font-semibold text-foreground outline-none"
           >
             {SORTS.map((s) => (
               <option key={s.key} value={s.key}>
@@ -215,8 +215,8 @@ export function PlayerBrowser({
 
       {shown.length === 0 ? (
         <div className="rounded-[22px] bg-card px-6 py-10 text-center">
-          <p className="text-[17px] font-semibold">Sin resultados</p>
-          <p className="mt-1 text-[15px] text-muted-foreground">Prueba con otro nombre o quita los filtros.</p>
+          <p className="text-[length:min(1rem,25.5px)] font-semibold">Sin resultados</p>
+          <p className="mt-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">Prueba con otro nombre o quita los filtros.</p>
         </div>
       ) : (
         <ul className="overflow-hidden rounded-[22px] bg-card">
@@ -244,15 +244,15 @@ export function PlayerBrowser({
                 <div className="flex min-h-[64px] min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border pr-3 group-last:border-b-0">
                   <Link href={`/players/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-2">
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[17px] leading-tight">{p.name}</span>
-                      <span className="block truncate text-[13px] text-muted-foreground">
+                      <span className="block truncate text-[length:min(1rem,25.5px)] leading-tight">{p.name}</span>
+                      <span className="block truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
                         {p.position} · {free ? "Agente libre" : p.team?.name}
                         {mode === "players" && p.age ? ` · ${p.age} años` : ""}
                       </span>
                     </span>
                     <span className="flex flex-col items-end leading-none">
-                      <span className="text-[20px] font-bold tabular-nums">{rating || "–"}</span>
-                      <span className="mt-1 text-[12px] font-semibold tabular-nums text-muted-foreground">
+                      <span className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums">{rating || "–"}</span>
+                      <span className="mt-1 text-[length:min(0.7059rem,18px)] font-semibold tabular-nums text-muted-foreground">
                         {mode === "market" ? compactMoney(getPlayerFixedPrice(p)) : tier.tier}
                       </span>
                     </span>
@@ -264,7 +264,7 @@ export function PlayerBrowser({
                       disabled={!marketOpen}
                       aria-label={free ? `Fichar a ${p.name}` : `Pagar la cláusula de ${p.name}`}
                       className={cn(
-                        "relative h-8 shrink-0 rounded-full px-3.5 text-[15px] font-semibold active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
+                        "relative h-8 shrink-0 rounded-full px-3.5 text-[length:min(0.8824rem,22.5px)] font-semibold active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
                         free ? "bg-white text-black" : "bg-secondary text-foreground",
                       )}
                     >
@@ -282,7 +282,7 @@ export function PlayerBrowser({
         <button
           type="button"
           onClick={() => setLimit((l) => l + PAGE)}
-          className="h-11 w-full rounded-full bg-card text-[17px] font-semibold text-[#0a84ff] active:opacity-70"
+          className="h-11 w-full rounded-full bg-card text-[length:min(1rem,25.5px)] font-semibold text-[#0a84ff] active:opacity-70"
         >
           Mostrar más ({list.length - shown.length})
         </button>

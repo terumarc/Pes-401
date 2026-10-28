@@ -64,15 +64,15 @@ export default async function CalendarPage() {
         <Scoreboard matches={matches} records={records} extras={{ rosters, goals: goalsByMatch, history, teamNames }} />
       ) : (
         <div className="rounded-[22px] bg-card px-6 py-12 text-center">
-          <p className="text-[17px] font-semibold">Aún no hay calendario</p>
-          <p className="mx-auto mt-1 max-w-xs text-[15px] text-muted-foreground">
+          <p className="text-[length:min(1rem,25.5px)] font-semibold">Aún no hay calendario</p>
+          <p className="mx-auto mt-1 max-w-xs text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
             Genera las jornadas de ida y vuelta para empezar a apuntar resultados.
           </p>
         </div>
       )}
 
       <section aria-label="Calendario" className="mt-10 space-y-2">
-        <h2 className="text-[13px] font-medium text-muted-foreground">Calendario</h2>
+        <h2 className="text-[length:min(0.7647rem,19.5px)] font-medium text-muted-foreground">Calendario</h2>
         <div className="flex flex-wrap gap-2">
           <GenerateFixturesBtn leagueId={league.id} teams={teams} hasExisting={matches.length > 0} />
           <ResetLeagueBtn leagueId={league.id} />

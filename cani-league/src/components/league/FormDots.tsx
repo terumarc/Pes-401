@@ -13,7 +13,7 @@ export function FormDots({ form, className }: { form: FormResult[]; className?: 
           key={i}
           aria-hidden
           className={cn(
-            "flex size-5 items-center justify-center rounded-full text-[12px] font-bold",
+            "flex size-5 items-center justify-center rounded-full text-[length:min(0.7059rem,18px)] font-bold",
             f === "V" && "bg-[#30d158] text-black",
             f === "E" && "bg-[#636366] text-white",
             f === "D" && "bg-[#ff453a] text-white",

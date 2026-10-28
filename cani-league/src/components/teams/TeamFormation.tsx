@@ -138,11 +138,11 @@ function TokenFace({ player, team, outOfPlace }: { player: Player; team: Kit; ou
       <span className="mt-1 w-full overflow-hidden rounded-md bg-background/95 text-center shadow ring-1 ring-black/30">
         <span className="block truncate px-1 pt-0.5 text-[12px] font-semibold leading-tight">{lastName(player.name)}</span>
         {outOfPlace ? (
-          <span className="block bg-zinc-800 text-[9px] font-bold leading-[14px] text-amber-300" title="Fuera de su posición">
+          <span className="block bg-zinc-800 text-[12px] font-bold leading-[14px] text-amber-300" title="Fuera de su posición">
             {player.position} → {outOfPlace}
           </span>
         ) : (
-          <span className={cn("block text-[9px] font-bold leading-[14px]", tone.chip)}>{player.position}</span>
+          <span className={cn("block text-[12px] font-bold leading-[14px]", tone.chip)}>{player.position}</span>
         )}
       </span>
     </>
@@ -372,7 +372,7 @@ export function TeamFormation({
   return (
     <section aria-label="Formación" className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[15px] text-muted-foreground tabular-nums">
+        <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground tabular-nums">
           {filled} de 11 titulares
         </p>
         <button

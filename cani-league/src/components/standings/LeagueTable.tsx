@@ -36,7 +36,7 @@ export function LeagueTable({ rows, forms = {} }: { rows: LeagueTableRow[]; form
         <div role="rowgroup">
           <div
             role="row"
-            className="flex h-9 items-center gap-1 border-b border-border pl-3 pr-3 text-[12px] font-semibold uppercase text-muted-foreground"
+            className="flex h-9 items-center gap-1 border-b border-border pl-3 pr-3 text-[length:min(0.7059rem,18px)] font-semibold uppercase text-muted-foreground"
           >
             {header("#", "Puesto", "w-6")}
             <span role="columnheader" className="min-w-0 flex-1 pl-8">Equipo</span>
@@ -61,7 +61,7 @@ export function LeagueTable({ rows, forms = {} }: { rows: LeagueTableRow[]; form
                 <span
                   role="cell"
                   className={cn(
-                    "w-6 shrink-0 text-center text-[15px] font-bold tabular-nums",
+                    "w-6 shrink-0 text-center text-[length:min(0.8824rem,22.5px)] font-bold tabular-nums",
                     first ? "text-[#30d158]" : last ? "text-[#ff453a]" : "text-muted-foreground",
                   )}
                 >
@@ -75,7 +75,7 @@ export function LeagueTable({ rows, forms = {} }: { rows: LeagueTableRow[]; form
                     {/* El enlace cubre toda la fila; el nombre es lo que se lee. */}
                     <Link
                       href={`/teams/${r.team.id}`}
-                      className="block truncate text-[15px] font-semibold leading-tight after:absolute after:inset-0 after:content-['']"
+                      className="block truncate text-[length:min(0.8824rem,22.5px)] font-semibold leading-tight after:absolute after:inset-0 after:content-['']"
                     >
                       <span className="sm:hidden">{r.team.short_name || r.team.name}</span>
                       <span className="hidden sm:inline">{r.team.name}</span>
@@ -84,14 +84,14 @@ export function LeagueTable({ rows, forms = {} }: { rows: LeagueTableRow[]; form
                   </div>
                 </div>
                 {COLUMNS.map((c) => (
-                  <span key={c.key} role="cell" className={cn(num, "wide" in c && wide, "text-[15px]")}>
+                  <span key={c.key} role="cell" className={cn(num, "wide" in c && wide, "text-[length:min(0.8824rem,22.5px)]")}>
                     {r[c.key]}
                   </span>
                 ))}
-                <span role="cell" className={cn(num, "w-8 text-[15px] text-muted-foreground")}>
+                <span role="cell" className={cn(num, "w-8 text-[length:min(0.8824rem,22.5px)] text-muted-foreground")}>
                   {r.goal_diff > 0 ? `+${r.goal_diff}` : r.goal_diff < 0 ? `−${-r.goal_diff}` : 0}
                 </span>
-                <span role="cell" className={cn(num, "w-9 text-[17px] font-bold")}>
+                <span role="cell" className={cn(num, "w-9 text-[length:min(1rem,25.5px)] font-bold")}>
                   {r.points}
                 </span>
               </div>
@@ -99,7 +99,7 @@ export function LeagueTable({ rows, forms = {} }: { rows: LeagueTableRow[]; form
           })}
         </div>
       </div>
-      <p className="mt-2 px-4 text-[13px] text-muted-foreground">
+      <p className="mt-2 px-4 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
         Se ordena sola: puntos, diferencia de goles y goles a favor.
       </p>
     </div>

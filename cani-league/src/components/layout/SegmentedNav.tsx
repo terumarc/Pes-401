@@ -26,7 +26,7 @@ export function SegmentedNav({
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex h-full items-center justify-center rounded-[7px] px-1 font-semibold transition-colors",
-                  items.length > 3 ? "text-[12px] tracking-tight" : "text-[13px]",
+                  items.length > 3 ? "text-[length:min(0.7059rem,18px)] tracking-tight" : "text-[length:min(0.7647rem,19.5px)]",
                   active && "bg-[#636366] shadow-[0_3px_8px_rgba(0,0,0,0.12)]",
                 )}
               >

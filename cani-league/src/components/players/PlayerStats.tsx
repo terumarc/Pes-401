@@ -84,7 +84,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
               aria-selected={chartMode === "radar26"}
               onClick={() => setChartMode("radar26")}
               className={cn(
-                "flex-1 rounded-[7px] text-[13px] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex-1 rounded-[7px] text-[length:min(0.7647rem,19.5px)] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 chartMode === "radar26"
                   ? "bg-[#636366] text-white"
                   : "text-[#ebebf5]/60"
@@ -98,7 +98,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
               aria-selected={chartMode === "macro"}
               onClick={() => setChartMode("macro")}
               className={cn(
-                "flex-1 rounded-[7px] text-[13px] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex-1 rounded-[7px] text-[length:min(0.7647rem,19.5px)] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 chartMode === "macro"
                   ? "bg-[#636366] text-white"
                   : "text-[#ebebf5]/60"
@@ -112,7 +112,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
               aria-selected={chartMode === "bars"}
               onClick={() => setChartMode("bars")}
               className={cn(
-                "flex-1 rounded-[7px] text-[13px] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex-1 rounded-[7px] text-[length:min(0.7647rem,19.5px)] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 chartMode === "bars"
                   ? "bg-[#636366] text-white"
                   : "text-[#ebebf5]/60"
@@ -145,7 +145,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
       {/* Category Filter Tabs */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
             {filteredDefs.length} atributos
           </p>
         </div>
@@ -161,7 +161,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
                 aria-pressed={isActive}
                 onClick={() => setActiveCategory(cat.id)}
                 className={cn(
-                  "h-8 rounded-full px-3.5 text-[15px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "h-8 rounded-full px-3.5 text-[length:min(0.8824rem,22.5px)] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive ? "bg-white text-black" : "bg-secondary text-foreground"
                 )}
               >
@@ -186,14 +186,14 @@ export function PlayerStats({ player }: PlayerStatsProps) {
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 overflow-hidden">
-                  <span className="flex h-5 min-w-8 items-center justify-center rounded bg-white/[0.08] px-1 font-mono text-[12px] font-bold text-muted-foreground">
+                  <span className="flex h-5 min-w-8 items-center justify-center rounded bg-white/[0.08] px-1 font-mono text-[length:min(0.7059rem,18px)] font-bold text-muted-foreground">
                     {def.shortLabel}
                   </span>
                   <div className="truncate">
-                    <div className="truncate text-[15px] font-semibold text-foreground">
+                    <div className="truncate text-[length:min(0.8824rem,22.5px)] font-semibold text-foreground">
                       {def.label}
                     </div>
-                    <div className="text-[12px] text-muted-foreground">
+                    <div className="text-[length:min(0.7059rem,18px)] text-muted-foreground">
                       {def.pesName}
                     </div>
                   </div>
@@ -227,7 +227,7 @@ export function PlayerStats({ player }: PlayerStatsProps) {
       </div>
 
       {/* PES Color Scale Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-2 py-1 text-[12px] text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-2 py-1 text-[length:min(0.7059rem,18px)] text-muted-foreground">
         <span className="font-semibold text-foreground">
           Escala PES:
         </span>

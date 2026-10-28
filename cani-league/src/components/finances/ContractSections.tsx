@@ -52,7 +52,7 @@ export function SalariesEditor({ leagueId, initial }: { leagueId: string; initia
 
   return (
     <section aria-labelledby="fin-salaries">
-      <h2 id="fin-salaries" className="mb-2 px-1 text-[20px] font-bold tracking-tight">
+      <h2 id="fin-salaries" className="mb-2 px-1 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
         Sueldos por temporada
       </h2>
       <ul className="overflow-hidden rounded-[22px] bg-card">
@@ -62,13 +62,13 @@ export function SalariesEditor({ leagueId, initial }: { leagueId: string; initia
           const renewal = Math.round(TIER_FIXED_PRICES[t] * TIER_RENEWAL_PERCENTAGES[t]);
           return (
             <li key={t} className="flex min-h-[64px] items-center gap-3 border-b border-border px-4 py-2.5 last:border-b-0">
-              <span className="w-8 shrink-0 text-[17px] font-bold">{t}</span>
+              <span className="w-8 shrink-0 text-[length:min(1rem,25.5px)] font-bold">{t}</span>
               <div className="min-w-0 flex-1">
-                <p className="text-[15px]">
+                <p className="text-[length:min(0.8824rem,22.5px)]">
                   {pct === null ? "—" : short(Math.round((TIER_FIXED_PRICES[t] * pct) / 100))}
                   <span className="text-muted-foreground"> por temporada</span>
                 </p>
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
                   {years > 0
                     ? `Contrato de ${years} ${years === 1 ? "temporada" : "temporadas"} · renovar ${short(renewal)}`
                     : "Sin contrato"}
@@ -84,16 +84,16 @@ export function SalariesEditor({ leagueId, initial }: { leagueId: string; initia
                     setMessage(null);
                     setDraft((d) => ({ ...d, [t]: e.target.value }));
                   }}
-                  className="h-11 w-16 rounded-[10px] bg-input px-2 text-right text-[17px] tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring/60 aria-invalid:ring-2 aria-invalid:ring-destructive"
+                  className="h-11 w-16 rounded-[10px] bg-input px-2 text-right text-[length:min(1rem,25.5px)] tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring/60 aria-invalid:ring-2 aria-invalid:ring-destructive"
                 />
-                <span className="text-[15px] text-muted-foreground">%</span>
+                <span className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground">%</span>
               </label>
             </li>
           );
         })}
       </ul>
       <div className="mt-2 flex items-center justify-between gap-3 px-4">
-        <p aria-live="polite" className={`text-[13px] ${message ? (message.ok ? "text-[#30d158]" : "text-destructive") : "text-muted-foreground"}`}>
+        <p aria-live="polite" className={`text-[length:min(0.7647rem,19.5px)] ${message ? (message.ok ? "text-[#30d158]" : "text-destructive") : "text-muted-foreground"}`}>
           {message?.text ??
             (invalid
               ? "Escribe un porcentaje entre 0 y 100."
@@ -103,7 +103,7 @@ export function SalariesEditor({ leagueId, initial }: { leagueId: string; initia
           type="button"
           onClick={save}
           disabled={pending || invalid || !dirty}
-          className="h-11 shrink-0 rounded-full bg-white px-5 text-[15px] font-semibold text-black disabled:opacity-40"
+          className="h-11 shrink-0 rounded-full bg-white px-5 text-[length:min(0.8824rem,22.5px)] font-semibold text-black disabled:opacity-40"
         >
           {pending ? "Guardando…" : "Guardar"}
         </button>
@@ -128,18 +128,18 @@ export function LastClosure({ events }: { events: ContractEvent[] }) {
 
   return (
     <section aria-labelledby="fin-closure">
-      <h2 id="fin-closure" className="mb-2 px-1 text-[20px] font-bold tracking-tight">
+      <h2 id="fin-closure" className="mb-2 px-1 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
         Último cierre de temporada
       </h2>
       <ul className="overflow-hidden rounded-[22px] bg-card">
         {rows.map(([team, r]) => (
           <li key={team} className="border-b border-border px-4 py-3 last:border-b-0">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[17px]">{team}</span>
-              <span className="text-[17px] font-semibold tabular-nums">−{short(r.paid)}</span>
+              <span className="text-[length:min(1rem,25.5px)]">{team}</span>
+              <span className="text-[length:min(1rem,25.5px)] font-semibold tabular-nums">−{short(r.paid)}</span>
             </div>
             {(r.renewals.length > 0 || r.released.length > 0) && (
-              <p className="mt-0.5 text-[13px] text-muted-foreground">
+              <p className="mt-0.5 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
                 {r.renewals.length > 0 && `Renovados: ${r.renewals.join(", ")}`}
                 {r.renewals.length > 0 && r.released.length > 0 && " · "}
                 {r.released.length > 0 && <span className="text-destructive">Libres por falta de dinero: {r.released.join(", ")}</span>}
@@ -148,7 +148,7 @@ export function LastClosure({ events }: { events: ContractEvent[] }) {
           </li>
         ))}
       </ul>
-      <p className="mt-2 px-4 text-[13px] text-muted-foreground">Aplicado el {date}.</p>
+      <p className="mt-2 px-4 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Aplicado el {date}.</p>
     </section>
   );
 }

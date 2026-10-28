@@ -30,7 +30,7 @@ export default async function TrophiesPage() {
           initialPrizes={result.prizes}
         />
       ) : (
-        <div className="rounded-[22px] bg-card p-4 text-[15px] text-muted-foreground">
+        <div className="rounded-[22px] bg-card p-4 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
           {result.reason === "missing_table"
             ? "Falta crear las tablas de trofeos en Supabase (migración 004_trophies.sql)."
             : `No se pudo cargar la sala de trofeos: ${result.message}`}

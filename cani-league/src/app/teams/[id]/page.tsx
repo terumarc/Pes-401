@@ -68,15 +68,15 @@ export default async function TeamDetailPage({ params }: Props) {
         />
         <div className="relative flex flex-col items-center text-center">
           <TeamLogo name={team.name} logoUrl={team.logo_url} color={team.primary_color} size="xl" />
-          <h1 className="mt-3 text-[28px] font-bold leading-tight tracking-tight">{team.name}</h1>
-          <p className="text-[15px] text-muted-foreground">{team.owner_name?.trim() || "Sin propietario"}</p>
+          <h1 className="mt-3 text-[length:min(1.6471rem,42px)] font-bold leading-tight tracking-tight">{team.name}</h1>
+          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground">{team.owner_name?.trim() || "Sin propietario"}</p>
           <FormDots form={form} className="mt-2" />
 
           <dl className="mt-5 grid w-full max-w-md grid-cols-3 rounded-[22px] bg-card py-3">
             {stats.map((s, i) => (
               <div key={s.label} className={i > 0 ? "border-l border-border" : undefined}>
-                <dt className="text-[13px] text-muted-foreground">{s.label}</dt>
-                <dd className="text-[20px] font-bold tabular-nums">{s.value}</dd>
+                <dt className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">{s.label}</dt>
+                <dd className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums">{s.value}</dd>
               </div>
             ))}
           </dl>
