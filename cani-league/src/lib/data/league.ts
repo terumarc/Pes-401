@@ -1,7 +1,7 @@
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { safeCache, invalidateMemCache } from "./cache";
-import { LOGO_ROUTE, withLogoUrls } from "@/lib/logo";
+import { LOGO_ROUTE, PHOTO_ROUTE, withLogoUrls } from "@/lib/logo";
 import { getOrEstimatePesStats } from "@/lib/data/pes_stats";
 import { getPlayerFixedPrice } from "@/lib/players";
 import type {
@@ -387,6 +387,11 @@ export async function updatePlayer(
   input: PlayerUpdateInput,
 ): Promise<Player> {
   const supabase = await createClient();
+  // Si el formulario devuelve la dirección corta de la foto, es que no ha cambiado: no se toca.
+  if (typeof input.photo_url === "string" && input.photo_url.startsWith(PHOTO_ROUTE)) {
+    input = { ...input };
+    delete input.photo_url;
+  }
   const { data, error } = await supabase
     .from("players")
     .update(input)
