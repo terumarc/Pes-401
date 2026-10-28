@@ -304,6 +304,39 @@ export async function getPlayers(options?: {
   return getCachedAllPlayers();
 }
 
+/** Jugador de una plantilla, con lo justo para listas, sueldos y ofertas. */
+export type SquadMember = {
+  id: string;
+  name: string;
+  team_id: string | null;
+  position: string;
+  overall: number | null;
+  defending: number | null;
+  contract_seasons_left: number | null;
+};
+
+async function fetchLeagueSquads(leagueId: string): Promise<SquadMember[]> {
+  const teams = await getTeamsByLeague(leagueId);
+  if (!teams.length) return [];
+  const supabase = createStaticClient();
+  const { data, error } = await supabase
+    .from("players")
+    .select("id,name,team_id,position,overall,defending,contract_seasons_left")
+    .in("team_id", teams.map((t) => t.id));
+  if (error) throw error;
+  return (data ?? []) as SquadMember[];
+}
+
+/**
+ * Solo los jugadores de los clubes de la liga (unos 200), no los ~5.000 de la base.
+ * Para pantallas que únicamente necesitan las plantillas.
+ */
+export const getLeagueSquads = safeCache(
+  fetchLeagueSquads,
+  ["players", "league_squads"],
+  { revalidate: 120, tags: ["players", "teams"] }
+);
+
 export async function getPlayerById(
   id: string,
 ): Promise<(Player & { team: Team }) | null> {

@@ -7,7 +7,7 @@ import { SegmentedNav, TEAM_SECTIONS } from "@/components/layout/SegmentedNav";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { getPlayerSalary } from "@/lib/contracts";
 import { getLastContractEvents, getSalaryTable } from "@/lib/data/contracts";
-import { getPlayers, getPrimaryLeague, getTeamsWithStandings } from "@/lib/data/league";
+import { getLeagueSquads, getPrimaryLeague, getTeamsWithStandings } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 export default async function FinancesPage() {
@@ -18,7 +18,7 @@ export default async function FinancesPage() {
 
   const [teams, players, salaries, events] = await Promise.all([
     getTeamsWithStandings(league.id),
-    getPlayers(),
+    getLeagueSquads(league.id),
     getSalaryTable(league.id),
     getLastContractEvents(league.id).catch(() => []),
   ]);

@@ -6,7 +6,7 @@ import { PixelAvatar } from "@/components/fantasy/PixelAvatar";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { PlayerStats } from "@/components/players/PlayerStats";
-import { getPlayerById, getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { getLeagueSquads, getPlayerById, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { getOffers } from "@/lib/data/market";
 import { getMarketWindow } from "@/lib/data/season";
 import { OfferSheet } from "@/components/market/OfferSheet";
@@ -47,7 +47,7 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
   const freeAgentEarly = !player.team || /libre|sin equipo/i.test(player.team.name);
   const [offers, window, everyone] =
     league && !freeAgentEarly
-      ? await Promise.all([getOffers(league.id, { playerId: player.id, resolvedLimit: 5 }), getMarketWindow(createStaticClient(), league.id), getPlayers()])
+      ? await Promise.all([getOffers(league.id, { playerId: player.id, resolvedLimit: 5 }), getMarketWindow(createStaticClient(), league.id), getLeagueSquads(league.id)])
       : [[], null, []];
   const myGoals = allGoals.filter((g) => g.player_id === player.id);
   const seasonGoals = myGoals.filter((g) => league && g.season === league.season).reduce((n, g) => n + g.goals, 0);
@@ -187,7 +187,7 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
                 <OfferSheet
                   player={{ id: player.id, name: player.name, team_id: player.team_id, teamName: team.name }}
                   clubs={clubs.map((c) => ({ id: c.id, name: c.name, budget: c.budget }))}
-                  squads={everyone.filter((p) => p.team_id !== player.team_id).map((p) => ({ id: p.id, name: p.name, position: p.position, team_id: p.team_id }))}
+                  squads={everyone.flatMap((p) => (p.team_id && p.team_id !== player.team_id ? [{ id: p.id, name: p.name, position: p.position, team_id: p.team_id }] : []))}
                   suggested={contract.price}
                 />
                 {offerViews.length > 0 && <OfferList offers={offerViews} marketOpen={window?.open ?? false} hidePlayer />}

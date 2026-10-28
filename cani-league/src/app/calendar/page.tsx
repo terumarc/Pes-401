@@ -10,7 +10,7 @@ import { Scoreboard, type Roster } from "@/components/league/Scoreboard";
 import { getAllPlayedMatches, getGoals } from "@/lib/data/stats";
 import type { GoalRow } from "@/lib/stats";
 import { getMatchesByLeague, buildLeagueTable } from "@/lib/data/matches";
-import { getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { getLeagueSquads, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 export default async function CalendarPage() {
@@ -22,7 +22,7 @@ export default async function CalendarPage() {
   const [allTeams, rawMatches, players, goals, history] = await Promise.all([
     getTeamsByLeague(league.id),
     getMatchesByLeague(league.id),
-    getPlayers(),
+    getLeagueSquads(league.id),
     getGoals(league.id, league.season),
     getAllPlayedMatches(league.id),
   ]);
