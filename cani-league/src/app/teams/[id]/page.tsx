@@ -81,7 +81,7 @@ export default async function TeamDetailPage({ params }: Props) {
             ))}
           </dl>
 
-          <div className="mt-4 flex w-full max-w-md gap-2">
+          <div className="mt-4 flex w-full max-w-md gap-2 large-text:flex-col large-text:[&>*]:min-h-11">
             <Button asChild variant="secondary" className="flex-1 gap-1.5">
               <Link href={`/players?new=1&team=${team.id}`}>
                 <UserPlus className="size-4" aria-hidden />

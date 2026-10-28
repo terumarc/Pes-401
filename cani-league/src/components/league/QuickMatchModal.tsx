@@ -181,15 +181,15 @@ export function QuickMatchModal({
       </DialogTrigger>
 
       <DialogContent
-        className="max-h-[92vh] overflow-y-auto sm:max-w-xl border-border bg-card/95 p-5 sm:p-6"
+        className="max-h-[92vh] grid-cols-[minmax(0,1fr)] overflow-y-auto overflow-x-hidden sm:max-w-xl border-border bg-card/95 p-5 sm:p-6"
         onKeyDown={handleKeyDown}
       >
         <DialogHeader className="text-left space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/25">
+          <div className="flex items-center gap-2 pr-8">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/25">
               <Swords className="size-4" />
             </span>
-            <DialogTitle className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            <DialogTitle className="min-w-0 text-xl sm:text-2xl font-black tracking-tight text-foreground large-text:whitespace-normal">
               Arena de Enfrentamientos
             </DialogTitle>
           </div>
@@ -214,7 +214,7 @@ export function QuickMatchModal({
             />
           )}
 
-          <div className="relative z-10 grid grid-cols-[1fr,auto,1fr] items-center gap-3 text-center">
+          <div className="relative z-10 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 text-center">
             {/* LOCAL */}
             <div
               className={cn(
@@ -235,7 +235,7 @@ export function QuickMatchModal({
                     color={homeTeam.primary_color}
                     size="md"
                   />
-                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-[130px]">
+                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-full">
                     {homeTeam.short_name || homeTeam.name}
                   </p>
                 </>
@@ -288,7 +288,7 @@ export function QuickMatchModal({
                     color={awayTeam.primary_color}
                     size="md"
                   />
-                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-[130px]">
+                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-full">
                     {awayTeam.short_name || awayTeam.name}
                   </p>
                 </>

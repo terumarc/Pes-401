@@ -140,14 +140,14 @@ export function OfferList({ offers, marketOpen, hidePlayer = false }: { offers: 
           </h2>
           <ul className="overflow-hidden rounded-[22px] bg-card">
             {resolved.map((o) => (
-              <li key={o.id} className="flex min-h-11 items-center gap-3 border-b border-border px-4 py-3 last:border-b-0">
+              <li key={o.id} className="flex min-h-11 items-center gap-3 border-b border-border px-4 py-3 last:border-b-0 large-text:flex-col large-text:items-start large-text:gap-1">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[length:min(0.8824rem,22.5px)]">{hidePlayer ? o.buyerName : `${o.buyerName} → ${o.playerName}`}</p>
-                  <p className="truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
+                  <p className="truncate text-[length:min(0.8824rem,22.5px)] large-text:whitespace-normal">{hidePlayer ? o.buyerName : `${o.buyerName} → ${o.playerName}`}</p>
+                  <p className="truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground large-text:whitespace-normal">
                     {what(o)} · {o.date}
                   </p>
                 </div>
-                <span className={cn("shrink-0 text-[length:min(0.7647rem,19.5px)] font-semibold", STATUS[o.status].cls)}>{STATUS[o.status].label}</span>
+                <span className={cn("shrink-0 text-[length:min(0.7647rem,19.5px)] font-semibold large-text:mt-1 large-text:rounded-full large-text:bg-white/[0.08] large-text:px-2.5 large-text:py-1", STATUS[o.status].cls)}>{STATUS[o.status].label}</span>
               </li>
             ))}
           </ul>

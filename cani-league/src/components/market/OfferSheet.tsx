@@ -72,7 +72,7 @@ export function OfferSheet({
       <Dialog open={open} onOpenChange={reset}>
         <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
           <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center large-text:grid-cols-1 large-text:justify-items-start large-text:gap-1">
             <button type="button" onClick={() => reset(false)} className="h-11 justify-self-start text-[length:min(1rem,25.5px)] text-[#0a84ff]">
               {done ? "Cerrar" : "Cancelar"}
             </button>

@@ -179,7 +179,7 @@ function DraggableToken({
       }}
       draggable={false}
       className={cn(
-        "flex w-[4.5rem] touch-manipulation select-none flex-col items-center outline-none [-webkit-touch-callout:none]",
+        "flex w-[76px] touch-manipulation select-none flex-col items-center outline-none [-webkit-touch-callout:none]",
         "focus-visible:[&>span:first-child>span:first-child]:ring-primary",
         isDragging && "opacity-30",
       )}
@@ -226,7 +226,7 @@ function PitchSlot({
           suppressClick={suppressClick}
         />
       ) : (
-        <span className="flex w-[4.5rem] flex-col items-center" aria-label={`Hueco libre de ${GROUP_LABEL[group]}`}>
+        <span className="flex w-[76px] flex-col items-center" aria-label={`Hueco libre de ${GROUP_LABEL[group]}`}>
           <span className="flex size-12 items-center justify-center rounded-full border-2 border-dashed border-white/35 bg-white/[0.06] text-white/70">
             <Plus className="size-5" aria-hidden />
           </span>
@@ -392,7 +392,7 @@ export function TeamFormation({
         options={(Object.keys(FORMATIONS) as FormationKey[]).map((f) => ({ value: f, label: f }))}
       />
 
-      <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
+      <DndContext id="formacion" sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
         {/* Campo */}
         <div
           className="relative overflow-hidden rounded-3xl"
@@ -410,7 +410,7 @@ export function TeamFormation({
             </g>
           </svg>
 
-          <div className="relative flex min-h-[31rem] flex-col justify-around gap-1 px-1 py-4 sm:min-h-[35rem]">
+          <div className="relative flex min-h-[527px] flex-col justify-around gap-1 px-1 py-4 sm:min-h-[595px]">
             {rows.map((row, i) => (
               <div key={i} className="flex justify-evenly">
                 {row.map((idx) => (
@@ -448,7 +448,7 @@ export function TeamFormation({
           createPortal(
             <DragOverlay dropAnimation={{ duration: 160, easing: "cubic-bezier(0.2,0,0,1)" }}>
               {activePlayer ? (
-                <div className="flex w-[4.5rem] scale-110 flex-col items-center drop-shadow-[0_12px_18px_rgba(0,0,0,0.55)]">
+                <div className="flex w-[76px] scale-110 flex-col items-center drop-shadow-[0_12px_18px_rgba(0,0,0,0.55)]">
                   <TokenFace player={activePlayer} team={team} />
                 </div>
               ) : null}

@@ -169,10 +169,10 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
               {facts.map(([k, v], i) => (
                 <li
                   key={k}
-                  className={`flex min-h-11 items-center justify-between gap-3 px-4 py-3 text-[length:min(1rem,25.5px)] ${i < facts.length - 1 ? "border-b border-border" : ""}`}
+                  className={`flex min-h-11 items-center justify-between gap-3 px-4 py-3 text-[length:min(1rem,25.5px)] large-text:flex-col large-text:items-start large-text:gap-0.5 ${i < facts.length - 1 ? "border-b border-border" : ""}`}
                 >
                   <span>{k}</span>
-                  <span className="text-right tabular-nums text-muted-foreground">{v}</span>
+                  <span className="text-right tabular-nums text-muted-foreground large-text:text-left">{v}</span>
                 </li>
               ))}
             </ul>

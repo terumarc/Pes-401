@@ -225,8 +225,8 @@ export function PlayerBrowser({
             const rating = getPlayerEffectiveRating(p);
             const tier = getPlayerTier(p);
             return (
-              <li key={p.id} className="group flex items-center gap-3 pl-4">
-                <Link href={`/players/${p.id}`} tabIndex={-1} aria-hidden className="shrink-0">
+              <li key={p.id} className="group flex items-center gap-3 pl-4 large-text:items-start">
+                <Link href={`/players/${p.id}`} tabIndex={-1} aria-hidden className="shrink-0 large-text:pt-3">
                   <span className="flex size-10 items-end justify-center overflow-hidden rounded-full bg-[#2c2c2e]">
                     {p.photo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -241,11 +241,11 @@ export function PlayerBrowser({
                     )}
                   </span>
                 </Link>
-                <div className="flex min-h-[64px] min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border pr-3 group-last:border-b-0">
-                  <Link href={`/players/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-2">
+                <div className="flex min-h-[64px] min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border pr-3 group-last:border-b-0 large-text:flex-col large-text:items-start large-text:gap-0 large-text:pb-3">
+                  <Link href={`/players/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-2 large-text:w-full large-text:items-start large-text:pt-3">
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[length:min(1rem,25.5px)] leading-tight">{p.name}</span>
-                      <span className="block truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
+                      <span className="block truncate text-[length:min(1rem,25.5px)] leading-tight large-text:whitespace-normal">{p.name}</span>
+                      <span className="block truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground large-text:mt-0.5 large-text:whitespace-normal">
                         {p.position} · {free ? "Agente libre" : p.team?.name}
                         {mode === "players" && p.age ? ` · ${p.age} años` : ""}
                       </span>
@@ -264,7 +264,7 @@ export function PlayerBrowser({
                       disabled={!marketOpen}
                       aria-label={free ? `Fichar a ${p.name}` : `Pagar la cláusula de ${p.name}`}
                       className={cn(
-                        "relative h-8 shrink-0 rounded-full px-3.5 text-[length:min(0.8824rem,22.5px)] font-semibold active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
+                        "relative h-8 shrink-0 rounded-full px-3.5 text-[length:min(0.8824rem,22.5px)] font-semibold active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-[''] large-text:h-11 large-text:px-5",
                         free ? "bg-white text-black" : "bg-secondary text-foreground",
                       )}
                     >
