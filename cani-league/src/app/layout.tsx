@@ -45,6 +45,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const season = await getSeason();
   return (
     <html lang="es" className={cn("dark antialiased", "font-sans", geist.variable)} suppressHydrationWarning>
+      <head>
+        {/* Marca la página cuando la letra base es grande (Dynamic Type o zoom de texto), antes de pintar. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){var d=document.documentElement;function c(){d.toggleAttribute('data-large-text',parseFloat(getComputedStyle(d).fontSize)>=21)}c();addEventListener('resize',c);document.addEventListener('visibilitychange',c)})()",
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <RouteProgressBar />
         <TooltipProvider>

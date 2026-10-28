@@ -9,6 +9,7 @@ import { useConfirm } from "@/components/ui/use-confirm";
 import { CUP_LABELS, currentTieOf, planCupMatch, roundName, tieState, type CupTie, type CupTrophy } from "@/lib/cups";
 import { cn } from "@/lib/utils";
 import { NEW_CUP_MATCH_EVENT } from "./NewCupMatchButton";
+import { MatchCard } from "@/components/league/MatchCard";
 
 export type CupTeam = { id: string; name: string; short_name: string | null; logo_url: string | null; primary_color: string | null };
 
@@ -27,40 +28,23 @@ type CupLeg = { tie: CupTie; leg: 1 | 2; played: boolean; label: string; needsPe
 function LegCard({ item, teams, onOpen }: { item: CupLeg; teams: Map<string, CupTeam>; onOpen: () => void }) {
   const { tie, leg } = item;
   // En la vuelta juega en casa el segundo equipo; los goles se guardan desde el punto de vista del primero.
-  const homeId = leg === 2 ? tie.away_team_id! : tie.home_team_id!;
-  const awayId = leg === 2 ? tie.home_team_id! : tie.away_team_id!;
+  const home = teams.get(leg === 2 ? tie.away_team_id! : tie.home_team_id!);
+  const away = teams.get(leg === 2 ? tie.home_team_id! : tie.away_team_id!);
   const h = leg === 1 ? tie.leg1_home_goals : tie.leg2_away_goals;
   const a = leg === 1 ? tie.leg1_away_goals : tie.leg2_home_goals;
-  const home = teams.get(homeId);
-  const away = teams.get(awayId);
-  const side = (team?: CupTeam) => (
-    <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
-      <Crest team={team} size={48} />
-      <p className="max-w-full truncate text-[length:min(0.8824rem,22.5px)] font-semibold leading-tight">{team?.short_name || team?.name || "—"}</p>
-    </div>
-  );
+  if (!home || !away) return null;
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-[22px] bg-card px-3 py-4 text-left transition-transform duration-150 active:scale-[0.98]"
-      aria-label={`${item.label}: ${home?.name ?? ""} contra ${away?.name ?? ""}${item.played ? `, ${h} a ${a}` : ", pendiente"}`}
-    >
-      {side(home)}
-      <div className="flex min-w-[6.5rem] flex-col items-center">
-        {item.played ? (
-          <p className="flex items-baseline gap-3 text-[length:min(2rem,51px)] font-bold leading-none tabular-nums tracking-tight">
-            <span className={cn((h ?? 0) < (a ?? 0) && "text-muted-foreground")}>{h}</span>
-            <span className={cn((a ?? 0) < (h ?? 0) && "text-muted-foreground")}>{a}</span>
-          </p>
-        ) : (
-          <p className="text-[length:min(1rem,25.5px)] font-semibold text-muted-foreground">vs</p>
-        )}
-        <p className="mt-1.5 text-center text-[length:min(0.7059rem,18px)] font-medium text-muted-foreground">{item.label}</p>
-        {item.needsPenalties && <p className="mt-0.5 text-[length:min(0.7059rem,18px)] font-medium text-[#ff9f0a]">Faltan penaltis</p>}
-      </div>
-      {side(away)}
-    </button>
+    <MatchCard
+      home={home}
+      away={away}
+      homeGoals={h}
+      awayGoals={a}
+      played={item.played}
+      label={item.label}
+      note={item.needsPenalties ? <p className="mt-0.5 text-[length:min(0.7059rem,18px)] font-medium text-[#ff9f0a]">Faltan penaltis</p> : undefined}
+      ariaLabel={`${item.label}: ${home.name} contra ${away.name}${item.played ? `, ${h} a ${a}` : ", pendiente"}`}
+      onOpen={onOpen}
+    />
   );
 }
 

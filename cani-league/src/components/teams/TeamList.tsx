@@ -24,16 +24,16 @@ export function TeamList({ teams }: { teams: TeamWithStanding[] }) {
               href={`/teams/${t.id}`}
               className="flex min-h-[68px] items-center gap-3 pl-4 transition-colors active:bg-white/[0.06] lg:hover:bg-white/[0.03]"
             >
-              <TeamLogo name={t.name} logoUrl={t.logo_url} color={t.primary_color} size="md" />
-              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 self-stretch border-b border-border pr-3 group-last:border-b-0 max-lg:pb-3 lg:grid lg:grid-cols-[1fr_9rem_9rem_5rem_5rem_1.5rem] lg:gap-4">
-                <div className="min-w-[7rem] flex-1 pt-3 lg:py-3">
+              <span className="shrink-0 large-text:self-start large-text:pt-3"><TeamLogo name={t.name} logoUrl={t.logo_url} color={t.primary_color} size="md" /></span>
+              <div className="flex min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border pr-3 group-last:border-b-0 lg:grid lg:grid-cols-[1fr_9rem_9rem_5rem_5rem_1.5rem] lg:gap-4">
+                <div className="min-w-0 flex-1 py-3">
                   <p className="line-clamp-2 text-[length:min(1rem,25.5px)] font-semibold leading-tight">{t.name}</p>
                   <p className="line-clamp-2 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">{t.owner_name?.trim() || "Sin propietario"}</p>
+                  {/* Con letra grande el dinero va como tercera línea, bajo el nombre. */}
+                  <p className="mt-1 hidden text-[length:min(0.8824rem,22.5px)] tabular-nums large-text:block lg:!hidden">{formatMoney(t.budget || 0)}</p>
                 </div>
-                {/* En móvil la flecha va pegada al dinero, para que bajen juntos si el nombre ocupa más. */}
-                <span className="ml-auto flex shrink-0 items-center justify-end gap-3 text-right text-[length:min(0.8824rem,22.5px)] tabular-nums max-lg:pt-3">
+                <span className="shrink-0 text-right text-[length:min(0.8824rem,22.5px)] tabular-nums large-text:hidden lg:!block">
                   {formatMoney(t.budget || 0)}
-                  <ChevronRight className="size-4 shrink-0 text-[#5a5a5f] lg:hidden" aria-hidden />
                 </span>
                 <span className="hidden text-right text-[length:min(0.8824rem,22.5px)] tabular-nums text-muted-foreground lg:block">
                   {formatMoney(t.squad_value || 0)}
@@ -44,7 +44,7 @@ export function TeamList({ teams }: { teams: TeamWithStanding[] }) {
                 <span className="hidden text-right text-[length:min(0.8824rem,22.5px)] tabular-nums text-muted-foreground lg:block">
                   {t.player_count || 0}
                 </span>
-                <ChevronRight className="hidden size-4 shrink-0 text-[#5a5a5f] lg:block" aria-hidden />
+                <ChevronRight className="size-4 shrink-0 text-[#5a5a5f]" aria-hidden />
               </div>
             </Link>
           </li>

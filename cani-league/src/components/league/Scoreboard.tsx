@@ -6,6 +6,7 @@ import { Minus, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { recordMatchResultClient, resetMatchResultClient } from "@/lib/data/mutations";
 import { cn } from "@/lib/utils";
+import { MatchCard } from "./MatchCard";
 import type { MatchWithTeams } from "@/types";
 import { headToHead, type GoalRow, type MatchLite } from "@/lib/stats";
 
@@ -35,45 +36,22 @@ function Crest({ team, size = 48 }: { team: Side; size?: number }) {
   );
 }
 
-function TeamColumn({ team, record }: { team: Side; record?: string }) {
-  return (
-    <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
-      <Crest team={team} />
-      <div className="min-w-0">
-        <p className="truncate text-[length:min(0.8824rem,22.5px)] font-semibold leading-tight">{team.short_name || team.name}</p>
-        {record && <p className="text-[length:min(0.7059rem,18px)] tabular-nums text-muted-foreground">{record}</p>}
-      </div>
-    </div>
-  );
-}
-
-/** Tarjeta de partido como las de Apple Sports: escudos a los lados, marcador grande en el centro. */
 function ScoreCard({ match, records, onOpen }: { match: MatchWithTeams; records: Record<string, string>; onOpen: () => void }) {
   const h = match.home_goals ?? 0;
   const a = match.away_goals ?? 0;
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-[22px] bg-card px-3 py-4 text-left transition-transform duration-150 active:scale-[0.98]"
-      aria-label={`${match.home_team.name} contra ${match.away_team.name}${match.played ? `, ${h} a ${a}` : ", pendiente"}`}
-    >
-      <TeamColumn team={match.home_team} record={records[match.home_team_id]} />
-      <div className="flex min-w-[6.5rem] flex-col items-center">
-        {match.played ? (
-          <p className="flex items-baseline gap-3 text-[length:min(2rem,51px)] font-bold leading-none tabular-nums tracking-tight">
-            <span className={cn(h < a && "text-muted-foreground")}>{h}</span>
-            <span className={cn(a < h && "text-muted-foreground")}>{a}</span>
-          </p>
-        ) : (
-          <p className="text-[length:min(1rem,25.5px)] font-semibold text-muted-foreground">vs</p>
-        )}
-        <p className="mt-1.5 text-[length:min(0.7059rem,18px)] font-medium text-muted-foreground">
-          {match.played ? "Final" : "Pendiente"}
-        </p>
-      </div>
-      <TeamColumn team={match.away_team} record={records[match.away_team_id]} />
-    </button>
+    <MatchCard
+      home={match.home_team}
+      away={match.away_team}
+      homeRecord={records[match.home_team_id]}
+      awayRecord={records[match.away_team_id]}
+      homeGoals={match.home_goals}
+      awayGoals={match.away_goals}
+      played={match.played}
+      label={match.played ? "Final" : "Pendiente"}
+      ariaLabel={`${match.home_team.name} contra ${match.away_team.name}${match.played ? `, ${h} a ${a}` : ", pendiente"}`}
+      onOpen={onOpen}
+    />
   );
 }
 

@@ -123,12 +123,12 @@ export function FinancesPanel({
                   className="flex min-h-[68px] w-full items-center gap-3 pl-4 text-left transition-colors active:bg-white/[0.06]"
                   aria-label={`${t.name}: ${formatMoney(t.budget || 0)}. Cambiar presupuesto`}
                 >
-                  <TeamLogo name={t.name} logoUrl={t.logo_url} color={t.primary_color} size="sm" />
+                  <span className="shrink-0 large-text:self-start large-text:pt-3"><TeamLogo name={t.name} logoUrl={t.logo_url} color={t.primary_color} size="sm" /></span>
                   <div className="flex min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border py-3 pr-3 group-last:border-b-0">
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                        <p className="line-clamp-2 min-w-[5rem] flex-1 text-[length:min(1rem,25.5px)] leading-tight">{t.name}</p>
-                        <p className="ml-auto shrink-0 text-[length:min(1rem,25.5px)] font-semibold tabular-nums">{formatMoney(t.budget || 0)}</p>
+                      <div className="flex items-baseline justify-between gap-3 large-text:flex-col large-text:items-start large-text:gap-1">
+                        <p className="line-clamp-2 min-w-0 flex-1 text-[length:min(1rem,25.5px)] leading-tight">{t.name}</p>
+                        <p className="shrink-0 text-[length:min(1rem,25.5px)] font-semibold tabular-nums">{formatMoney(t.budget || 0)}</p>
                       </div>
                       {/* Barra respecto al club con más presupuesto */}
                       <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10" aria-hidden>

@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+/* Letra grande del sistema (≥ 21 px de base): las tarjetas pasan a una disposición apilada. */
+@custom-variant large-text (&:where([data-large-text], [data-large-text] *));
 
 /*
  * Letra que sigue el tamaño elegido en el móvil.
