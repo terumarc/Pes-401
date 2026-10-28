@@ -100,3 +100,69 @@ export function shuffle<T>(list: T[], rnd: () => number = Math.random): T[] {
   }
   return a;
 }
+
+/** Plan para apuntar un partido de copa entre dos equipos elegidos a mano. */
+export type CupMatchPlan =
+  | { ok: false; error: string }
+  | {
+      ok: true;
+      /** Cruce donde se apunta el partido. */
+      tie: CupTie;
+      /** Si hay que cambiar los cruces de la ronda: el otro cruce y cómo queda. */
+      swap: { tie: CupTie; home: string; away: string } | null;
+      /** Cómo queda el cruce donde se juega (local de la ida primero). */
+      home: string;
+      away: string;
+      /** Partido que toca: 1 ida (o final), 2 vuelta. */
+      leg: 1 | 2;
+    };
+
+const played1 = (t: CupTie) => t.leg1_home_goals != null && t.leg1_away_goals != null;
+const played2 = (t: CupTie) => t.leg2_home_goals != null && t.leg2_away_goals != null;
+
+/** Cruce sin decidir en el que está un equipo ahora mismo (null si ya está eliminado o es campeón). */
+export function currentTieOf(ties: CupTie[], teamId: string): CupTie | null {
+  return (
+    ties
+      .filter((t) => (t.home_team_id === teamId || t.away_team_id === teamId) && !tieState(t).winner)
+      .sort((a, b) => a.round - b.round)[0] ?? null
+  );
+}
+
+/**
+ * Decide dónde va un partido de copa entre `homeId` (local) y `awayId`.
+ * Si ya se enfrentan en el cuadro, se apunta ahí. Si no, y los dos están en la misma ronda
+ * con sus cruces sin empezar, se reordena la ronda: ellos dos juntos y sus rivales del sorteo entre sí.
+ */
+export function planCupMatch(
+  ties: CupTie[],
+  homeId: string,
+  awayId: string,
+  name: (id: string) => string = (id) => id,
+): CupMatchPlan {
+  if (homeId === awayId) return { ok: false, error: "Elige dos equipos distintos." };
+  const x = currentTieOf(ties, homeId);
+  const y = currentTieOf(ties, awayId);
+  if (!x) return { ok: false, error: `${name(homeId)} ya no sigue en esta copa.` };
+  if (!y) return { ok: false, error: `${name(awayId)} ya no sigue en esta copa.` };
+
+  // Ya se enfrentan: se apunta el siguiente partido de la eliminatoria.
+  if (x.id === y.id) {
+    const twoLegs = !x.is_final;
+    if (!played1(x)) return { ok: true, tie: x, swap: null, home: homeId, away: awayId, leg: 1 };
+    if (twoLegs && !played2(x)) return { ok: true, tie: x, swap: null, home: x.home_team_id!, away: x.away_team_id!, leg: 2 };
+    // Global empatado sin penaltis: se vuelve a abrir el último partido para elegirlos.
+    return { ok: true, tie: x, swap: null, home: x.home_team_id!, away: x.away_team_id!, leg: twoLegs ? 2 : 1 };
+  }
+
+  if (x.round !== y.round) {
+    return { ok: false, error: `${name(homeId)} y ${name(awayId)} no están en la misma ronda.` };
+  }
+  for (const [t, id] of [[x, homeId], [y, awayId]] as const) {
+    if (!t.home_team_id || !t.away_team_id) return { ok: false, error: `${name(id)} todavía espera rival de la ronda anterior.` };
+    if (played1(t)) return { ok: false, error: `La eliminatoria de ${name(id)} ya ha empezado; no se puede cambiar su rival.` };
+  }
+  const rivalX = x.home_team_id === homeId ? x.away_team_id! : x.home_team_id!;
+  const rivalY = y.home_team_id === awayId ? y.away_team_id! : y.home_team_id!;
+  return { ok: true, tie: x, swap: { tie: y, home: rivalX, away: rivalY }, home: homeId, away: awayId, leg: 1 };
+}

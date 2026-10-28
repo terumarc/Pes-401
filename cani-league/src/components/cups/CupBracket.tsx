@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
-import { drawCupsAction, recordCupLegAction } from "@/app/actions/cups";
+import { arrangeCupTieAction, drawCupsAction, recordCupLegAction } from "@/app/actions/cups";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useConfirm } from "@/components/ui/use-confirm";
-import { CUP_LABELS, roundName, tieState, type CupTie, type CupTrophy } from "@/lib/cups";
+import { CUP_LABELS, currentTieOf, planCupMatch, roundName, tieState, type CupTie, type CupTrophy } from "@/lib/cups";
 import { cn } from "@/lib/utils";
 
 export type CupTeam = { id: string; name: string; short_name: string | null; logo_url: string | null; primary_color: string | null };
@@ -88,13 +88,13 @@ function Stepper({ value, onChange, label }: { value: number; onChange: (n: numb
   );
 }
 
-function TieSheet({ tie, teams, onClose }: { tie: CupTie; teams: Map<string, CupTeam>; onClose: () => void }) {
+function TieSheet({ tie, teams, onClose, initialLeg }: { tie: CupTie; teams: Map<string, CupTeam>; onClose: () => void; initialLeg?: 1 | 2 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const home = teams.get(tie.home_team_id!)!;
   const away = teams.get(tie.away_team_id!)!;
   const twoLegs = !tie.is_final;
-  const [leg, setLeg] = useState<1 | 2>(twoLegs && tie.leg1_home_goals != null ? 2 : 1);
+  const [leg, setLeg] = useState<1 | 2>(twoLegs ? initialLeg ?? (tie.leg1_home_goals != null ? 2 : 1) : 1);
   const [g, setG] = useState({
     1: { h: tie.leg1_home_goals ?? 0, a: tie.leg1_away_goals ?? 0 },
     2: { h: tie.leg2_home_goals ?? 0, a: tie.leg2_away_goals ?? 0 },
@@ -208,6 +208,117 @@ function TieSheet({ tie, teams, onClose }: { tie: CupTie; teams: Map<string, Cup
   );
 }
 
+/** Elegir los dos equipos que han jugado, como en la liga; el cuadro se ajusta si hace falta. */
+function PickMatchSheet({
+  leagueId,
+  trophy,
+  ties,
+  teams,
+  onClose,
+  onReady,
+}: {
+  leagueId: string;
+  trophy: CupTrophy;
+  ties: CupTie[];
+  teams: Map<string, CupTeam>;
+  onClose: () => void;
+  onReady: (tie: CupTie, leg: 1 | 2) => void;
+}) {
+  const [home, setHome] = useState<string | null>(null);
+  const [away, setAway] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const alive = [...teams.values()]
+    .filter((t) => currentTieOf(ties, t.id))
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
+  const name = (id: string) => teams.get(id)?.name ?? "Ese equipo";
+  const plan = home && away ? planCupMatch(ties, home, away, name) : null;
+  const rounds = ties.length ? Math.max(...ties.map((t) => t.round)) : 0;
+
+  let note: string | null = null;
+  if (plan?.ok) {
+    const what = plan.tie.is_final ? "la final" : `${plan.leg === 1 ? "la ida" : "la vuelta"} de ${roundName(plan.tie.round, rounds).toLowerCase()}`;
+    note = plan.swap
+      ? `Se apunta ${what}. Como no estaban emparejados, ${name(plan.swap.home)} pasa a jugar contra ${name(plan.swap.away)}.`
+      : `Se apunta ${what}.`;
+  }
+
+  function next() {
+    if (!home || !away) return;
+    setError(null);
+    startTransition(async () => {
+      try {
+        const { tie, leg } = await arrangeCupTieAction(leagueId, trophy, home, away);
+        onReady(tie, leg);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo preparar el partido.");
+      }
+    });
+  }
+
+  const picker = (label: string, value: string | null, set: (id: string) => void, other: string | null) => (
+    <fieldset className="mt-4">
+      <legend className="mb-1.5 px-1 text-[13px] text-muted-foreground">{label}</legend>
+      <div className="grid grid-cols-2 gap-2">
+        {alive.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            aria-pressed={value === t.id}
+            disabled={other === t.id}
+            onClick={() => set(t.id)}
+            className={cn(
+              "flex h-11 min-w-0 items-center gap-2 rounded-full px-3 text-[15px] font-semibold disabled:opacity-30",
+              value === t.id ? "bg-white text-black" : "bg-secondary",
+            )}
+          >
+            <Crest team={t} size={22} />
+            <span className="truncate">{t.short_name ?? t.name}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+
+  return (
+    <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
+      <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[17px] text-[#0a84ff] active:opacity-60">
+          Cancelar
+        </button>
+        <DialogTitle className="text-[17px] font-semibold">Apuntar partido</DialogTitle>
+        <span />
+      </div>
+      <DialogDescription className="px-1 text-[15px] text-muted-foreground">
+        {CUP_LABELS[trophy]}: elige quién ha jugado. Si no era el cruce del sorteo, se cambia.
+      </DialogDescription>
+
+      {alive.length < 2 ? (
+        <p className="mt-6 text-center text-[15px] text-muted-foreground">No quedan partidos por jugar en esta copa.</p>
+      ) : (
+        <>
+          {picker("Local", home, setHome, away)}
+          {picker("Visitante", away, setAway, home)}
+        </>
+      )}
+
+      {plan && !plan.ok && <p className="mt-4 text-center text-[15px] text-[#ff9f0a]">{plan.error}</p>}
+      {note && <p className="mt-4 text-center text-[15px] text-muted-foreground">{note}</p>}
+      {error && <p className="mt-3 text-center text-[15px] text-destructive">{error}</p>}
+
+      <button
+        type="button"
+        onClick={next}
+        disabled={pending || !plan?.ok}
+        className="mt-6 h-[50px] w-full rounded-full bg-white text-[17px] font-semibold text-black disabled:opacity-40"
+      >
+        {pending ? "Preparando…" : "Apuntar resultado"}
+      </button>
+    </DialogContent>
+  );
+}
+
 /** Cuadro de una copa por rondas, con sorteo y resultados. */
 export function CupBracket({
   leagueId,
@@ -224,12 +335,19 @@ export function CupBracket({
   const [confirm, confirmDialog] = useConfirm();
   const [pending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+  // Cruce recién preparado desde «Apuntar partido», hasta que llegue el cuadro actualizado.
+  const [arranged, setArranged] = useState<{ tie: CupTie; leg: 1 | 2 } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const byId = new Map(teams.map((t) => [t.id, t]));
   const rounds = ties.length ? Math.max(...ties.map((t) => t.round)) : 0;
   const final = ties.find((t) => t.is_final);
   const champion = final?.winner_team_id ? byId.get(final.winner_team_id) : undefined;
-  const open = ties.find((t) => t.id === openId) ?? null;
+  const open = arranged?.tie ?? ties.find((t) => t.id === openId) ?? null;
+  const closeTie = () => {
+    setOpenId(null);
+    setArranged(null);
+  };
 
   function draw(all: boolean) {
     setError(null);
@@ -265,6 +383,15 @@ export function CupBracket({
 
   return (
     <div className="space-y-7">
+      {!champion && (
+        <button
+          type="button"
+          onClick={() => setPicking(true)}
+          className="flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-white text-[17px] font-semibold text-black active:opacity-80"
+        >
+          <Plus className="size-5" aria-hidden /> Apuntar partido
+        </button>
+      )}
       {champion && (
         <div className="flex items-center gap-3 rounded-[22px] bg-card px-4 py-3">
           <Crest team={champion} size={40} />
@@ -311,8 +438,32 @@ export function CupBracket({
         {error && <p className="mt-2 text-[15px] text-destructive">{error}</p>}
       </div>
 
-      <Dialog open={!!open} onOpenChange={(o) => !o && setOpenId(null)}>
-        {open && <TieSheet key={open.id} tie={open} teams={byId} onClose={() => setOpenId(null)} />}
+      <Dialog open={!!open} onOpenChange={(o) => !o && closeTie()}>
+        {open && (
+          <TieSheet
+            key={`${open.id}:${open.home_team_id}:${open.away_team_id}`}
+            tie={open}
+            teams={byId}
+            initialLeg={arranged?.leg}
+            onClose={closeTie}
+          />
+        )}
+      </Dialog>
+      <Dialog open={picking} onOpenChange={setPicking}>
+        {picking && (
+          <PickMatchSheet
+            leagueId={leagueId}
+            trophy={trophy}
+            ties={ties}
+            teams={byId}
+            onClose={() => setPicking(false)}
+            onReady={(tie, leg) => {
+              setPicking(false);
+              setArranged({ tie, leg });
+              router.refresh();
+            }}
+          />
+        )}
       </Dialog>
       {confirmDialog}
     </div>

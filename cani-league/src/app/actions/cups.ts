@@ -7,6 +7,7 @@ import {
   CUP_TROPHIES,
   firstRoundPairs,
   nextSlot,
+  planCupMatch,
   roundsFor,
   shuffle,
   tieState,
@@ -117,4 +118,52 @@ export async function recordCupLegAction(
   if (error) throw new Error(`No se pudo guardar el resultado: ${error.message}`);
   await resolveTie(tieId);
   revalidateCups();
+}
+
+/**
+ * Prepara el cruce para un partido de copa elegido a mano (local y visitante).
+ * Si los dos equipos no estaban emparejados, reordena la ronda. Devuelve el cruce listo para apuntar el resultado.
+ */
+export async function arrangeCupTieAction(
+  leagueId: string,
+  trophy: CupTrophy,
+  homeId: string,
+  awayId: string,
+): Promise<{ tie: CupTie; leg: 1 | 2 }> {
+  const supabase = await createClient();
+  const { data: league } = await supabase.from("leagues").select("season").eq("id", leagueId).single();
+  if (!league) throw new Error("Liga no encontrada.");
+  const { data: rows, error } = await supabase
+    .from("cup_ties")
+    .select("*")
+    .eq("league_id", leagueId)
+    .eq("season", league.season)
+    .eq("trophy", trophy);
+  if (error) throw new Error(`No se pudo leer el cuadro: ${error.message}`);
+  const { data: teams } = await supabase.from("teams").select("id, name").eq("league_id", leagueId);
+  const name = (id: string) => teams?.find((t) => t.id === id)?.name ?? "Ese equipo";
+
+  const plan = planCupMatch((rows ?? []) as CupTie[], homeId, awayId, name);
+  if (!plan.ok) throw new Error(plan.error);
+
+  if (plan.swap) {
+    const { error: e1 } = await supabase
+      .from("cup_ties")
+      .update({ home_team_id: plan.swap.home, away_team_id: plan.swap.away })
+      .eq("id", plan.swap.tie.id);
+    if (e1) throw new Error(`No se pudo cambiar el cruce: ${e1.message}`);
+  }
+  let tie = plan.tie;
+  if (plan.home !== tie.home_team_id || plan.away !== tie.away_team_id) {
+    const { data: updated, error: e2 } = await supabase
+      .from("cup_ties")
+      .update({ home_team_id: plan.home, away_team_id: plan.away })
+      .eq("id", tie.id)
+      .select("*")
+      .single();
+    if (e2 || !updated) throw new Error(`No se pudo preparar el cruce: ${e2?.message ?? ""}`);
+    tie = updated as CupTie;
+  }
+  revalidateCups();
+  return { tie, leg: plan.leg };
 }
