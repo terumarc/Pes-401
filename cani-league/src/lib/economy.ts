@@ -8,14 +8,7 @@ export const ECONOMY_CONFIG = {
   STARTING_BUDGET_MIN: 50_000_000,
   STARTING_BUDGET_MAX: 50_000_000,
   
-  // Recompensas base por partido (Justas para todos, sin multiplicadores)
-  MATCH_REWARDS: {
-    WIN: 3_000_000,
-    DRAW: 1_000_000,
-    LOSS: 500_000,
-  },
-
-  // Inyecciones por posición en la liga (Ida y Vuelta)
+  // Premio por posición en la liga (se cobra solo al acabar la temporada)
   POSITION_REWARDS: {
     BASE: 25_000_000,
     INCREMENT: 5_000_000,
@@ -33,15 +26,6 @@ export const POSITION_INCREMENT = ECONOMY_CONFIG.POSITION_REWARDS.INCREMENT;
 export function calculatePositionReward(position: number): number {
   const clampedPos = Math.max(1, position);
   return BASE_POSITION_REWARD + (clampedPos - 1) * POSITION_INCREMENT;
-}
-
-/**
- * Devuelve la recompensa financiera plana tras un partido.
- */
-export function calculateMatchReward(result: "win" | "draw" | "loss"): number {
-  if (result === "win") return ECONOMY_CONFIG.MATCH_REWARDS.WIN;
-  if (result === "draw") return ECONOMY_CONFIG.MATCH_REWARDS.DRAW;
-  return ECONOMY_CONFIG.MATCH_REWARDS.LOSS;
 }
 
 /**

@@ -245,54 +245,7 @@ export async function reorderStandingsClient(
 
 // ─── Partidos ────────────────────────────────────────────────
 
-import { calculateMatchReward, calculateStartingBudget } from "@/lib/economy";
-
-export async function applyMatchRewardsClient(matchId: string): Promise<void> {
-  const supabase = createClient();
-
-  // 1. Obtener el partido
-  const { data: match, error: matchErr } = await supabase
-    .from("matches")
-    .select("*")
-    .eq("id", matchId)
-    .single();
-  if (matchErr || !match) throw matchErr;
-  if (!match.played) return; // No hacer nada si no se ha jugado
-
-  // 2. Determinar resultados
-  let homeResult: "win" | "draw" | "loss" = "draw";
-  let awayResult: "win" | "draw" | "loss" = "draw";
-
-  if ((match.home_goals || 0) > (match.away_goals || 0)) {
-    homeResult = "win";
-    awayResult = "loss";
-  } else if ((match.home_goals || 0) < (match.away_goals || 0)) {
-    homeResult = "loss";
-    awayResult = "win";
-  }
-
-  // 3. Calcular recompensas planas (igual para todos)
-  const homeReward = calculateMatchReward(homeResult);
-  const awayReward = calculateMatchReward(awayResult);
-
-  // 4. Aplicar recompensas (sumar al presupuesto)
-  const { data: teams, error: teamsErr } = await supabase
-    .from("teams")
-    .select("id, budget")
-    .in("id", [match.home_team_id, match.away_team_id]);
-  if (teamsErr || !teams) throw teamsErr;
-
-  const homeTeam = teams.find(t => t.id === match.home_team_id);
-  const awayTeam = teams.find(t => t.id === match.away_team_id);
-
-  if (homeTeam) {
-    await supabase.from("teams").update({ budget: homeTeam.budget + homeReward }).eq("id", homeTeam.id);
-  }
-  if (awayTeam) {
-    await supabase.from("teams").update({ budget: awayTeam.budget + awayReward }).eq("id", awayTeam.id);
-  }
-  await triggerServerRevalidate("teams");
-}
+import { calculateStartingBudget } from "@/lib/economy";
 
 export async function recordMatchResultClient(
   matchId: string,
@@ -325,9 +278,7 @@ export async function recordMatchResultClient(
     .select("*")
     .single();
   if (error) throw error;
-  
-  // Aplicar recompensas automáticamente al registrar el resultado
-  await applyMatchRewardsClient(matchId);
+
   await triggerServerRevalidate();
 
   return data as Match;
@@ -396,7 +347,6 @@ export async function recordDirectMatchClient(
       .single();
 
     if (updateErr) throw updateErr;
-    await applyMatchRewardsClient(reverseMatch.id);
     await triggerServerRevalidate();
     return updatedMatch as Match;
   }
@@ -420,7 +370,6 @@ export async function recordDirectMatchClient(
     .single();
 
   if (insertErr) throw insertErr;
-  await applyMatchRewardsClient(newMatch.id);
   await triggerServerRevalidate();
   return newMatch as Match;
 }

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { calculateMatchReward } from "@/lib/economy";
 import { applySeasonMultipliers } from "@/lib/data/budget";
 import { saveLeagueMatchGoals, type ScorerInput } from "@/lib/data/goals";
 import { calendarKeyOf, claimSeasonStage, closeSeasonContracts } from "@/lib/data/contracts";
@@ -21,10 +20,6 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
-
-    // Si el partido ya estaba jugado (se corrige el resultado), no se vuelven a pagar las primas.
-    const { data: before } = await supabase.from("matches").select("played").eq("id", matchId).maybeSingle();
-    const wasPlayed = !!before?.played;
 
     // 1. Guardar resultado
     const { data: updatedMatch, error: updateErr } = await supabase
@@ -51,47 +46,8 @@ export async function POST(request: Request) {
       await saveLeagueMatchGoals(supabase, updatedMatch, scorers as ScorerInput[]);
     }
 
-    // 2. Recompensas por partido
-    let homeResult: "win" | "draw" | "loss" = "draw";
-    let awayResult: "win" | "draw" | "loss" = "draw";
-    const hGoals = updatedMatch.home_goals ?? 0;
-    const aGoals = updatedMatch.away_goals ?? 0;
-    if (hGoals > aGoals) {
-      homeResult = "win";
-      awayResult = "loss";
-    } else if (hGoals < aGoals) {
-      homeResult = "loss";
-      awayResult = "win";
-    }
-
-    const homeReward = calculateMatchReward(homeResult);
-    const awayReward = calculateMatchReward(awayResult);
-
-    const { data: teamsData } = await supabase
-      .from("teams")
-      .select("id, budget, name")
-      .in("id", [updatedMatch.home_team_id, updatedMatch.away_team_id]);
-
-    if (teamsData && !wasPlayed) {
-      const homeTeam = teamsData.find((t) => t.id === updatedMatch.home_team_id);
-      const awayTeam = teamsData.find((t) => t.id === updatedMatch.away_team_id);
-
-      if (homeTeam) {
-        await supabase
-          .from("teams")
-          .update({ budget: homeTeam.budget + homeReward })
-          .eq("id", homeTeam.id);
-      }
-      if (awayTeam) {
-        await supabase
-          .from("teams")
-          .update({ budget: awayTeam.budget + awayReward })
-          .eq("id", awayTeam.id);
-      }
-    }
-
-    // 3. Revisión de fin de ida (mid-season) y fin de vuelta (end-season)
-    let seasonStageApplied: "mid" | "end" | null = null;
+    // 2. Fin de temporada: el dinero de la liga solo se cobra al acabar la vuelta.
+    let seasonStageApplied: "end" | null = null;
     const { data: allLeagueMatches } = await supabase
       .from("matches")
       .select(
@@ -101,10 +57,8 @@ export async function POST(request: Request) {
       .eq("season", updatedMatch.season ?? "");
 
     if (allLeagueMatches && allLeagueMatches.length > 0) {
-      const round1 = allLeagueMatches.filter((m) => m.round === 1);
       const round2 = allLeagueMatches.filter((m) => m.round === 2);
 
-      const round1Complete = round1.length > 0 && round1.every((m) => m.played);
       const round2Complete = round2.length > 0 && round2.every((m) => m.played);
 
       // Si este partido completó la vuelta completa (final de temporada)
@@ -135,34 +89,10 @@ export async function POST(request: Request) {
           // Después de cobrar los premios, se pagan sueldos y renovaciones.
           await closeSeasonContracts(updatedMatch.league_id, calendarKey);
         }
-      } else if (round1Complete && updatedMatch.round === 1) {
-        // Completó todos los partidos de ida (mitad de temporada)
-        const { data: leagueTeams } = await supabase
-          .from("teams")
-          .select("*")
-          .eq("league_id", updatedMatch.league_id);
-
-        if (leagueTeams) {
-          const playableTeams = (leagueTeams as Team[]).filter(
-            (t) => !t.name.toLowerCase().includes("libre") && !t.name.toLowerCase().includes("sin equipo")
-          );
-          const table = buildLeagueTable(
-            playableTeams,
-            round1 as unknown as MatchWithTeams[],
-          );
-          const standings = table.map((row, idx) => ({
-            team_id: row.team.id,
-            position: idx + 1,
-          }));
-          if (await claimSeasonStage(supabase, updatedMatch.league_id, calendarKeyOf(allLeagueMatches), "mid")) {
-            await applySeasonMultipliers(updatedMatch.league_id, standings, "mid");
-            seasonStageApplied = "mid";
-          }
-        }
       }
     }
 
-    // 4. Invalidación de caché
+    // 3. Invalidación de caché
     invalidateMemCache();
     try {
       revalidateTag("matches", "max");

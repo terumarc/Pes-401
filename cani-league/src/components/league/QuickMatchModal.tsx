@@ -455,9 +455,6 @@ export function QuickMatchModal({
                 <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
                   <Coins className="size-3 text-muted-foreground" /> 3. Marcador del Encuentro
                 </span>
-                <span className="text-[10px] text-muted-foreground">
-                  Premio: +3M€ victoria · +1M€ empate
-                </span>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

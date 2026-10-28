@@ -189,7 +189,7 @@ export function FinancesPanel({
           </li>
         </ul>
         <p className="mt-2 px-4 text-[13px] text-muted-foreground">
-          Los premios por posición se cobran al acabar la ida y al acabar la liga.
+          Los premios por posición se cobran solo al acabar la temporada. Ganar partidos no da dinero.
         </p>
       </section>
 
