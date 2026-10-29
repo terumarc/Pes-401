@@ -17,6 +17,7 @@ import {
 import { amountFor, movesMoney, type ActivityRow } from "@/lib/data/activity";
 import { formatMoney } from "@/lib/format/money";
 import { cn } from "@/lib/utils";
+import { TeamLogo } from "@/components/teams/TeamCard";
 
 const KIND: Record<string, { Icon: LucideIcon; tint: string }> = {
   signing: { Icon: UserPlus, tint: "#30d158" },
@@ -61,14 +62,19 @@ function signed(n: number) {
  * Movimientos agrupados por día. Con `teamId`, el dinero se muestra desde el
  * punto de vista de ese club (+ entra, − sale).
  */
+export type ActivityClub = { name: string; logoUrl: string | null; color: string };
+
 export function ActivityList({
   rows,
   teamId,
+  clubs = {},
   emptyTitle = "Sin movimientos todavía",
   emptyText = "Aquí aparecerán los fichajes, ofertas, resultados, sueldos y premios.",
 }: {
   rows: ActivityRow[];
   teamId?: string | null;
+  /** Escudo y color de cada club, para que cada movimiento lleve el suyo. */
+  clubs?: Record<string, ActivityClub>;
   emptyTitle?: string;
   emptyText?: string;
 }) {
@@ -99,14 +105,31 @@ export function ActivityList({
               const meta = KIND[row.kind] ?? { Icon: Wallet, tint: "#8e8e93" };
               const money = amountFor(row, teamId);
               const neutralAmount = !movesMoney(row) && row.amount ? row.amount : null;
+              // En la ficha de un club se ve el escudo del otro club implicado, si lo hay.
+              const crestId = teamId && row.team_id === teamId && row.other_team_id ? row.other_team_id : row.team_id;
+              const club = crestId ? clubs[crestId] : undefined;
               return (
                 <li key={row.id} className="group flex items-start gap-3 pl-4">
-                  <span
-                    aria-hidden
-                    className="mt-3 flex size-8 shrink-0 items-center justify-center rounded-full"
-                    style={{ backgroundColor: `${meta.tint}1f`, color: meta.tint }}
-                  >
-                    <meta.Icon className="size-[17px]" strokeWidth={2.1} />
+                  {/* Escudo del club con el tipo de movimiento en una pastilla, como un avatar con insignia. */}
+                  <span aria-hidden className="relative mt-2.5 shrink-0">
+                    {club ? (
+                      <TeamLogo name={club.name} logoUrl={club.logoUrl} color={club.color} size="sm" />
+                    ) : (
+                      <span
+                        className="flex size-9 items-center justify-center rounded-full"
+                        style={{ backgroundColor: `${meta.tint}1f`, color: meta.tint }}
+                      >
+                        <meta.Icon className="size-[18px]" strokeWidth={2.1} />
+                      </span>
+                    )}
+                    {club && (
+                      <span
+                        className="absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center rounded-full ring-2 ring-card"
+                        style={{ backgroundColor: meta.tint === "#ffffff" ? "#3a3a3c" : meta.tint, color: meta.tint === "#ffffff" ? "#fff" : "#000" }}
+                      >
+                        <meta.Icon className="size-[11px]" strokeWidth={2.6} />
+                      </span>
+                    )}
                   </span>
                   <div className="flex min-h-[60px] min-w-0 flex-1 items-start gap-3 border-b border-border py-2.5 pr-4 group-last:border-b-0">
                     <div className="min-w-0 flex-1">

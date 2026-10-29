@@ -37,6 +37,7 @@ export function WelcomeScreen({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const free = clubs.filter((c) => !c.takenBy);
+  const chosen = clubs.find((c) => c.id === teamId) ?? null;
 
   function save(withoutClub = false) {
     setError(null);
@@ -61,12 +62,32 @@ export function WelcomeScreen({
 
   return (
     <main className="flex min-h-dvh flex-col items-center bg-background px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-foreground">
-      <div className="w-full max-w-md animate-fade-up">
+      {/* Al elegir club, su color se funde con el fondo, como en la ficha de club. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-x-0 top-0 h-[22rem] transition-[background] duration-500"
+        style={{
+          background: chosen
+            ? `linear-gradient(180deg, ${chosen.color}66 0%, transparent 85%)`
+            : "linear-gradient(180deg, rgba(245,190,70,0.14) 0%, transparent 70%)",
+        }}
+      />
+      <div className="relative w-full max-w-md animate-fade-up">
         <header className="flex flex-col items-center pt-4 text-center">
-          <CaniLeagueCrest title="" className="h-16 w-auto" />
-          <h1 className="mt-4 text-[length:min(2rem,51px)] leading-[1.1] font-bold tracking-[-0.02em]">Bienvenido a la liga</h1>
-          <p className="mt-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:balance]">
-            Dinos cómo te llamamos y cuál es tu club. Lo hacemos una sola vez.
+          <div className="flex h-20 items-center justify-center">
+            {chosen ? (
+              <span key={chosen.id} className="animate-fade-up">
+                <TeamLogo name={chosen.name} logoUrl={chosen.logoUrl} color={chosen.color} size="xl" />
+              </span>
+            ) : (
+              <CaniLeagueCrest title="" className="h-20 w-auto" />
+            )}
+          </div>
+          <h1 className="mt-3 text-[length:min(1.6471rem,42px)] leading-tight font-bold tracking-tight">
+            {chosen ? chosen.name : "Bienvenido a la liga"}
+          </h1>
+          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:balance]">
+            {chosen ? `${name.trim() || "Tú"} · Cani League` : "Dinos cómo te llamamos y cuál es tu club. Lo hacemos una sola vez."}
           </p>
         </header>
 
@@ -117,24 +138,28 @@ export function WelcomeScreen({
                       aria-checked={selected}
                       disabled={taken || pending}
                       onClick={() => setTeamId(c.id)}
+                      style={selected ? { background: `linear-gradient(90deg, ${c.color}40, transparent 80%)` } : undefined}
                       className={cn(
-                        "flex min-h-[60px] w-full items-center gap-3 pl-4 text-left outline-none transition-colors active:bg-white/[0.06] focus-visible:bg-white/[0.06]",
+                        "flex min-h-[68px] w-full items-center gap-3 pl-4 text-left outline-none transition-colors active:bg-white/[0.06] focus-visible:bg-white/[0.06]",
                         taken && "opacity-45",
                       )}
                     >
-                      <TeamLogo name={c.name} logoUrl={c.logoUrl} color={c.color} size="sm" />
-                      <span className="flex min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border py-2.5 pr-4 group-last:border-b-0">
+                      <span className="shrink-0 large-text:self-start large-text:pt-3">
+                        <TeamLogo name={c.name} logoUrl={c.logoUrl} color={c.color} size="md" />
+                      </span>
+                      <span className="flex min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border py-3 pr-4 group-last:border-b-0">
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[length:min(1rem,25.5px)]">{c.name}</span>
-                          <span className="block truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
+                          <span className="line-clamp-2 text-[length:min(1rem,25.5px)] font-semibold leading-tight">{c.name}</span>
+                          <span className="line-clamp-2 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
                             {taken ? `Lo lleva ${c.takenBy}` : c.hint ? `Apuntado como ${c.hint}` : "Libre"}
                           </span>
                         </span>
                         <span
                           aria-hidden
+                          style={selected ? { backgroundColor: c.color } : undefined}
                           className={cn(
-                            "flex size-6 shrink-0 items-center justify-center rounded-full",
-                            selected ? "bg-[#0a84ff] text-white" : "ring-1 ring-inset ring-[#48484a]",
+                            "flex size-6 shrink-0 items-center justify-center rounded-full text-white",
+                            selected ? "shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.85)]" : "ring-1 ring-inset ring-[#48484a]",
                             taken && "invisible",
                           )}
                         >

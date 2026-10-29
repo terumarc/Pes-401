@@ -43,6 +43,9 @@ export default async function MovimientosPage({
   const isMine = !!teamId && teamId === viewer.teamId;
 
   const rows = await getActivity({ teamId, group });
+  const clubMap = Object.fromEntries(
+    teams.map((t) => [t.id, { name: t.name, logoUrl: t.logo_url, color: t.primary_color }]),
+  );
 
   // Balance del club con lo que se ve en la lista.
   let incoming = 0;
@@ -125,6 +128,7 @@ export default async function MovimientosPage({
 
       <ActivityList
         rows={rows}
+        clubs={clubMap}
         teamId={teamId}
         emptyText={
           teamId

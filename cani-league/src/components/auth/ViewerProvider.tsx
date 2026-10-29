@@ -10,6 +10,8 @@ export type ClientViewer = {
   email: string;
   teamId: string | null;
   teamName: string | null;
+  teamLogo: string | null;
+  teamColor: string | null;
   isAdmin: boolean;
 };
 

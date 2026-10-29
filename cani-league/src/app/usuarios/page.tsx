@@ -27,7 +27,7 @@ export default async function UsuariosPage() {
   const teams = league ? await getTeamsByLeague(league.id) : [];
   const clubs = teams
     .filter((t) => !/libre|sin equipo/i.test(t.name))
-    .map((t) => ({ id: t.id, name: t.name }))
+    .map((t) => ({ id: t.id, name: t.name, logoUrl: t.logo_url, color: t.primary_color }))
     .sort((a, b) => a.name.localeCompare(b.name, "es"));
 
   const views: MemberView[] = (members ?? []).map((m) => ({

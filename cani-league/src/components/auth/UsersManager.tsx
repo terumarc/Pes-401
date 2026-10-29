@@ -9,6 +9,7 @@ import { useConfirm } from "@/components/ui/use-confirm";
 import { addMemberAction, removeMemberAction, updateMemberAction, type MemberInput } from "@/app/actions/members";
 import { initials } from "@/components/auth/UserMenu";
 import { cn } from "@/lib/utils";
+import { TeamLogo } from "@/components/teams/TeamCard";
 
 export type MemberView = {
   id: string;
@@ -21,12 +22,12 @@ export type MemberView = {
   lastSeen: string | null;
 };
 
-type Club = { id: string; name: string };
+type Club = { id: string; name: string; logoUrl: string | null; color: string };
 
 /** Lista de la liga: quién puede entrar, con qué club y quién es admin. */
 export function UsersManager({ members, clubs, meId }: { members: MemberView[]; clubs: Club[]; meId: string }) {
   const [editing, setEditing] = useState<MemberView | "new" | null>(null);
-  const clubName = (id: string | null) => clubs.find((c) => c.id === id)?.name ?? null;
+  const clubOf = (id: string | null) => clubs.find((c) => c.id === id) ?? null;
   const takenClubs = new Map(members.filter((m) => m.teamId).map((m) => [m.teamId!, m.name]));
   const clubsWithoutOwner = clubs.filter((c) => !takenClubs.has(c.id));
 
@@ -38,23 +39,28 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
       </p>
 
       <ul className="overflow-hidden rounded-[22px] bg-card">
-        {members.map((m) => (
+        {members.map((m) => {
+          const club = clubOf(m.teamId);
+          return (
           <li key={m.id} className="group">
             <button
               type="button"
               onClick={() => setEditing(m)}
               className="flex min-h-[68px] w-full items-center gap-3 pl-4 text-left active:bg-white/[0.06]"
             >
-              <span
-                aria-hidden
-                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#2c2c2e] text-[15px] font-semibold"
-              >
-                {initials(m.name) || "?"}
+              <span aria-hidden className="shrink-0 large-text:self-start large-text:pt-3">
+                {club ? (
+                  <TeamLogo name={club.name} logoUrl={club.logoUrl} color={club.color} size="md" />
+                ) : (
+                  <span className="flex size-11 items-center justify-center rounded-full bg-[#2c2c2e] text-[15px] font-semibold">
+                    {initials(m.name) || "?"}
+                  </span>
+                )}
               </span>
-              <span className="flex min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border py-2.5 pr-3 group-last:border-b-0">
+              <span className="flex min-w-0 flex-1 items-center gap-3 self-stretch border-b border-border py-3 pr-3 group-last:border-b-0">
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="truncate text-[length:min(1rem,25.5px)]">{m.name}</span>
+                    <span className="truncate text-[length:min(1rem,25.5px)] font-semibold">{m.name}</span>
                     {m.id === meId && <span className="shrink-0 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">(tú)</span>}
                     {m.isAdmin && (
                       <span className="shrink-0 rounded-full bg-[#ff9f0a]/15 px-2 py-0.5 text-[length:min(0.6471rem,16.5px)] font-semibold text-[#ff9f0a]">
@@ -63,7 +69,7 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
                     )}
                   </span>
                   <span className="block truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
-                    {clubName(m.teamId) ?? "Sin club"} · {m.email}
+                    {club?.name ?? "Sin club"} · {m.email}
                   </span>
                   {!m.joined && <span className="block text-[length:min(0.7647rem,19.5px)] text-[#0a84ff]">Aún no ha entrado</span>}
                 </span>
@@ -71,7 +77,8 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
               </span>
             </button>
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       <button

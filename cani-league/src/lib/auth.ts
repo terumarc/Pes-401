@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { logoSrc } from "@/lib/logo";
 import { createClient } from "@/lib/supabase/server";
 
 /** Quién está usando la app: su ficha de miembro de la liga. */
@@ -9,6 +10,8 @@ export type Viewer = {
   email: string;
   teamId: string | null;
   teamName: string | null;
+  teamLogo: string | null;
+  teamColor: string | null;
   isAdmin: boolean;
   /** Ya ha pasado por la bienvenida (nombre y club). */
   onboarded: boolean;
@@ -31,19 +34,20 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 
   const { data: row } = await supabase
     .from("members")
-    .select("*, team:teams(name)")
+    .select("*, team:teams(name, logo_url, primary_color)")
     .eq("user_id", userId)
     .maybeSingle();
   let member: { id: string; display_name: string; email: string; team_id: string | null; is_admin: boolean; onboarded_at: string | null } | null = row;
-  let teamName: string | null = (row?.team as { name: string } | null)?.name ?? null;
+  type TeamBits = { name: string; logo_url: string | null; primary_color: string } | null;
+  let team = (row?.team as TeamBits) ?? null;
 
   if (!member) {
     // Primera vez que entra: se enlaza su cuenta con su ficha de miembro.
     const { data: claimed } = await supabase.rpc("claim_membership");
     member = claimed && claimed.id ? claimed : null;
     if (member?.team_id) {
-      const { data: team } = await supabase.from("teams").select("name").eq("id", member.team_id).maybeSingle();
-      teamName = team?.name ?? null;
+      const { data } = await supabase.from("teams").select("name, logo_url, primary_color").eq("id", member.team_id).maybeSingle();
+      team = data ?? null;
     }
   }
   if (!member) return null;
@@ -54,7 +58,9 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     name: member.display_name,
     email: member.email,
     teamId: member.team_id,
-    teamName,
+    teamName: team?.name ?? null,
+    teamLogo: member.team_id ? logoSrc(member.team_id, team?.logo_url) : null,
+    teamColor: team?.primary_color ?? null,
     isAdmin: member.is_admin,
     onboarded: !!member.onboarded_at,
   };

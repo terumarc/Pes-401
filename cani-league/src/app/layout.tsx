@@ -52,6 +52,8 @@ async function getClientViewer(): Promise<ClientViewer | null> {
       email: viewer.email,
       teamId: viewer.teamId,
       teamName: viewer.teamName,
+      teamLogo: viewer.teamLogo,
+      teamColor: viewer.teamColor,
       isAdmin: viewer.isAdmin,
     };
   } catch {

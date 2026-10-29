@@ -15,6 +15,7 @@ import {
 import { useViewer } from "@/components/auth/ViewerProvider";
 import { signOutAction } from "@/app/login/actions";
 import { cn } from "@/lib/utils";
+import { TeamLogo } from "@/components/teams/TeamCard";
 
 export function initials(name: string) {
   return name
@@ -40,14 +41,20 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
     });
   }
 
-  const avatar = (
-    <span
-      aria-hidden
-      className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#2c2c2e] text-[13px] font-semibold text-white"
-    >
-      {initials(viewer.name) || "?"}
-    </span>
-  );
+  // El escudo de tu club hace de foto de perfil; sin club, tus iniciales.
+  const avatar =
+    viewer.teamId && viewer.teamName ? (
+      <span aria-hidden className="shrink-0">
+        <TeamLogo name={viewer.teamName} logoUrl={viewer.teamLogo} color={viewer.teamColor ?? "#2c2c2e"} size="xs" />
+      </span>
+    ) : (
+      <span
+        aria-hidden
+        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#2c2c2e] text-[12px] font-semibold text-white"
+      >
+        {initials(viewer.name) || "?"}
+      </span>
+    );
 
   return (
     <DropdownMenu>

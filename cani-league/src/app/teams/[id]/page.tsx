@@ -111,7 +111,11 @@ export default async function TeamDetailPage({ params }: Props) {
             Ver todos
           </Link>
         </div>
-        <ActivityList rows={activity} teamId={team.id} />
+        <ActivityList
+          rows={activity}
+          teamId={team.id}
+          clubs={Object.fromEntries(teams.map((t) => [t.id, { name: t.name, logoUrl: t.logo_url, color: t.primary_color }]))}
+        />
       </section>
     </div>
   );
