@@ -36,6 +36,7 @@ import {
 import { ADMIN_NAV_ITEMS, NAV_ITEMS } from "@/constants"
 import { useViewer } from "@/components/auth/ViewerProvider"
 import { UserMenu } from "@/components/auth/UserMenu"
+import { CaniLeagueCrest } from "@/components/brand/CaniLeagueCrest"
 
 const ICONS = {
   LayoutDashboard,
@@ -87,9 +88,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
               <Link href="/calendar" onClick={() => setOpenMobile(false)}>
-                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Trophy className="size-4" />
-                </div>
+                <CaniLeagueCrest title="" className="h-8 w-auto shrink-0" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Cani League</span>
                   <span className="truncate text-xs text-muted-foreground">PES 6 Manager</span>

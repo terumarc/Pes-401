@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { OTPInput, type SlotProps } from "input-otp";
 import { Check, ChevronLeft, Loader2 } from "lucide-react";
-import { PixelTrophy } from "@/components/trophies/PixelTrophy";
+import { CaniLeagueCrest } from "@/components/brand/CaniLeagueCrest";
 import { sendCodeAction, verifyCodeAction } from "@/app/login/actions";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ type Step = "email" | "code" | "done";
 
 /**
  * Pantalla de entrada, con el mismo estilo que el resto de la app: el trofeo
- * de la liga en su estante y una tarjeta. Dos pasos: email → código de 6 cifras.
+ * de la liga y una tarjeta. Dos pasos: email → código de 6 cifras.
  */
 export function LoginScreen({
   season,
@@ -104,21 +104,17 @@ export function LoginScreen({
 
   return (
     <main className="flex min-h-dvh flex-col items-center bg-background px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-foreground">
-      {/* Trofeo, nombre y tarjeta van juntos y centrados; la nota queda abajo. */}
+      {/* Escudo, nombre y tarjeta van juntos y centrados; la nota queda abajo. */}
       <div className="flex w-full max-w-md flex-1 flex-col justify-center animate-fade-up">
         <header className="flex flex-col items-center text-center">
-          {/* El trofeo de la liga en su estante iluminado, como en la sala de trofeos */}
-          <div className="relative flex h-40 w-full items-end justify-center">
+          {/* Escudo de la liga con un brillo dorado detrás */}
+          <div className="relative flex w-full justify-center">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -top-4 -bottom-10"
-              style={{ background: "radial-gradient(closest-side, rgba(245,190,70,0.2), rgba(245,190,70,0.06) 55%, transparent)" }}
+              className="pointer-events-none absolute inset-x-0 -inset-y-8"
+              style={{ background: "radial-gradient(closest-side, rgba(245,190,70,0.16), rgba(245,190,70,0.05) 55%, transparent)" }}
             />
-            <PixelTrophy
-              type="league"
-              title="Trofeo de la Cani League"
-              className="relative h-36 drop-shadow-[0_6px_0_rgba(0,0,0,0.35)]"
-            />
+            <CaniLeagueCrest className="relative h-[136px] w-auto drop-shadow-[0_6px_0_rgba(0,0,0,0.35)]" />
           </div>
           <h1 className="mt-5 text-[34px] leading-[1.1] font-bold tracking-[-0.02em]">Cani League</h1>
           <p className="mt-1 text-[15px] text-muted-foreground">
