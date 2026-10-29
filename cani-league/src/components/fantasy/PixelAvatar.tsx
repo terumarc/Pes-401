@@ -137,10 +137,29 @@ export function PixelAvatar({
 }) {
   const body = shirt || "#5d6675";
   const pixels = build(seed, body, trim || shade(body, 1.6));
+  // Un trazo por color, juntando los píxeles seguidos de cada fila: unas 10 figuras en vez de ~400 cuadrados.
+  const byColor = new Map<string, string>();
+  const rows = new Map<string, { x: number; y: number }[]>();
+  for (const p of pixels) {
+    const k = `${p.c}|${p.y}`;
+    (rows.get(k) ?? rows.set(k, []).get(k)!).push(p);
+  }
+  for (const [k, list] of rows) {
+    const c = k.slice(0, k.indexOf("|"));
+    list.sort((a, b) => a.x - b.x);
+    let d = byColor.get(c) ?? "";
+    for (let i = 0; i < list.length; ) {
+      let j = i;
+      while (j + 1 < list.length && list[j + 1].x === list[j].x + 1) j++;
+      d += `M${list[i].x} ${list[i].y}h${j - i + 1}v1h-${j - i + 1}z`;
+      i = j + 1;
+    }
+    byColor.set(c, d);
+  }
   return (
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} shapeRendering="crispEdges" className={className} style={style} aria-hidden>
-      {pixels.map((p) => (
-        <rect key={`${p.x}-${p.y}`} x={p.x} y={p.y} width={1} height={1} fill={p.c} />
+      {[...byColor].map(([c, d]) => (
+        <path key={c} d={d} fill={c} />
       ))}
     </svg>
   );

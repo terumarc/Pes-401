@@ -121,7 +121,7 @@ export default async function MovimientosPage({
           </div>
           <div className="border-l border-border">
             <dt className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Ha salido</dt>
-            <dd className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums text-[#ff453a]">−{formatMoney(outgoing)}</dd>
+            <dd className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums text-destructive">−{formatMoney(outgoing)}</dd>
           </div>
         </dl>
       )}

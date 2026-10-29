@@ -62,7 +62,7 @@ export function LeagueTable({ rows, forms = {} }: { rows: LeagueTableRow[]; form
                   role="cell"
                   className={cn(
                     "w-6 shrink-0 text-center text-[length:min(0.8824rem,22.5px)] font-bold tabular-nums",
-                    first ? "text-[#30d158]" : last ? "text-[#ff453a]" : "text-muted-foreground",
+                    first ? "text-[#30d158]" : last ? "text-destructive" : "text-muted-foreground",
                   )}
                 >
                   {pos}

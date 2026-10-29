@@ -207,7 +207,7 @@ export async function updateTeam(
 }
 
 const PLAYER_LIST_COLUMNS =
-  "id,team_id,name,short_name,photo_url,position,age,nationality,overall,speed,acceleration,shooting,passing,dribbling,defending,physical,market_value,transfer_price,available_in_market,created_at,team:teams(id,name,short_name,primary_color,logo_url)";
+  "id,team_id,name,short_name,photo_url,position,age,nationality,overall,speed,acceleration,shooting,passing,dribbling,defending,physical,market_value,transfer_price,available_in_market,created_at,team:teams(id,name,short_name,primary_color,secondary_color,logo_url)";
 
 /** Internal helper to fetch all players in parallel chunks */
 async function fetchAllPlayersInParallel(
@@ -344,6 +344,15 @@ export const getLeagueSquads = safeCache(
   ["players", "league_squads"],
   { revalidate: 120, tags: ["players", "teams"] }
 );
+
+/** Nombres de unos pocos jugadores por id (para ofertas e historial). */
+export async function getPlayerNames(ids: string[]): Promise<Record<string, string>> {
+  const unique = [...new Set(ids)];
+  if (!unique.length) return {};
+  const { data, error } = await createStaticClient().from("players").select("id,name").in("id", unique);
+  if (error) throw error;
+  return Object.fromEntries((data ?? []).map((p) => [p.id, p.name]));
+}
 
 export async function getPlayerById(
   id: string,

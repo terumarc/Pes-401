@@ -154,7 +154,7 @@ export function StatStrip({ items }: { items: { label: string; value: ReactNode;
       <dl className="flex gap-2 sm:grid sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {items.map((it) => (
           <div key={it.label} className="min-w-[8.5rem] shrink-0 rounded-2xl border border-border/80 bg-card/60 px-3.5 py-3">
-            <dt className="text-[length:min(0.7059rem,18px)] font-medium text-muted-foreground">{it.label}</dt>
+            <dt className="text-[length:min(0.7059rem,18px)] font-medium text-[#aeaeb2]">{it.label}</dt>
             <dd className="mt-1 text-lg font-bold tabular-nums tracking-tight">{it.value}</dd>
             {it.hint && <dd className="mt-0.5 text-[length:min(0.7059rem,18px)] text-muted-foreground">{it.hint}</dd>}
           </div>

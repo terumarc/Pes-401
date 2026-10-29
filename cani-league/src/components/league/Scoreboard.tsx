@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { recordMatchResultClient, resetMatchResultClient } from "@/lib/data/mutations";
+import { recordDirectMatchClient, recordMatchResultClient, resetMatchResultClient } from "@/lib/data/mutations";
 import { cn } from "@/lib/utils";
 import { MatchCard } from "./MatchCard";
+import { NEW_LEAGUE_MATCH_EVENT } from "./NewMatchButton";
 import type { MatchWithTeams } from "@/types";
 import { headToHead, type GoalRow, type MatchLite } from "@/lib/stats";
 import { canActFor, useViewer } from "@/components/auth/ViewerProvider";
@@ -273,7 +274,7 @@ function HeadToHeadBlock({ match, extras }: { match: MatchWithTeams; extras: Ext
   const line = (m: MatchLite) => `${nameOf(m.home_team_id)} ${m.home_goals}–${m.away_goals} ${nameOf(m.away_team_id)}`;
   return (
     <section aria-label="Historial" className="mt-6">
-      <h3 className="mb-1.5 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Historial · {h.games.length} partidos</h3>
+      <h3 className="mb-1.5 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Historial · {h.games.length} {h.games.length === 1 ? "partido" : "partidos"}</h3>
       <div className="overflow-hidden rounded-[14px] bg-secondary">
         <div className="grid grid-cols-3 border-b border-border py-2.5 text-center">
           {[
@@ -304,8 +305,188 @@ function HeadToHeadBlock({ match, extras }: { match: MatchWithTeams; extras: Ext
   );
 }
 
+/** Hoja iOS: asa, «Cancelar» a la izquierda y título. */
+function SheetHeader({ title, onClose }: { title: string; onClose: () => void }) {
+  return (
+    <>
+      <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center large-text:grid-cols-1 large-text:justify-items-start large-text:gap-1">
+        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[length:min(1rem,25.5px)] text-[#0a84ff] active:opacity-60">
+          Cancelar
+        </button>
+        <DialogTitle className="text-[length:min(1rem,25.5px)] font-semibold">{title}</DialogTitle>
+        <span />
+      </div>
+    </>
+  );
+}
+
+/**
+ * Paso 1 de «Nuevo partido»: elegir local y visitante (como en las copas).
+ * Debajo dice qué partido del calendario se va a apuntar.
+ */
+function PickMatchSheet({
+  teams,
+  matches,
+  onClose,
+  onFixture,
+  onExtra,
+}: {
+  teams: Side[];
+  matches: MatchWithTeams[];
+  onClose: () => void;
+  onFixture: (match: MatchWithTeams) => void;
+  onExtra: (home: Side, away: Side) => void;
+}) {
+  const viewer = useViewer();
+  const own = !viewer?.isAdmin && viewer?.teamId ? viewer.teamId : null;
+  const [home, setHome] = useState<string | null>(own);
+  const [away, setAway] = useState<string | null>(null);
+  const label = (t: Side) => t.short_name || t.name;
+  const sorted = [...teams].sort((a, b) => label(a).localeCompare(label(b), "es"));
+  const byId = new Map(teams.map((t) => [t.id, t]));
+
+  // El siguiente partido pendiente entre los dos, en cualquier orden.
+  const fixture =
+    home && away
+      ? matches
+          .filter(
+            (m) =>
+              !m.played &&
+              ((m.home_team_id === home && m.away_team_id === away) || (m.home_team_id === away && m.away_team_id === home)),
+          )
+          .sort((a, b) => a.matchday - b.matchday)[0]
+      : undefined;
+  const allowed = !home || !away || canActFor(viewer, home) || canActFor(viewer, away);
+
+  let note: string | null = null;
+  if (home && away && allowed) {
+    note = fixture
+      ? `Se apunta la jornada ${fixture.matchday} · ${fixture.round === 2 ? "vuelta" : "ida"}, con ${label(byId.get(fixture.home_team_id)!)} en casa.`
+      : "Ya jugaron la ida y la vuelta: se apunta como partido extra y cuenta para la tabla.";
+  }
+
+  const picker = (legend: string, value: string | null, set: (id: string) => void, other: string | null) => (
+    <fieldset className="mt-4">
+      <legend className="mb-1.5 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">{legend}</legend>
+      <div className="grid grid-cols-2 gap-2">
+        {sorted.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            aria-pressed={value === t.id}
+            disabled={other === t.id}
+            onClick={() => set(t.id)}
+            className={cn(
+              "flex min-h-11 min-w-0 items-center gap-2 rounded-full px-3 text-[length:min(0.8824rem,22.5px)] font-semibold transition-colors disabled:opacity-30",
+              value === t.id ? "bg-white text-black" : "bg-secondary",
+            )}
+          >
+            <Crest team={t} size={22} />
+            <span className="truncate">{label(t)}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+
+  return (
+    <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
+      <SheetHeader title="Nuevo partido" onClose={onClose} />
+      <DialogDescription className="px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
+        Elige quién ha jugado. El resultado y los goleadores van en el paso siguiente.
+      </DialogDescription>
+
+      {picker("Local", home, setHome, away)}
+      {picker("Visitante", away, setAway, home)}
+
+      {!allowed && (
+        <p className="mt-4 text-center text-[length:min(0.8824rem,22.5px)] text-[#ffb340]">
+          Solo puedes apuntar partidos de {viewer?.teamName ?? "tu club"}.
+        </p>
+      )}
+      {note && <p className="mt-4 text-center text-[length:min(0.8824rem,22.5px)] text-muted-foreground">{note}</p>}
+
+      <button
+        type="button"
+        disabled={!home || !away || !allowed}
+        onClick={() => {
+          if (!home || !away) return;
+          if (fixture) onFixture(fixture);
+          else onExtra(byId.get(home)!, byId.get(away)!);
+        }}
+        className="mt-6 h-[50px] w-full rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black transition-opacity active:opacity-80 disabled:opacity-40"
+      >
+        Siguiente
+      </button>
+    </DialogContent>
+  );
+}
+
+/** Paso 2 cuando ya se jugaron la ida y la vuelta: marcador de un partido extra. */
+function ExtraMatchSheet({ leagueId, home, away, onClose }: { leagueId: string; home: Side; away: Side; onClose: () => void }) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [h, setH] = useState(0);
+  const [a, setA] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    setBusy(true);
+    setError(null);
+    try {
+      await recordDirectMatchClient(leagueId, home.id, away.id, h, a);
+      onClose();
+      startTransition(() => router.refresh());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo guardar el resultado.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
+      <SheetHeader title="Partido extra" onClose={onClose} />
+      <DialogDescription className="sr-only">Marcador del partido extra</DialogDescription>
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        {[
+          { team: home, value: h, set: setH },
+          { team: away, value: a, set: setA },
+        ].map(({ team, value, set }) => (
+          <div key={team.id} className="flex flex-col items-center gap-2">
+            <Crest team={team} size={44} />
+            <p className="max-w-full truncate text-[length:min(0.8824rem,22.5px)] font-semibold">{team.name}</p>
+            <Stepper value={value} onChange={set} label={team.name} />
+          </div>
+        ))}
+      </div>
+      {error && <p role="alert" className="mt-4 text-center text-[length:min(0.8824rem,22.5px)] text-destructive">{error}</p>}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={save}
+        className="mt-7 h-[50px] w-full rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black transition-opacity active:opacity-80 disabled:opacity-50"
+      >
+        {busy ? "Guardando…" : "Guardar resultado"}
+      </button>
+    </DialogContent>
+  );
+}
+
 /** Partidos de la ida y de la vuelta, cada fase con todos sus partidos juntos: primero los que faltan por jugar. */
-export function Scoreboard({ matches, records, extras }: { matches: MatchWithTeams[]; records: Record<string, string>; extras: Extras }) {
+export function Scoreboard({
+  leagueId,
+  matches,
+  records,
+  extras,
+}: {
+  leagueId: string;
+  matches: MatchWithTeams[];
+  records: Record<string, string>;
+  extras: Extras;
+}) {
   const byRound = useMemo(() => {
     const order = (x: MatchWithTeams, y: MatchWithTeams) => x.matchday - y.matchday;
     return {
@@ -318,6 +499,25 @@ export function Scoreboard({ matches, records, extras }: { matches: MatchWithTea
     byRound[1].some((m) => !m.played) || !byRound[2].length ? 1 : 2,
   );
   const [openId, setOpenId] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+  const [extra, setExtra] = useState<{ home: Side; away: Side } | null>(null);
+
+  // «Nuevo partido» vive en la cabecera de la página.
+  useEffect(() => {
+    const show = () => setPicking(true);
+    window.addEventListener(NEW_LEAGUE_MATCH_EVENT, show);
+    return () => window.removeEventListener(NEW_LEAGUE_MATCH_EVENT, show);
+  }, []);
+
+  // Clubes de la liga, sacados del calendario.
+  const teams = useMemo(() => {
+    const map = new Map<string, Side>();
+    for (const m of matches) {
+      map.set(m.home_team.id, m.home_team);
+      map.set(m.away_team.id, m.away_team);
+    }
+    return [...map.values()];
+  }, [matches]);
 
   const list = byRound[round];
   const pending = list.filter((m) => !m.played);
@@ -368,6 +568,27 @@ export function Scoreboard({ matches, records, extras }: { matches: MatchWithTea
 
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpenId(null)}>
         {open && <ResultSheet key={open.id} match={open} extras={extras} onClose={() => setOpenId(null)} />}
+      </Dialog>
+      <Dialog open={picking} onOpenChange={setPicking}>
+        {picking && (
+          <PickMatchSheet
+            teams={teams}
+            matches={matches}
+            onClose={() => setPicking(false)}
+            onFixture={(m) => {
+              setPicking(false);
+              setRound(m.round === 2 ? 2 : 1);
+              setOpenId(m.id);
+            }}
+            onExtra={(home, away) => {
+              setPicking(false);
+              setExtra({ home, away });
+            }}
+          />
+        )}
+      </Dialog>
+      <Dialog open={!!extra} onOpenChange={(o) => !o && setExtra(null)}>
+        {extra && <ExtraMatchSheet leagueId={leagueId} home={extra.home} away={extra.away} onClose={() => setExtra(null)} />}
       </Dialog>
     </section>
   );

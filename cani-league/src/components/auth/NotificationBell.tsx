@@ -48,8 +48,10 @@ export function NotificationBell({ className }: { className?: string }) {
   useEffect(() => {
     if (!userId) return;
     load();
+    // Nombre único por montaje: si el componente se vuelve a montar antes de que se cierre el canal
+    // anterior, Supabase devolvería ese mismo canal ya suscrito y fallaría.
     const channel = supabase
-      .channel(`notifications:${userId}`)
+      .channel(`notifications:${userId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },

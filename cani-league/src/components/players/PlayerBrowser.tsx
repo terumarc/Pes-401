@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { PixelAvatar } from "@/components/fantasy/PixelAvatar";
@@ -9,6 +9,8 @@ import { formatMoney } from "@/lib/format/money";
 import { getPlayerEffectiveRating, getPlayerFixedPrice, getPlayerTier, getPositionGroup } from "@/lib/players";
 import { cn } from "@/lib/utils";
 import type { Player, Team } from "@/types";
+import { searchPlayersAction } from "@/app/actions/player-search";
+import type { PlayerSearchResult } from "@/lib/data/player-search";
 
 type Row = Player & { team?: Partial<Team> | null };
 
@@ -37,7 +39,6 @@ const SORTS = [
   { key: "age", label: "Edad" },
 ] as const;
 
-const PAGE = 40;
 
 function compactMoney(v: number) {
   if (v >= 1_000_000) {
@@ -92,12 +93,13 @@ function Segmented<T extends string>({
  * y lista agrupada. En modo mercado cada fila lleva su precio y el botón de fichar.
  */
 export function PlayerBrowser({
-  players,
+  initial,
   teams,
   mode,
   marketOpen = true,
 }: {
-  players: Row[];
+  /** Primera página (40) ya buscada en el servidor con los filtros por defecto. */
+  initial: PlayerSearchResult;
   teams: Team[];
   mode: "players" | "market";
   /** Con la ventana de fichajes cerrada los botones de fichar se desactivan. */
@@ -108,34 +110,54 @@ export function PlayerBrowser({
   const [tier, setTier] = useState<(typeof TIER_FILTERS)[number]["key"]>("all");
   const [origin, setOrigin] = useState<"all" | "free" | "club">("all");
   const [sort, setSort] = useState<(typeof SORTS)[number]["key"]>("rating");
-  const [limit, setLimit] = useState(PAGE);
   const [buying, setBuying] = useState<Row | null>(null);
-  const q = useDeferredValue(query.trim().toLowerCase());
+  const [result, setResult] = useState(initial);
+  const [loading, startLoading] = useTransition();
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const request = useRef(0);
+  const firstRun = useRef(true);
 
-  const list = useMemo(() => {
-    const out = players.filter((p) => {
-      if (group !== "all" && getPositionGroup(p.position) !== group) return false;
-      if (tier !== "all" && getPlayerTier(p).tier !== tier) return false;
-      if (origin === "free" && !isFree(p)) return false;
-      if (origin === "club" && isFree(p)) return false;
-      if (!q) return true;
-      return (
-        p.name.toLowerCase().includes(q) ||
-        (p.team?.name ?? "").toLowerCase().includes(q) ||
-        (p.nationality ?? "").toLowerCase().includes(q) ||
-        p.position.toLowerCase() === q
-      );
-    });
-    out.sort((a, b) => {
-      if (sort === "price") return getPlayerFixedPrice(b) - getPlayerFixedPrice(a);
-      if (sort === "name") return a.name.localeCompare(b.name, "es");
-      if (sort === "age") return (a.age ?? 99) - (b.age ?? 99);
-      return getPlayerEffectiveRating(b) - getPlayerEffectiveRating(a);
-    });
-    return out;
-  }, [players, group, tier, origin, sort, q]);
+  // Cada cambio de búsqueda o filtro pide la primera página al servidor (la búsqueda espera 250 ms a que dejes de escribir).
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    const id = ++request.current;
+    const t = setTimeout(
+      () =>
+        startLoading(async () => {
+          try {
+            const r = await searchPlayersAction({ q: query, group, tier, origin, sort, offset: 0 });
+            if (id === request.current) {
+              setResult(r);
+              setFailed(false);
+            }
+          } catch {
+            if (id === request.current) setFailed(true);
+          }
+        }),
+      query ? 250 : 0,
+    );
+    return () => clearTimeout(t);
+  }, [query, group, tier, origin, sort]);
 
-  const shown = list.slice(0, limit);
+  async function loadMore() {
+    const id = request.current;
+    setLoadingMore(true);
+    try {
+      const r = await searchPlayersAction({ q: query, group, tier, origin, sort, offset: result.rows.length });
+      if (id === request.current) setResult((prev) => ({ rows: [...prev.rows, ...r.rows], total: r.total }));
+    } catch {
+      setFailed(true);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  const shown = result.rows as Row[];
+  const total = result.total;
 
   return (
     <div className="space-y-4">
@@ -148,7 +170,6 @@ export function PlayerBrowser({
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            setLimit(PAGE);
           }}
           placeholder="Nombre, club o país"
           className="h-11 w-full rounded-[10px] bg-input pl-10 pr-10 text-[length:min(1rem,25.5px)] outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/60 [&::-webkit-search-cancel-button]:hidden"
@@ -167,8 +188,8 @@ export function PlayerBrowser({
         )}
       </label>
 
-      <Segmented label="Línea" value={group} onChange={(v) => { setGroup(v); setLimit(PAGE); }} options={GROUPS} />
-      <Segmented label="Nivel" value={tier} onChange={(v) => { setTier(v); setLimit(PAGE); }} options={TIER_FILTERS} />
+      <Segmented label="Línea" value={group} onChange={setGroup} options={GROUPS} />
+      <Segmented label="Nivel" value={tier} onChange={setTier} options={TIER_FILTERS} />
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         {mode === "market" ? (
@@ -184,7 +205,7 @@ export function PlayerBrowser({
                 key={k}
                 type="button"
                 aria-pressed={origin === k}
-                onClick={() => { setOrigin(k); setLimit(PAGE); }}
+                onClick={() => setOrigin(k)}
                 className={cn(
                   "relative h-8 rounded-full px-3.5 text-[length:min(0.8824rem,22.5px)] font-semibold after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
                   origin === k ? "bg-white text-black" : "bg-card text-foreground",
@@ -195,7 +216,7 @@ export function PlayerBrowser({
             ))}
           </div>
         ) : (
-          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground tabular-nums">{list.length} jugadores</p>
+          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground tabular-nums" aria-live="polite">{total} jugadores</p>
         )}
         <label className="flex items-center gap-1.5 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
           <span className={mode === "market" ? "sr-only" : undefined}>Ordenar por</span>
@@ -213,13 +234,13 @@ export function PlayerBrowser({
         </label>
       </div>
 
-      {shown.length === 0 ? (
+      {shown.length === 0 && !loading ? (
         <div className="rounded-[22px] bg-card px-6 py-10 text-center">
           <p className="text-[length:min(1rem,25.5px)] font-semibold">Sin resultados</p>
           <p className="mt-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">Prueba con otro nombre o quita los filtros.</p>
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-[22px] bg-card">
+        <ul className={cn("overflow-hidden rounded-[22px] bg-card transition-opacity", loading && "opacity-60")} aria-busy={loading}>
           {shown.map((p) => {
             const free = isFree(p);
             const rating = getPlayerEffectiveRating(p);
@@ -241,13 +262,20 @@ export function PlayerBrowser({
         </ul>
       )}
 
-      {list.length > shown.length && (
+      {failed && (
+        <p role="alert" className="px-1 text-[length:min(0.8824rem,22.5px)] text-destructive">
+          No se pudo cargar la lista. Comprueba la conexión y vuelve a cambiar un filtro.
+        </p>
+      )}
+
+      {total > shown.length && (
         <button
           type="button"
-          onClick={() => setLimit((l) => l + PAGE)}
-          className="h-11 w-full rounded-full bg-card text-[length:min(1rem,25.5px)] font-semibold text-[#0a84ff] active:opacity-70"
+          onClick={loadMore}
+          disabled={loadingMore}
+          className="h-11 w-full rounded-full bg-card text-[length:min(1rem,25.5px)] font-semibold text-[#0a84ff] active:opacity-70 disabled:opacity-60"
         >
-          Mostrar más ({list.length - shown.length})
+          {loadingMore ? "Cargando…" : `Mostrar más (${total - shown.length})`}
         </button>
       )}
 
@@ -278,15 +306,12 @@ const TIER_TINT: Record<string, string> = {
 };
 const LINE_TINT: Record<string, string> = { gk: "#e8c35a", def: "#74aee8", mid: "#6fcf97", att: "#ec8a8a" };
 
-function Avatar({ p, free, size }: { p: Row; free: boolean; size: number }) {
+function Avatar({ p, free, className }: { p: Row; free: boolean; className?: string }) {
   return (
-    <span
-      className="flex shrink-0 items-end justify-center overflow-hidden rounded-full bg-[#2a2a2d] ring-1 ring-white/[0.08]"
-      style={{ width: size, height: size }}
-    >
+    <span className={cn("flex shrink-0 items-end justify-center overflow-hidden rounded-full bg-[#2a2a2d] ring-1 ring-white/[0.08]", className)}>
       {p.photo_url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={p.photo_url} alt="" className="size-full object-cover" />
+        <img src={p.photo_url} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
       ) : (
         <PixelAvatar
           seed={p.id}
@@ -300,19 +325,16 @@ function Avatar({ p, free, size }: { p: Row; free: boolean; size: number }) {
 }
 
 /** La media es lo único con peso; el nivel va debajo, pequeño y en su tono. */
-function Rating({ rating, tier, big }: { rating: number; tier: string; big?: boolean }) {
+function Rating({ rating, tier }: { rating: number; tier: string }) {
   const tint = TIER_TINT[tier] ?? TIER_TINT.D;
   return (
     <span
-      className={cn(
-        "flex shrink-0 flex-col items-center justify-center rounded-[12px] bg-white/[0.05] leading-none tabular-nums ring-1 ring-inset",
-        big ? "h-[58px] w-[54px]" : "h-11 w-11",
-      )}
+      className="flex size-11 shrink-0 flex-col items-center justify-center rounded-[12px] bg-white/[0.05] leading-none tabular-nums ring-1 ring-inset large-text:h-[58px] large-text:w-[54px]"
       style={{ ["--tw-ring-color" as string]: `${tint}33` }}
       aria-label={`Media ${rating || "sin datos"}, nivel ${tier}`}
     >
-      <span className={cn("font-semibold tracking-tight text-foreground", big ? "text-[24px]" : "text-[18px]")}>{rating || "–"}</span>
-      <span className={cn("mt-1 font-medium tracking-wide", big ? "text-[13px]" : "text-[12px]")} style={{ color: tint }}>
+      <span className="text-[18px] font-semibold tracking-tight text-foreground large-text:text-[24px]">{rating || "–"}</span>
+      <span className="mt-1 text-[12px] font-medium tracking-wide large-text:text-[13px]" style={{ color: tint }}>
         {tier}
       </span>
     </span>
@@ -391,40 +413,36 @@ function PlayerRow({
   const href = `/players/${p.id}`;
 
   return (
-    <div className="border-b border-white/[0.06] group-last:border-b-0">
-      {/* Letra normal */}
-      <div className="flex min-h-[68px] items-center gap-3 px-4 py-3 large-text:hidden">
-        <Link href={href} className="flex min-w-0 flex-1 items-center gap-3 rounded-[14px] outline-offset-4">
-          <Avatar p={p} free={free} size={44} />
-          <span className="min-w-0 flex-1">
-            <span className="line-clamp-2 text-[length:min(1rem,25.5px)] font-medium leading-tight tracking-[-0.01em]">{p.name}</span>
-            <MetaLine p={p} free={free} showAge={!market} className="mt-1" />
+    <div className="border-b border-white/[0.06] px-4 py-3 group-last:border-b-0 large-text:py-4">
+      <div className="flex min-h-11 items-center gap-3 large-text:items-start">
+        <Link href={href} className="flex min-w-0 flex-1 items-center gap-3 rounded-[14px] outline-offset-4 large-text:items-start">
+          <Avatar p={p} free={free} className="size-11 large-text:size-14" />
+          <span className="min-w-0 flex-1 large-text:pt-0.5">
+            <span className="line-clamp-2 text-[length:min(1rem,25.5px)] font-medium leading-tight tracking-[-0.01em] large-text:line-clamp-none">
+              {p.name}
+            </span>
+            <MetaLine p={p} free={free} showAge={!market} className="mt-1 large-text:mt-1.5" />
             {market && (
-              <span className="mt-0.5 block text-[length:min(0.8235rem,21px)] font-medium tabular-nums text-foreground/90">{price}</span>
+              <span className="mt-0.5 block text-[length:min(0.8235rem,21px)] font-medium tabular-nums text-foreground/90 large-text:hidden">
+                {price}
+              </span>
             )}
           </span>
           <Rating rating={rating} tier={tier} />
         </Link>
-        {market && <BuyButton free={free} name={p.name} disabled={!marketOpen} onBuy={onBuy} />}
-      </div>
-
-      {/* Letra grande */}
-      <div className="hidden px-4 py-4 large-text:block">
-        <Link href={href} className="flex items-start gap-3 rounded-[14px] outline-offset-4">
-          <Avatar p={p} free={free} size={56} />
-          <span className="min-w-0 flex-1 pt-0.5">
-            <span className="block text-[length:min(1rem,25.5px)] font-medium leading-tight tracking-[-0.01em]">{p.name}</span>
-            <MetaLine p={p} free={free} showAge className="mt-1.5" />
-          </span>
-          <Rating rating={rating} tier={tier} big />
-        </Link>
         {market && (
-          <div className="mt-3 flex items-center justify-between gap-3 pl-[68px]">
-            <span className="text-[length:min(1.0588rem,27px)] font-semibold tabular-nums">{price}</span>
-            <BuyButton free={free} name={p.name} disabled={!marketOpen} onBuy={onBuy} wide />
-          </div>
+          <span className="large-text:hidden">
+            <BuyButton free={free} name={p.name} disabled={!marketOpen} onBuy={onBuy} />
+          </span>
         )}
       </div>
+      {/* Con letra grande el precio y el botón van en su propia línea. */}
+      {market && (
+        <div className="mt-3 hidden items-center justify-between gap-3 pl-[68px] large-text:flex">
+          <span className="text-[length:min(1.0588rem,27px)] font-semibold tabular-nums">{price}</span>
+          <BuyButton free={free} name={p.name} disabled={!marketOpen} onBuy={onBuy} wide />
+        </div>
+      )}
     </div>
   );
 }

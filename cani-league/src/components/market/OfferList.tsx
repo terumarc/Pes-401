@@ -27,7 +27,7 @@ export type OfferView = {
 const STATUS: Record<OfferView["status"], { label: string; cls: string }> = {
   pending: { label: "Pendiente", cls: "text-[#ff9f0a]" },
   accepted: { label: "Aceptada", cls: "text-[#30d158]" },
-  rejected: { label: "Rechazada", cls: "text-[#ff453a]" },
+  rejected: { label: "Rechazada", cls: "text-destructive" },
   cancelled: { label: "Retirada", cls: "text-muted-foreground" },
 };
 
@@ -120,7 +120,7 @@ export function OfferList({ offers, marketOpen, hidePlayer = false }: { offers: 
                           type="button"
                           disabled={busy === o.id}
                           onClick={() => run(o.id, () => rejectOfferAction(o.id))}
-                          className="h-9 rounded-full bg-secondary px-4 text-[length:min(0.8824rem,22.5px)] font-semibold text-[#ff453a] disabled:opacity-40"
+                          className="h-9 rounded-full bg-secondary px-4 text-[length:min(0.8824rem,22.5px)] font-semibold text-destructive disabled:opacity-40"
                         >
                           Rechazar
                         </button>
