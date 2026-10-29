@@ -113,7 +113,7 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={signOut} disabled={pending} className={cn("text-[#ff453a] focus:text-[#ff453a]")}>
+        <DropdownMenuItem onSelect={signOut} disabled={pending} className={cn("text-destructive focus:text-destructive")}>
           <LogOut aria-hidden className="text-current" />
           Cerrar sesión
         </DropdownMenuItem>

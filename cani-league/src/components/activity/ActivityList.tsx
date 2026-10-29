@@ -145,7 +145,7 @@ export function ActivityList({
                       <span
                         className={cn(
                           "shrink-0 pt-0.5 text-[length:min(0.8824rem,22.5px)] font-semibold tabular-nums",
-                          !teamId ? "text-foreground" : money > 0 ? "text-[#30d158]" : "text-[#ff453a]",
+                          !teamId ? "text-foreground" : money > 0 ? "text-[#30d158]" : "text-destructive",
                         )}
                       >
                         {teamId ? signed(money) : formatMoney(Math.abs(money))}

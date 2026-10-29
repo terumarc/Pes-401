@@ -7,7 +7,7 @@ const LABEL: Record<FormResult, string> = { V: "victoria", E: "empate", D: "derr
 export function FormDots({ form, className }: { form: FormResult[]; className?: string }) {
   if (!form.length) return null;
   return (
-    <span className={cn("inline-flex gap-1", className)} aria-label={`Últimos partidos: ${form.map((f) => LABEL[f]).join(", ")}`}>
+    <span role="img" className={cn("inline-flex gap-1", className)} aria-label={`Últimos partidos: ${form.map((f) => LABEL[f]).join(", ")}`}>
       {form.map((f, i) => (
         <span
           key={i}
@@ -16,7 +16,7 @@ export function FormDots({ form, className }: { form: FormResult[]; className?: 
             "flex size-5 items-center justify-center rounded-full text-[length:min(0.7059rem,18px)] font-bold",
             f === "V" && "bg-[#30d158] text-black",
             f === "E" && "bg-[#636366] text-white",
-            f === "D" && "bg-[#ff453a] text-white",
+            f === "D" && "bg-[#ff453a] text-black",
           )}
         >
           {f}

@@ -118,7 +118,7 @@ export function OfferSheet({
                   <p className={`${selectCls} flex items-center`}>{buyer?.name}</p>
                 )}
                 {buyer && (
-                  <span className={`mt-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] ${short ? "text-[#ff453a]" : "text-muted-foreground"}`}>
+                  <span className={`mt-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] ${short ? "text-destructive" : "text-muted-foreground"}`}>
                     Presupuesto: {formatMoney(buyer.budget)}
                   </span>
                 )}

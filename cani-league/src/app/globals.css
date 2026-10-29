@@ -89,8 +89,9 @@ html {
   --muted-foreground: #8e8e93;
   --accent: #2c2c2e;
   --accent-foreground: #ffffff;
-  --destructive: #ff453a;
-  --destructive-foreground: #ff453a;
+  /* Rojo de iOS aclarado para texto sobre gris (≥ 4,5:1 sobre #2c2c2e). */
+  --destructive: #ff7a70;
+  --destructive-foreground: #ff7a70;
   --border: rgba(84, 84, 88, 0.48);
   --input: rgba(118, 118, 128, 0.24);
   --ring: #0a84ff;
@@ -201,6 +202,15 @@ textarea {
   }
 }
 
+@keyframes fade-only {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes bar-fill {
   from {
     transform: scaleX(0);
@@ -286,14 +296,34 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .trophy-spin { animation: none; }
 
-  /* «Reducir movimiento» del sistema: sin animaciones de entrada, barras ni transiciones. */
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  /*
+   * «Reducir movimiento» del sistema: se quita el desplazamiento, no el aviso del cambio.
+   * Las pantallas y hojas aparecen con un fundido corto en vez de subir o deslizarse,
+   * las barras se pintan ya llenas y el cambio de color/opacidad de los botones se mantiene.
+   */
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-fade-up {
+    animation-name: fade-only;
+  }
+  .animate-bar {
+    animation: none;
+  }
+  /* Hojas y diálogos (tw-animate-css): sin deslizarse ni hacer zoom, solo fundido. */
+  [data-slot] {
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    --tw-enter-opacity: 0;
+    --tw-exit-opacity: 0;
+  }
+  /* Las transiciones de posición o tamaño pasan a ser instantáneas; color y opacidad siguen. */
+  * {
+    transition-property: color, background-color, border-color, opacity, box-shadow, outline-color !important;
   }
 
   /* Tampoco el «encogerse» de los botones al pulsar. */

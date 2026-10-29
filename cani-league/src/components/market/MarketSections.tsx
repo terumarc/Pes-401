@@ -10,7 +10,7 @@ export function MarketBanner({ window }: { window: MarketWindow }) {
   return (
     <div role="status" className="mb-5 flex items-start gap-3 rounded-[22px] bg-card px-4 py-3">
       <span
-        className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full ${window.open ? "bg-[#30d158]/20 text-[#30d158]" : "bg-[#ff453a]/20 text-[#ff453a]"}`}
+        className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full ${window.open ? "bg-[#30d158]/20 text-[#30d158]" : "bg-[#ff453a]/20 text-destructive"}`}
       >
         <Icon className="size-4" aria-hidden />
       </span>
