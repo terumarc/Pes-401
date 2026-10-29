@@ -4,7 +4,6 @@ import { useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { PixelAvatar } from "@/components/fantasy/PixelAvatar";
-import { PositionChip } from "@/components/fantasy/primitives";
 import { TransferModal } from "@/components/market/TransferModal";
 import { formatMoney } from "@/lib/format/money";
 import { getPlayerEffectiveRating, getPlayerFixedPrice, getPlayerTier, getPositionGroup } from "@/lib/players";
@@ -265,20 +264,24 @@ export function PlayerBrowser({
   );
 }
 
-/** Colores del nivel, como las cartas del FUT: oro para S, morado para S+… */
-const TIER_BOX: Record<string, string> = {
-  "S+": "bg-[#bf5af2] text-black",
-  S: "bg-[#ffd60a] text-black",
-  A: "bg-[#0a84ff] text-black",
-  B: "bg-[#30d158] text-black",
-  C: "bg-[#48484a] text-white",
-  D: "bg-[#2c2c2e] text-white ring-1 ring-inset ring-white/15",
+/**
+ * Tonos apagados (saturación ~75 %) para nivel y posición: el color es un acento, no un relleno.
+ * Todos cumplen ≥ 4,5:1 sobre la tarjeta.
+ */
+const TIER_TINT: Record<string, string> = {
+  "S+": "#c4a1f2",
+  S: "#e3c46a",
+  A: "#7fb2ef",
+  B: "#7fd49b",
+  C: "#b4b4ba",
+  D: "#8e8e93",
 };
+const LINE_TINT: Record<string, string> = { gk: "#e8c35a", def: "#74aee8", mid: "#6fcf97", att: "#ec8a8a" };
 
 function Avatar({ p, free, size }: { p: Row; free: boolean; size: number }) {
   return (
     <span
-      className="flex shrink-0 items-end justify-center overflow-hidden rounded-full bg-[#2c2c2e] ring-1 ring-white/10"
+      className="flex shrink-0 items-end justify-center overflow-hidden rounded-full bg-[#2a2a2d] ring-1 ring-white/[0.08]"
       style={{ width: size, height: size }}
     >
       {p.photo_url ? (
@@ -296,49 +299,53 @@ function Avatar({ p, free, size }: { p: Row; free: boolean; size: number }) {
   );
 }
 
-/** Caja de la media con el nivel debajo, del color del nivel. */
-function RatingBox({ rating, tier, big }: { rating: number; tier: string; big?: boolean }) {
+/** La media es lo único con peso; el nivel va debajo, pequeño y en su tono. */
+function Rating({ rating, tier, big }: { rating: number; tier: string; big?: boolean }) {
+  const tint = TIER_TINT[tier] ?? TIER_TINT.D;
   return (
     <span
       className={cn(
-        "flex shrink-0 flex-col items-center justify-center rounded-[12px] leading-none tabular-nums",
-        big ? "size-[60px]" : "size-11",
-        TIER_BOX[tier] ?? TIER_BOX.D,
+        "flex shrink-0 flex-col items-center justify-center rounded-[12px] bg-white/[0.05] leading-none tabular-nums ring-1 ring-inset",
+        big ? "h-[58px] w-[54px]" : "h-11 w-11",
       )}
+      style={{ ["--tw-ring-color" as string]: `${tint}33` }}
       aria-label={`Media ${rating || "sin datos"}, nivel ${tier}`}
     >
-      <span className={cn("font-extrabold", big ? "text-[26px]" : "text-[19px]")}>{rating || "–"}</span>
-      <span className={cn("mt-0.5 font-bold", big ? "text-[13px]" : "text-[12px]")}>{tier}</span>
-    </span>
-  );
-}
-
-/** Escudo pequeño del club (o el icono de libre) + nombre. */
-function ClubLine({ p, free, showAge, price, className }: { p: Row; free: boolean; showAge: boolean; price?: string; className?: string }) {
-  const crest = !free && p.team?.logo_url;
-  return (
-    <span className={cn("flex min-w-0 items-center gap-1.5 text-[length:min(0.7647rem,19.5px)] text-muted-foreground", className)}>
-      {crest ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={crest} alt="" className="size-4 shrink-0 rounded-full object-cover" />
-      ) : (
-        <span
-          aria-hidden
-          className="size-2.5 shrink-0 rounded-full"
-          style={{ background: free ? "#30d158" : p.team?.primary_color ?? "#636366" }}
-        />
-      )}
-      <span className="flex min-w-0 items-baseline gap-1">
-        <span className="min-w-0 truncate large-text:whitespace-normal">
-          {free ? "Libre" : p.team?.short_name || p.team?.name}
-          {showAge && p.age ? ` · ${p.age} años` : ""}
-        </span>
-        {price && <span className="shrink-0 font-semibold tabular-nums text-foreground">· {price}</span>}
+      <span className={cn("font-semibold tracking-tight text-foreground", big ? "text-[24px]" : "text-[18px]")}>{rating || "–"}</span>
+      <span className={cn("mt-1 font-medium tracking-wide", big ? "text-[13px]" : "text-[12px]")} style={{ color: tint }}>
+        {tier}
       </span>
     </span>
   );
 }
 
+/** Posición en su tono, club con escudo pequeño (o «Libre») y, si toca, edad o precio. */
+function MetaLine({ p, free, showAge, price, className }: { p: Row; free: boolean; showAge: boolean; price?: string; className?: string }) {
+  const crest = !free && p.team?.logo_url;
+  return (
+    <span className={cn("flex min-w-0 items-center gap-1.5 text-[length:min(0.7647rem,19.5px)] text-muted-foreground", className)}>
+      <span className="shrink-0 font-medium tracking-wide" style={{ color: LINE_TINT[getPositionGroup(p.position)] ?? undefined }}>
+        {p.position}
+      </span>
+      <span aria-hidden className="shrink-0 opacity-50">·</span>
+      {crest ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={crest} alt="" className="size-4 shrink-0 rounded-full object-cover" />
+      ) : free ? (
+        <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-[#7fd49b]" />
+      ) : null}
+      <span className="flex min-w-0 items-baseline gap-1">
+        <span className="min-w-0 truncate large-text:whitespace-normal">
+          {free ? "Libre" : p.team?.short_name || p.team?.name}
+          {showAge && p.age ? ` · ${p.age} años` : ""}
+        </span>
+        {price && <span className="shrink-0 font-medium tabular-nums text-foreground/90">· {price}</span>}
+      </span>
+    </span>
+  );
+}
+
+/** Botón teñido, como los de iOS: azul suave para fichar, neutro para pagar la cláusula. */
 function BuyButton({ free, name, disabled, onBuy, wide }: { free: boolean; name: string; disabled: boolean; onBuy: () => void; wide?: boolean }) {
   return (
     <button
@@ -347,9 +354,9 @@ function BuyButton({ free, name, disabled, onBuy, wide }: { free: boolean; name:
       disabled={disabled}
       aria-label={free ? `Fichar a ${name}` : `Pagar la cláusula de ${name}`}
       className={cn(
-        "relative shrink-0 rounded-full font-semibold active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
+        "relative shrink-0 rounded-full font-medium transition-colors active:opacity-70 disabled:opacity-30 after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-['']",
         wide ? "h-11 px-6 text-[length:min(1rem,25.5px)]" : "h-8 px-3.5 text-[length:min(0.8824rem,22.5px)]",
-        free ? "bg-white text-black" : "bg-secondary text-foreground",
+        free ? "bg-[#0a84ff]/[0.16] text-[#5ea8ff]" : "bg-white/[0.07] text-foreground/90",
       )}
     >
       {free ? "Fichar" : "Cláusula"}
@@ -358,10 +365,9 @@ function BuyButton({ free, name, disabled, onBuy, wide }: { free: boolean; name:
 }
 
 /**
- * Fila de jugador al estilo de las apps de fantasy (Biwenger, Fantasy LaLiga, FUT):
- * foto con la posición encima, nombre y club con su escudo, y la media en una caja
- * del color del nivel. En el mercado, precio y botón de fichar juntos.
- * Con letra grande se apila: foto, nombre y media arriba; club debajo; precio y botón al final.
+ * Fila de jugador: foto, nombre, posición y club en una línea discreta, y la media como único
+ * elemento con peso. En el mercado, precio en la línea del club y botón teñido a la derecha.
+ * Con letra grande se apila: foto, nombre y media arriba; posición y club; precio y botón al final.
  */
 function PlayerRow({
   p,
@@ -385,19 +391,19 @@ function PlayerRow({
   const href = `/players/${p.id}`;
 
   return (
-    <div className="border-b border-border group-last:border-b-0">
+    <div className="border-b border-white/[0.06] group-last:border-b-0">
       {/* Letra normal */}
-      <div className="flex min-h-[68px] items-center gap-3 px-4 py-2.5 transition-colors lg:hover:bg-white/[0.03] large-text:hidden">
+      <div className="flex min-h-[68px] items-center gap-3 px-4 py-3 large-text:hidden">
         <Link href={href} className="flex min-w-0 flex-1 items-center gap-3 rounded-[14px] outline-offset-4">
-          <span className="relative shrink-0">
-            <Avatar p={p} free={free} size={44} />
-            <PositionChip position={p.position} className="absolute -bottom-1 left-1/2 -translate-x-1/2 shadow" />
-          </span>
+          <Avatar p={p} free={free} size={44} />
           <span className="min-w-0 flex-1">
-            <span className="line-clamp-2 text-[length:min(1rem,25.5px)] font-semibold leading-tight">{p.name}</span>
-            <ClubLine p={p} free={free} showAge={!market} price={market ? price : undefined} className="mt-1" />
+            <span className="line-clamp-2 text-[length:min(1rem,25.5px)] font-medium leading-tight tracking-[-0.01em]">{p.name}</span>
+            <MetaLine p={p} free={free} showAge={!market} className="mt-1" />
+            {market && (
+              <span className="mt-0.5 block text-[length:min(0.8235rem,21px)] font-medium tabular-nums text-foreground/90">{price}</span>
+            )}
           </span>
-          <RatingBox rating={rating} tier={tier} />
+          <Rating rating={rating} tier={tier} />
         </Link>
         {market && <BuyButton free={free} name={p.name} disabled={!marketOpen} onBuy={onBuy} />}
       </div>
@@ -405,19 +411,16 @@ function PlayerRow({
       {/* Letra grande */}
       <div className="hidden px-4 py-4 large-text:block">
         <Link href={href} className="flex items-start gap-3 rounded-[14px] outline-offset-4">
-          <span className="relative shrink-0">
-            <Avatar p={p} free={free} size={56} />
-            <PositionChip position={p.position} className="absolute -bottom-1 left-1/2 -translate-x-1/2 shadow" />
-          </span>
+          <Avatar p={p} free={free} size={56} />
           <span className="min-w-0 flex-1 pt-0.5">
-            <span className="block text-[length:min(1rem,25.5px)] font-semibold leading-tight">{p.name}</span>
-            <ClubLine p={p} free={free} showAge className="mt-1.5" />
+            <span className="block text-[length:min(1rem,25.5px)] font-medium leading-tight tracking-[-0.01em]">{p.name}</span>
+            <MetaLine p={p} free={free} showAge className="mt-1.5" />
           </span>
-          <RatingBox rating={rating} tier={tier} big />
+          <Rating rating={rating} tier={tier} big />
         </Link>
         {market && (
           <div className="mt-3 flex items-center justify-between gap-3 pl-[68px]">
-            <span className="text-[length:min(1rem,25.5px)] font-semibold tabular-nums">{price}</span>
+            <span className="text-[length:min(1.0588rem,27px)] font-semibold tabular-nums">{price}</span>
             <BuyButton free={free} name={p.name} disabled={!marketOpen} onBuy={onBuy} wide />
           </div>
         )}
