@@ -9,6 +9,12 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      league_invites: {
+        Row: { code: string; created_at: string; created_by: string | null; revoked_at: string | null };
+        Insert: { code: string; created_at?: string; created_by?: string | null; revoked_at?: string | null };
+        Update: { revoked_at?: string | null };
+        Relationships: [];
+      };
       members: {
         Row: {
           id: string;
@@ -19,6 +25,7 @@ export type Database = {
           user_id: string | null;
           created_at: string;
           last_seen_at: string | null;
+          onboarded_at: string | null;
         };
         Insert: {
           id?: string;
@@ -734,6 +741,13 @@ export type Database = {
       is_member: { Args: Record<string, never>; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       my_team_id: { Args: Record<string, never>; Returns: string | null };
+      is_valid_invite: { Args: { p_code: string }; Returns: boolean };
+      join_with_code: { Args: { p_email: string; p_code: string }; Returns: boolean };
+      new_invite_code: { Args: Record<string, never>; Returns: string };
+      complete_profile: {
+        Args: { p_name: string | null; p_team: string | null };
+        Returns: Database["public"]["Tables"]["members"]["Row"];
+      };
       claim_membership: {
         Args: Record<string, never>;
         Returns: Database["public"]["Tables"]["members"]["Row"] | null;

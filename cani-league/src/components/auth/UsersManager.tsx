@@ -33,8 +33,8 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
   return (
     <div className="space-y-6">
       <p className="px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
-        Solo pueden entrar los emails de esta lista. Cada uno gestiona su club; los admins pueden hacer de todo y actuar por
-        cualquier club.
+        Quien está en la liga. Cada uno gestiona su club; los admins pueden hacer de todo y actuar por cualquier club. Toca a
+        alguien para cambiar su club o hacerle admin.
       </p>
 
       <ul className="overflow-hidden rounded-[22px] bg-card">
@@ -77,10 +77,10 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
       <button
         type="button"
         onClick={() => setEditing("new")}
-        className="flex h-[50px] w-full items-center justify-center gap-1.5 rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black active:opacity-80"
+        className="flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-secondary text-[length:min(0.8824rem,22.5px)] font-semibold text-foreground active:opacity-70"
       >
-        <Plus className="size-5" strokeWidth={2.4} aria-hidden />
-        Añadir persona
+        <Plus className="size-4" strokeWidth={2.4} aria-hidden />
+        Añadir a alguien a mano
       </button>
 
       {clubsWithoutOwner.length > 0 && (

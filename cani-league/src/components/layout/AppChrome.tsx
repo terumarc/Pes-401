@@ -7,10 +7,11 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { CommandMenu } from "@/components/layout/CommandMenu";
 
-/** La barra lateral, la cabecera y las pestañas; la pantalla de entrada va sin nada de eso. */
+/** La barra lateral, la cabecera y las pestañas; la entrada, la invitación y la bienvenida van sin nada de eso. */
 export function AppChrome({ season, children }: { season: string | null; children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname.startsWith("/auth/")) return <>{children}</>;
+  const bare = ["/login", "/bienvenida"].includes(pathname) || pathname.startsWith("/auth/") || pathname.startsWith("/unirse/");
+  if (bare) return <>{children}</>;
 
   return (
     <>

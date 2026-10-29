@@ -21,10 +21,13 @@ export function LoginScreen({
   season,
   next,
   initialError,
+  invite = null,
 }: {
   season: string | null;
   next: string;
   initialError: string | null;
+  /** Código del enlace de invitación (/unirse/…): con él, un email nuevo entra en la liga. */
+  invite?: string | null;
 }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("email");
@@ -50,7 +53,7 @@ export function LoginScreen({
     setNotice(null);
     startTransition(async () => {
       try {
-        const res = await sendCodeAction(email);
+        const res = await sendCodeAction(email, invite);
         if (!res.ok) {
           setError(res.error);
           if (!resend) requestAnimationFrame(() => emailRef.current?.focus());
@@ -83,7 +86,7 @@ export function LoginScreen({
           return;
         }
         setStep("done");
-        router.replace(next);
+        router.replace(res.welcome ? `/bienvenida?next=${encodeURIComponent(next)}` : next);
         router.refresh();
       } catch {
         setError(OFFLINE);
@@ -134,10 +137,12 @@ export function LoginScreen({
               className="animate-fade-up"
             >
               <h2 id="login-step-title" className="text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
-                Entrar
+                {invite ? "Únete a la liga" : "Entrar"}
               </h2>
               <label htmlFor="login-email" className="mt-1 block text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:pretty]">
-                Escribe tu email y te mandamos un código de 6 cifras.
+                {invite
+                  ? "Te han invitado a la Cani League. Escribe tu email y te mandamos un código de 6 cifras."
+                  : "Escribe tu email y te mandamos un código de 6 cifras."}
               </label>
               <input
                 ref={emailRef}
@@ -246,7 +251,9 @@ export function LoginScreen({
       </div>
 
       <p className="mt-6 max-w-xs text-center text-[length:min(0.7647rem,19.5px)] text-muted-foreground [text-wrap:balance]">
-        Solo pueden entrar los amigos que un admin ha añadido a la liga.
+        {invite
+          ? "Después eliges tu nombre y tu club."
+          : "Para entrar por primera vez, usa el enlace de invitación del grupo."}
       </p>
     </main>
   );

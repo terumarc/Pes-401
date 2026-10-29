@@ -10,6 +10,8 @@ export type Viewer = {
   teamId: string | null;
   teamName: string | null;
   isAdmin: boolean;
+  /** Ya ha pasado por la bienvenida (nombre y club). */
+  onboarded: boolean;
 };
 
 export class AuthError extends Error {
@@ -32,7 +34,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     .select("*, team:teams(name)")
     .eq("user_id", userId)
     .maybeSingle();
-  let member: { id: string; display_name: string; email: string; team_id: string | null; is_admin: boolean } | null = row;
+  let member: { id: string; display_name: string; email: string; team_id: string | null; is_admin: boolean; onboarded_at: string | null } | null = row;
   let teamName: string | null = (row?.team as { name: string } | null)?.name ?? null;
 
   if (!member) {
@@ -54,6 +56,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     teamId: member.team_id,
     teamName,
     isAdmin: member.is_admin,
+    onboarded: !!member.onboarded_at,
   };
 });
 

@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
   const target = url.clone();
   target.search = "";
   if (ok) {
-    await supabase.rpc("claim_membership");
-    target.pathname = "/calendar";
+    const { data: member } = await supabase.rpc("claim_membership");
+    target.pathname = member && !member.onboarded_at ? "/bienvenida" : "/calendar";
   } else {
     target.pathname = "/login";
     target.searchParams.set("error", "enlace");
