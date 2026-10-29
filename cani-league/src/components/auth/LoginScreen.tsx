@@ -116,8 +116,8 @@ export function LoginScreen({
             />
             <CaniLeagueCrest className="relative h-[136px] w-auto drop-shadow-[0_6px_0_rgba(0,0,0,0.35)]" />
           </div>
-          <h1 className="mt-5 text-[34px] leading-[1.1] font-bold tracking-[-0.02em]">Cani League</h1>
-          <p className="mt-1 text-[15px] text-muted-foreground">
+          <h1 className="mt-5 text-[length:min(2rem,51px)] leading-[1.1] font-bold tracking-[-0.02em]">Cani League</h1>
+          <p className="mt-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
             {season ? `Temporada ${season}` : "La liga de PES 6 de los amigos"}
           </p>
         </header>
@@ -133,10 +133,10 @@ export function LoginScreen({
               noValidate
               className="animate-fade-up"
             >
-              <h2 id="login-step-title" className="text-[20px] font-bold tracking-tight">
+              <h2 id="login-step-title" className="text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
                 Entrar
               </h2>
-              <label htmlFor="login-email" className="mt-1 block text-[15px] text-muted-foreground [text-wrap:pretty]">
+              <label htmlFor="login-email" className="mt-1 block text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:pretty]">
                 Escribe tu email y te mandamos un código de 6 cifras.
               </label>
               <input
@@ -160,7 +160,7 @@ export function LoginScreen({
                 aria-invalid={!!error || undefined}
                 aria-describedby={error ? "login-error" : undefined}
                 className={cn(
-                  "mt-4 h-11 w-full rounded-[10px] bg-input px-3 text-[17px] text-foreground caret-[#0a84ff] outline-none transition-shadow",
+                  "mt-4 h-11 w-full rounded-[10px] bg-input px-3 text-[length:min(1rem,25.5px)] text-foreground caret-[#0a84ff] outline-none transition-shadow",
                   "placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/60 disabled:opacity-60",
                   "aria-invalid:ring-2 aria-invalid:ring-destructive",
                   // El autorrelleno del navegador no pinta el campo de amarillo o azul.
@@ -181,10 +181,10 @@ export function LoginScreen({
               }}
               className="animate-fade-up"
             >
-              <h2 id="login-step-title" className="text-[20px] font-bold tracking-tight">
+              <h2 id="login-step-title" className="text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
                 Revisa tu correo
               </h2>
-              <p className="mt-1 text-[15px] text-muted-foreground [text-wrap:pretty]">
+              <p className="mt-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:pretty]">
                 Hemos mandado el código a <span className="break-all text-foreground">{email.trim()}</span>. Si no llega en
                 un minuto, mira en spam.
               </p>
@@ -219,7 +219,7 @@ export function LoginScreen({
               <PrimaryButton pending={busy} disabled={code.length < 6}>
                 {step === "done" ? "Entrando…" : pending ? "Comprobando…" : "Entrar"}
               </PrimaryButton>
-              <div className="-mx-1 mt-2 -mb-2 flex items-center justify-between gap-2 text-[17px]">
+              <div className="-mx-1 mt-2 -mb-2 flex items-center justify-between gap-2 text-[length:min(1rem,25.5px)]">
                 <button
                   type="button"
                   onClick={backToEmail}
@@ -245,7 +245,7 @@ export function LoginScreen({
         </section>
       </div>
 
-      <p className="mt-6 max-w-xs text-center text-[13px] text-muted-foreground [text-wrap:balance]">
+      <p className="mt-6 max-w-xs text-center text-[length:min(0.7647rem,19.5px)] text-muted-foreground [text-wrap:balance]">
         Solo pueden entrar los amigos que un admin ha añadido a la liga.
       </p>
     </main>
@@ -257,11 +257,11 @@ function Feedback({ error, notice }: { error: string | null; notice: string | nu
   return (
     <div aria-live="polite">
       {error ? (
-        <p id="login-error" role="alert" className="mt-2.5 text-[15px] text-destructive [text-wrap:pretty]">
+        <p id="login-error" role="alert" className="mt-2.5 text-[length:min(0.8824rem,22.5px)] text-destructive [text-wrap:pretty]">
           {error}
         </p>
       ) : notice ? (
-        <p className="mt-2.5 flex items-center gap-1.5 text-[15px] text-[#30d158]">
+        <p className="mt-2.5 flex items-center gap-1.5 text-[length:min(0.8824rem,22.5px)] text-[#30d158]">
           <Check className="size-4 shrink-0" strokeWidth={2.5} aria-hidden />
           {notice}
         </p>
@@ -277,7 +277,7 @@ function PrimaryButton({ pending, disabled, children }: { pending: boolean; disa
       type="submit"
       disabled={pending || disabled}
       aria-busy={pending || undefined}
-      className="mt-4 flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-white text-[17px] font-semibold text-black outline-none transition-opacity active:opacity-80 disabled:opacity-40 focus-visible:ring-3 focus-visible:ring-ring/60"
+      className="mt-4 flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black outline-none transition-opacity active:opacity-80 disabled:opacity-40 focus-visible:ring-3 focus-visible:ring-ring/60"
     >
       {pending && <Loader2 className="size-5 animate-spin" aria-hidden />}
       {children}
@@ -290,7 +290,7 @@ function CodeSlot({ char, isActive, hasFakeCaret }: SlotProps) {
   return (
     <div
       className={cn(
-        "relative flex h-[52px] min-w-0 flex-1 items-center justify-center rounded-[10px] bg-input text-[24px] font-semibold tabular-nums transition-shadow",
+        "relative flex h-[52px] min-w-0 flex-1 items-center justify-center rounded-[10px] bg-input text-[length:min(1.4118rem,36px)] font-semibold tabular-nums transition-shadow",
         isActive && "ring-2 ring-ring/60",
       )}
     >

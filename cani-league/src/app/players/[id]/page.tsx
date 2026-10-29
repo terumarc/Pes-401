@@ -62,11 +62,11 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
   if (edit === "1" && (await getViewer())?.isAdmin) {
     return (
       <div className="animate-fade-up mx-auto max-w-2xl pb-12">
-        <h1 className="mb-5 text-[34px] font-bold tracking-tight">Editar jugador</h1>
+        <h1 className="mb-5 text-[length:min(2rem,51px)] font-bold tracking-tight">Editar jugador</h1>
         <div className="rounded-[22px] bg-card p-5">
           <PlayerForm teams={teams} player={player} />
         </div>
-        <Link href={`/players/${player.id}`} className="mt-4 inline-flex h-11 items-center text-[17px] text-[#0a84ff]">
+        <Link href={`/players/${player.id}`} className="mt-4 inline-flex h-11 items-center text-[length:min(1rem,25.5px)] text-[#0a84ff]">
           Cancelar
         </Link>
       </div>
@@ -126,8 +126,8 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
               />
             )}
           </span>
-          <h1 className="mt-3 text-[28px] font-bold leading-tight tracking-tight">{player.name}</h1>
-          <p className="text-[15px] text-muted-foreground">
+          <h1 className="mt-3 text-[length:min(1.6471rem,42px)] font-bold leading-tight tracking-tight">{player.name}</h1>
+          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
             {[player.position, player.age ? `${player.age} años` : null, player.nationality].filter(Boolean).join(" · ")}
           </p>
 
@@ -138,8 +138,8 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
               { label: "Precio", value: short(contract.price) },
             ].map((s, i) => (
               <div key={s.label} className={i > 0 ? "border-l border-border" : undefined}>
-                <dt className="text-[13px] text-muted-foreground">{s.label}</dt>
-                <dd className="text-[20px] font-bold tabular-nums">{s.value}</dd>
+                <dt className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">{s.label}</dt>
+                <dd className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums">{s.value}</dd>
               </div>
             ))}
           </dl>
@@ -149,18 +149,18 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_1fr]">
         <div className="space-y-8">
           <section aria-labelledby="pl-club">
-            <h2 id="pl-club" className="mb-2 px-1 text-[20px] font-bold tracking-tight">
+            <h2 id="pl-club" className="mb-2 px-1 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
               Ficha
             </h2>
             <ul className="overflow-hidden rounded-[22px] bg-card">
               <li className="border-b border-border">
                 {freeAgent ? (
-                  <div className="flex min-h-11 items-center justify-between px-4 py-3 text-[17px]">
+                  <div className="flex min-h-11 items-center justify-between px-4 py-3 text-[length:min(1rem,25.5px)]">
                     <span>Club</span>
                     <span className="text-muted-foreground">Agente libre</span>
                   </div>
                 ) : (
-                  <Link href={`/teams/${team.id}`} className="flex min-h-11 items-center justify-between gap-3 px-4 py-3 text-[17px] active:bg-white/[0.06]">
+                  <Link href={`/teams/${team.id}`} className="flex min-h-11 items-center justify-between gap-3 px-4 py-3 text-[length:min(1rem,25.5px)] active:bg-white/[0.06]">
                     <span>Club</span>
                     <span className="flex items-center gap-1 text-muted-foreground">
                       {team.name}
@@ -172,10 +172,10 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
               {facts.map(([k, v], i) => (
                 <li
                   key={k}
-                  className={`flex min-h-11 items-center justify-between gap-3 px-4 py-3 text-[17px] ${i < facts.length - 1 ? "border-b border-border" : ""}`}
+                  className={`flex min-h-11 items-center justify-between gap-3 px-4 py-3 text-[length:min(1rem,25.5px)] large-text:flex-col large-text:items-start large-text:gap-0.5 ${i < facts.length - 1 ? "border-b border-border" : ""}`}
                 >
                   <span>{k}</span>
-                  <span className="text-right tabular-nums text-muted-foreground">{v}</span>
+                  <span className="text-right tabular-nums text-muted-foreground large-text:text-left">{v}</span>
                 </li>
               ))}
             </ul>
@@ -183,7 +183,7 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
 
           {!freeAgent && edit !== "1" && (
             <section aria-labelledby="pl-offers">
-              <h2 id="pl-offers" className="mb-2 px-1 text-[20px] font-bold tracking-tight">
+              <h2 id="pl-offers" className="mb-2 px-1 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
                 Ofertas
               </h2>
               <div className="space-y-4">
@@ -211,7 +211,7 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
         </div>
 
         <section aria-labelledby="pl-stats">
-          <h2 id="pl-stats" className="mb-2 px-1 text-[20px] font-bold tracking-tight">
+          <h2 id="pl-stats" className="mb-2 px-1 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
             Atributos
           </h2>
           <div className="rounded-[22px] bg-card p-4">

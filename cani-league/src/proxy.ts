@@ -8,6 +8,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Todo menos los ficheros estáticos, los iconos, los trofeos y los escudos.
-    "/((?!_next/static|_next/image|favicon.ico|apple-icon.png|manifest.webmanifest|icons/|trophies/|api/logo/|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|apple-icon.png|manifest.webmanifest|icons/|trophies/|api/logo/|api/photo/|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)$).*)",
   ],
 };

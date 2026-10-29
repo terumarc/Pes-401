@@ -6,6 +6,7 @@ import { Minus, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { recordMatchResultClient, resetMatchResultClient } from "@/lib/data/mutations";
 import { cn } from "@/lib/utils";
+import { MatchCard } from "./MatchCard";
 import type { MatchWithTeams } from "@/types";
 import { headToHead, type GoalRow, type MatchLite } from "@/lib/stats";
 import { canActFor, useViewer } from "@/components/auth/ViewerProvider";
@@ -36,52 +37,29 @@ function Crest({ team, size = 48 }: { team: Side; size?: number }) {
   );
 }
 
-function TeamColumn({ team, record }: { team: Side; record?: string }) {
-  return (
-    <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
-      <Crest team={team} />
-      <div className="min-w-0">
-        <p className="truncate text-[15px] font-semibold leading-tight">{team.short_name || team.name}</p>
-        {record && <p className="text-[12px] tabular-nums text-muted-foreground">{record}</p>}
-      </div>
-    </div>
-  );
-}
-
-/** Tarjeta de partido como las de Apple Sports: escudos a los lados, marcador grande en el centro. */
 function ScoreCard({ match, records, onOpen }: { match: MatchWithTeams; records: Record<string, string>; onOpen: () => void }) {
   const h = match.home_goals ?? 0;
   const a = match.away_goals ?? 0;
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-[22px] bg-card px-3 py-4 text-left transition-transform duration-150 active:scale-[0.98]"
-      aria-label={`${match.home_team.name} contra ${match.away_team.name}${match.played ? `, ${h} a ${a}` : ", pendiente"}`}
-    >
-      <TeamColumn team={match.home_team} record={records[match.home_team_id]} />
-      <div className="flex min-w-[6.5rem] flex-col items-center">
-        {match.played ? (
-          <p className="flex items-baseline gap-3 text-[34px] font-bold leading-none tabular-nums tracking-tight">
-            <span className={cn(h < a && "text-muted-foreground")}>{h}</span>
-            <span className={cn(a < h && "text-muted-foreground")}>{a}</span>
-          </p>
-        ) : (
-          <p className="text-[17px] font-semibold text-muted-foreground">vs</p>
-        )}
-        <p className="mt-1.5 text-[12px] font-medium text-muted-foreground">
-          {match.played ? "Final" : "Pendiente"}
-        </p>
-      </div>
-      <TeamColumn team={match.away_team} record={records[match.away_team_id]} />
-    </button>
+    <MatchCard
+      home={match.home_team}
+      away={match.away_team}
+      homeRecord={records[match.home_team_id]}
+      awayRecord={records[match.away_team_id]}
+      homeGoals={match.home_goals}
+      awayGoals={match.away_goals}
+      played={match.played}
+      label={match.played ? "Final" : "Pendiente"}
+      ariaLabel={`${match.home_team.name} contra ${match.away_team.name}${match.played ? `, ${h} a ${a}` : ", pendiente"}`}
+      onOpen={onOpen}
+    />
   );
 }
 
 function Stepper({ value, onChange, label }: { value: number; onChange: (n: number) => void; label: string }) {
   return (
     <div className="flex flex-col items-center gap-3">
-      <p className="text-[64px] font-bold leading-none tabular-nums">{value}</p>
+      <p className="text-[length:min(3.7647rem,96px)] font-bold leading-none tabular-nums">{value}</p>
       <div className="flex overflow-hidden rounded-full bg-secondary">
         <button
           type="button"
@@ -161,11 +139,11 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
     <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
       {/* Asa y barra superior de hoja iOS: Cancelar a la izquierda, título centrado. */}
       <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[17px] text-[#0a84ff] active:opacity-60">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center large-text:grid-cols-1 large-text:justify-items-start large-text:gap-1">
+        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[length:min(1rem,25.5px)] text-[#0a84ff] active:opacity-60">
           Cancelar
         </button>
-        <DialogTitle className="text-[17px] font-semibold">
+        <DialogTitle className="text-[length:min(1rem,25.5px)] font-semibold">
           Jornada {match.matchday} · {match.round === 2 ? "Vuelta" : "Ida"}
         </DialogTitle>
         <span />
@@ -179,7 +157,7 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
         ].map(({ team, value, set }) => (
           <div key={team.id} className="flex flex-col items-center gap-2">
             <Crest team={team} size={44} />
-            <p className="max-w-full truncate text-[15px] font-semibold">{team.name}</p>
+            <p className="max-w-full truncate text-[length:min(0.8824rem,22.5px)] font-semibold">{team.name}</p>
             <Stepper value={value} onChange={set} label={team.name} />
           </div>
         ))}
@@ -206,7 +184,7 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
       {error && <p className="mt-4 text-center text-sm text-destructive">{error}</p>}
 
       {!canRecord && (
-        <p className="mt-6 text-center text-[13px] text-muted-foreground">
+        <p className="mt-6 text-center text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
           Solo pueden apuntar este partido {match.home_team.name}, {match.away_team.name} o un admin.
         </p>
       )}
@@ -216,7 +194,7 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
           type="button"
           disabled={busy}
           onClick={() => run(() => recordMatchResultClient(match.id, home, away, scorersPayload()))}
-          className="h-[50px] w-full rounded-full bg-white text-[17px] font-semibold text-black transition-opacity active:opacity-80 disabled:opacity-50"
+          className="h-[50px] w-full rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black transition-opacity active:opacity-80 disabled:opacity-50"
         >
           {match.played ? "Guardar cambios" : "Guardar resultado"}
         </button>
@@ -225,7 +203,7 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
             type="button"
             disabled={busy}
             onClick={() => run(() => resetMatchResultClient(match.id))}
-            className="h-[50px] w-full rounded-full text-[17px] font-medium text-destructive active:bg-white/5 disabled:opacity-50"
+            className="h-[50px] w-full rounded-full text-[length:min(1rem,25.5px)] font-medium text-destructive active:bg-white/5 disabled:opacity-50"
           >
             Borrar resultado
           </button>
@@ -250,7 +228,7 @@ function ScorerPickers({
   if (sides.every((s) => s.count === 0)) return null;
   return (
     <section aria-label="Goleadores" className="mt-6">
-      <h3 className="mb-1.5 px-1 text-[13px] text-muted-foreground">Goleadores</h3>
+      <h3 className="mb-1.5 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Goleadores</h3>
       <div className="overflow-hidden rounded-[14px] bg-secondary">
         {sides.flatMap(({ team, count }) =>
           Array.from({ length: count }, (_, i) => (
@@ -262,7 +240,7 @@ function ScorerPickers({
               <select
                 value={picks[team.id]?.[i] ?? ""}
                 onChange={(e) => onPick(team.id, i, e.target.value)}
-                className="h-11 min-w-0 flex-1 bg-transparent text-[17px] outline-none"
+                className="h-11 min-w-0 flex-1 bg-transparent text-[length:min(1rem,25.5px)] outline-none"
               >
                 <option value="">Sin asignar</option>
                 {(rosters[team.id] ?? []).map((p) => (
@@ -290,12 +268,12 @@ function HeadToHeadBlock({ match, extras }: { match: MatchWithTeams; extras: Ext
   );
   const nameOf = (id: string) => extras.teamNames[id] ?? "?";
   if (h.games.length === 0) {
-    return <p className="mt-6 px-1 text-[13px] text-muted-foreground">Primer enfrentamiento entre estos clubes.</p>;
+    return <p className="mt-6 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Primer enfrentamiento entre estos clubes.</p>;
   }
   const line = (m: MatchLite) => `${nameOf(m.home_team_id)} ${m.home_goals}–${m.away_goals} ${nameOf(m.away_team_id)}`;
   return (
     <section aria-label="Historial" className="mt-6">
-      <h3 className="mb-1.5 px-1 text-[13px] text-muted-foreground">Historial · {h.games.length} partidos</h3>
+      <h3 className="mb-1.5 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Historial · {h.games.length} partidos</h3>
       <div className="overflow-hidden rounded-[14px] bg-secondary">
         <div className="grid grid-cols-3 border-b border-border py-2.5 text-center">
           {[
@@ -304,19 +282,19 @@ function HeadToHeadBlock({ match, extras }: { match: MatchWithTeams; extras: Ext
             { v: h.winsB, l: `Gana ${nameOf(b)}` },
           ].map((x) => (
             <div key={x.l}>
-              <p className="text-[20px] font-bold tabular-nums">{x.v}</p>
-              <p className="truncate px-1 text-[12px] text-muted-foreground">{x.l}</p>
+              <p className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums">{x.v}</p>
+              <p className="truncate px-1 text-[length:min(0.7059rem,18px)] text-muted-foreground">{x.l}</p>
             </div>
           ))}
         </div>
         {h.biggest && (
-          <p className="border-b border-border px-3 py-2.5 text-[15px]">
+          <p className="border-b border-border px-3 py-2.5 text-[length:min(0.8824rem,22.5px)]">
             <span className="text-muted-foreground">Mayor victoria · </span>
             {line(h.biggest)}
           </p>
         )}
         {h.games.slice(0, 5).map((m) => (
-          <p key={m.id} className="flex justify-between gap-3 border-b border-border px-3 py-2 text-[15px] tabular-nums last:border-b-0">
+          <p key={m.id} className="flex justify-between gap-3 border-b border-border px-3 py-2 text-[length:min(0.8824rem,22.5px)] tabular-nums last:border-b-0">
             <span>{line(m)}</span>
             {m.season && <span className="shrink-0 text-muted-foreground">{m.season}</span>}
           </p>
@@ -349,7 +327,7 @@ export function Scoreboard({ matches, records, extras }: { matches: MatchWithTea
   const group = (title: string, items: MatchWithTeams[]) =>
     items.length > 0 && (
       <section aria-label={title} className="space-y-3">
-        <h2 className="px-1 text-[20px] font-bold tracking-tight">
+        <h2 className="px-1 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
           {title} <span className="text-muted-foreground tabular-nums">{items.length}</span>
         </h2>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -374,7 +352,7 @@ export function Scoreboard({ matches, records, extras }: { matches: MatchWithTea
               aria-selected={round === r}
               onClick={() => setRound(r)}
               className={cn(
-                "flex-1 rounded-[7px] text-[13px] font-semibold tabular-nums transition-colors",
+                "flex-1 rounded-[7px] text-[length:min(0.7647rem,19.5px)] font-semibold tabular-nums transition-colors",
                 round === r ? "bg-[#636366] text-white" : "text-[#ebebf5]/60",
               )}
             >
@@ -384,7 +362,7 @@ export function Scoreboard({ matches, records, extras }: { matches: MatchWithTea
         })}
       </div>
 
-      {list.length === 0 && <p className="px-1 text-[15px] text-muted-foreground">No hay partidos en esta fase.</p>}
+      {list.length === 0 && <p className="px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">No hay partidos en esta fase.</p>}
       {group("Por jugar", pending)}
       {group("Jugados", played)}
 

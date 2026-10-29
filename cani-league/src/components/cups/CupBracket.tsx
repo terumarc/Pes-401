@@ -10,6 +10,7 @@ import { useConfirm } from "@/components/ui/use-confirm";
 import { CUP_LABELS, currentTieOf, planCupMatch, roundName, tieState, type CupTie, type CupTrophy } from "@/lib/cups";
 import { cn } from "@/lib/utils";
 import { NEW_CUP_MATCH_EVENT } from "./NewCupMatchButton";
+import { MatchCard } from "@/components/league/MatchCard";
 
 export type CupTeam = { id: string; name: string; short_name: string | null; logo_url: string | null; primary_color: string | null };
 
@@ -28,47 +29,30 @@ type CupLeg = { tie: CupTie; leg: 1 | 2; played: boolean; label: string; needsPe
 function LegCard({ item, teams, onOpen }: { item: CupLeg; teams: Map<string, CupTeam>; onOpen: () => void }) {
   const { tie, leg } = item;
   // En la vuelta juega en casa el segundo equipo; los goles se guardan desde el punto de vista del primero.
-  const homeId = leg === 2 ? tie.away_team_id! : tie.home_team_id!;
-  const awayId = leg === 2 ? tie.home_team_id! : tie.away_team_id!;
+  const home = teams.get(leg === 2 ? tie.away_team_id! : tie.home_team_id!);
+  const away = teams.get(leg === 2 ? tie.home_team_id! : tie.away_team_id!);
   const h = leg === 1 ? tie.leg1_home_goals : tie.leg2_away_goals;
   const a = leg === 1 ? tie.leg1_away_goals : tie.leg2_home_goals;
-  const home = teams.get(homeId);
-  const away = teams.get(awayId);
-  const side = (team?: CupTeam) => (
-    <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
-      <Crest team={team} size={48} />
-      <p className="max-w-full truncate text-[15px] font-semibold leading-tight">{team?.short_name || team?.name || "—"}</p>
-    </div>
-  );
+  if (!home || !away) return null;
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-[22px] bg-card px-3 py-4 text-left transition-transform duration-150 active:scale-[0.98]"
-      aria-label={`${item.label}: ${home?.name ?? ""} contra ${away?.name ?? ""}${item.played ? `, ${h} a ${a}` : ", pendiente"}`}
-    >
-      {side(home)}
-      <div className="flex min-w-[6.5rem] flex-col items-center">
-        {item.played ? (
-          <p className="flex items-baseline gap-3 text-[34px] font-bold leading-none tabular-nums tracking-tight">
-            <span className={cn((h ?? 0) < (a ?? 0) && "text-muted-foreground")}>{h}</span>
-            <span className={cn((a ?? 0) < (h ?? 0) && "text-muted-foreground")}>{a}</span>
-          </p>
-        ) : (
-          <p className="text-[17px] font-semibold text-muted-foreground">vs</p>
-        )}
-        <p className="mt-1.5 text-center text-[12px] font-medium text-muted-foreground">{item.label}</p>
-        {item.needsPenalties && <p className="mt-0.5 text-[12px] font-medium text-[#ff9f0a]">Faltan penaltis</p>}
-      </div>
-      {side(away)}
-    </button>
+    <MatchCard
+      home={home}
+      away={away}
+      homeGoals={h}
+      awayGoals={a}
+      played={item.played}
+      label={item.label}
+      note={item.needsPenalties ? <p className="mt-0.5 text-[length:min(0.7059rem,18px)] font-medium text-[#ff9f0a]">Faltan penaltis</p> : undefined}
+      ariaLabel={`${item.label}: ${home.name} contra ${away.name}${item.played ? `, ${h} a ${a}` : ", pendiente"}`}
+      onOpen={onOpen}
+    />
   );
 }
 
 function Stepper({ value, onChange, label }: { value: number; onChange: (n: number) => void; label: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-[48px] font-bold leading-none tabular-nums">{value}</p>
+      <p className="text-[length:min(2.8235rem,72px)] font-bold leading-none tabular-nums">{value}</p>
       <div className="flex overflow-hidden rounded-full bg-secondary">
         <button type="button" aria-label={`Quitar gol a ${label}`} onClick={() => onChange(Math.max(0, value - 1))} className="flex size-11 items-center justify-center active:bg-white/10">
           <Minus className="size-5" />
@@ -125,11 +109,11 @@ function TieSheet({ tie, teams, onClose, initialLeg }: { tie: CupTie; teams: Map
   return (
     <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
       <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[17px] text-[#0a84ff] active:opacity-60">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center large-text:grid-cols-1 large-text:justify-items-start large-text:gap-1">
+        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[length:min(1rem,25.5px)] text-[#0a84ff] active:opacity-60">
           Cancelar
         </button>
-        <DialogTitle className="text-[17px] font-semibold">{CUP_LABELS[tie.trophy as CupTrophy]}</DialogTitle>
+        <DialogTitle className="text-[length:min(1rem,25.5px)] font-semibold">{CUP_LABELS[tie.trophy as CupTrophy]}</DialogTitle>
         <span />
       </div>
       <DialogDescription className="sr-only">Resultado de la eliminatoria</DialogDescription>
@@ -143,7 +127,7 @@ function TieSheet({ tie, teams, onClose, initialLeg }: { tie: CupTie; teams: Map
               role="tab"
               aria-selected={leg === l}
               onClick={() => setLeg(l)}
-              className={cn("flex-1 rounded-[7px] text-[13px] font-semibold", leg === l ? "bg-[#636366] text-white" : "text-[#ebebf5]/60")}
+              className={cn("flex-1 rounded-[7px] text-[length:min(0.7647rem,19.5px)] font-semibold", leg === l ? "bg-[#636366] text-white" : "text-[#ebebf5]/60")}
             >
               {l === 1 ? "Ida" : "Vuelta"}
             </button>
@@ -157,7 +141,7 @@ function TieSheet({ tie, teams, onClose, initialLeg }: { tie: CupTie; teams: Map
           return (
             <div key={team.id} className="flex flex-col items-center gap-2">
               <Crest team={team} size={40} />
-              <p className="max-w-full truncate text-[15px] font-semibold">{team.name}</p>
+              <p className="max-w-full truncate text-[length:min(0.8824rem,22.5px)] font-semibold">{team.name}</p>
               <Stepper value={g[leg][side]} onChange={(n) => set(side, n)} label={team.name} />
             </div>
           );
@@ -165,14 +149,14 @@ function TieSheet({ tie, teams, onClose, initialLeg }: { tie: CupTie; teams: Map
       </div>
 
       {preview.aggHome != null && twoLegs && (
-        <p className="mt-4 text-center text-[15px] text-muted-foreground tabular-nums">
+        <p className="mt-4 text-center text-[length:min(0.8824rem,22.5px)] text-muted-foreground tabular-nums">
           Global: {home.short_name ?? home.name} {preview.aggHome} – {preview.aggAway} {away.short_name ?? away.name}
         </p>
       )}
 
       {preview.needsPenalties && (
         <fieldset className="mt-4">
-          <legend className="mb-1.5 px-1 text-[13px] text-muted-foreground">¿Quién gana en los penaltis?</legend>
+          <legend className="mb-1.5 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">¿Quién gana en los penaltis?</legend>
           <div className="flex gap-2">
             {[home, away].map((t) => (
               <button
@@ -180,7 +164,7 @@ function TieSheet({ tie, teams, onClose, initialLeg }: { tie: CupTie; teams: Map
                 type="button"
                 aria-pressed={pen === t.id}
                 onClick={() => setPen(t.id)}
-                className={cn("h-11 flex-1 rounded-full text-[15px] font-semibold", pen === t.id ? "bg-white text-black" : "bg-secondary")}
+                className={cn("h-11 flex-1 rounded-full text-[length:min(0.8824rem,22.5px)] font-semibold", pen === t.id ? "bg-white text-black" : "bg-secondary")}
               >
                 {t.short_name ?? t.name}
               </button>
@@ -189,12 +173,12 @@ function TieSheet({ tie, teams, onClose, initialLeg }: { tie: CupTie; teams: Map
         </fieldset>
       )}
 
-      {error && <p className="mt-3 text-center text-[15px] text-destructive">{error}</p>}
+      {error && <p className="mt-3 text-center text-[length:min(0.8824rem,22.5px)] text-destructive">{error}</p>}
       <button
         type="button"
         onClick={save}
         disabled={pending || (preview.needsPenalties && !pen)}
-        className="mt-6 h-[50px] w-full rounded-full bg-white text-[17px] font-semibold text-black disabled:opacity-40"
+        className="mt-6 h-[50px] w-full rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black disabled:opacity-40"
       >
         {pending ? "Guardando…" : `Guardar ${twoLegs ? (leg === 1 ? "la ida" : "la vuelta") : "la final"}`}
       </button>
@@ -257,7 +241,7 @@ function PickMatchSheet({
 
   const picker = (label: string, value: string | null, set: (id: string) => void, other: string | null) => (
     <fieldset className="mt-4">
-      <legend className="mb-1.5 px-1 text-[13px] text-muted-foreground">{label}</legend>
+      <legend className="mb-1.5 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">{label}</legend>
       <div className="grid grid-cols-2 gap-2">
         {alive.map((t) => (
           <button
@@ -267,7 +251,7 @@ function PickMatchSheet({
             disabled={other === t.id}
             onClick={() => set(t.id)}
             className={cn(
-              "flex h-11 min-w-0 items-center gap-2 rounded-full px-3 text-[15px] font-semibold disabled:opacity-30",
+              "flex h-11 min-w-0 items-center gap-2 rounded-full px-3 text-[length:min(0.8824rem,22.5px)] font-semibold disabled:opacity-30",
               value === t.id ? "bg-white text-black" : "bg-secondary",
             )}
           >
@@ -282,19 +266,19 @@ function PickMatchSheet({
   return (
     <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
       <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[17px] text-[#0a84ff] active:opacity-60">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center large-text:grid-cols-1 large-text:justify-items-start large-text:gap-1">
+        <button type="button" onClick={onClose} className="h-11 justify-self-start text-[length:min(1rem,25.5px)] text-[#0a84ff] active:opacity-60">
           Cancelar
         </button>
-        <DialogTitle className="text-[17px] font-semibold">Nuevo partido</DialogTitle>
+        <DialogTitle className="text-[length:min(1rem,25.5px)] font-semibold">Nuevo partido</DialogTitle>
         <span />
       </div>
-      <DialogDescription className="px-1 text-[15px] text-muted-foreground">
+      <DialogDescription className="px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
         {CUP_LABELS[trophy]}: elige quién ha jugado. Si no era el cruce del sorteo, se cambia.
       </DialogDescription>
 
       {alive.length < 2 ? (
-        <p className="mt-6 text-center text-[15px] text-muted-foreground">No quedan partidos por jugar en esta copa.</p>
+        <p className="mt-6 text-center text-[length:min(0.8824rem,22.5px)] text-muted-foreground">No quedan partidos por jugar en esta copa.</p>
       ) : (
         <>
           {picker("Local", home, setHome, away)}
@@ -302,15 +286,15 @@ function PickMatchSheet({
         </>
       )}
 
-      {plan && !plan.ok && <p className="mt-4 text-center text-[15px] text-[#ff9f0a]">{plan.error}</p>}
-      {note && <p className="mt-4 text-center text-[15px] text-muted-foreground">{note}</p>}
-      {error && <p className="mt-3 text-center text-[15px] text-destructive">{error}</p>}
+      {plan && !plan.ok && <p className="mt-4 text-center text-[length:min(0.8824rem,22.5px)] text-[#ff9f0a]">{plan.error}</p>}
+      {note && <p className="mt-4 text-center text-[length:min(0.8824rem,22.5px)] text-muted-foreground">{note}</p>}
+      {error && <p className="mt-3 text-center text-[length:min(0.8824rem,22.5px)] text-destructive">{error}</p>}
 
       <button
         type="button"
         onClick={next}
         disabled={pending || !plan?.ok}
-        className="mt-6 h-[50px] w-full rounded-full bg-white text-[17px] font-semibold text-black disabled:opacity-40"
+        className="mt-6 h-[50px] w-full rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black disabled:opacity-40"
       >
         {pending ? "Preparando…" : "Apuntar resultado"}
       </button>
@@ -391,8 +375,8 @@ export function CupBracket({
   if (!ties.length) {
     return (
       <div className="rounded-[22px] bg-card px-6 py-10 text-center">
-        <p className="text-[17px] font-semibold">Aún no se han sorteado las copas</p>
-        <p className="mx-auto mt-1 max-w-xs text-[15px] text-muted-foreground">
+        <p className="text-[length:min(1rem,25.5px)] font-semibold">Aún no se han sorteado las copas</p>
+        <p className="mx-auto mt-1 max-w-xs text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
           Entran todos los clubes. Eliminatorias a ida y vuelta y final a un partido.
         </p>
         {isAdmin ? (
@@ -400,14 +384,14 @@ export function CupBracket({
             type="button"
             onClick={() => draw(true)}
             disabled={pending}
-            className="mt-5 h-11 rounded-full bg-white px-6 text-[17px] font-semibold text-black disabled:opacity-50"
+            className="mt-5 h-11 rounded-full bg-white px-6 text-[length:min(1rem,25.5px)] font-semibold text-black disabled:opacity-50"
           >
             {pending ? "Sorteando…" : "Sortear las tres copas"}
           </button>
         ) : (
-          <p className="mt-4 text-[13px] text-muted-foreground">El sorteo lo hace un admin.</p>
+          <p className="mt-4 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">El sorteo lo hace un admin.</p>
         )}
-        {error && <p className="mt-3 text-[15px] text-destructive">{error}</p>}
+        {error && <p className="mt-3 text-[length:min(0.8824rem,22.5px)] text-destructive">{error}</p>}
       </div>
     );
   }
@@ -418,8 +402,8 @@ export function CupBracket({
         <div className="flex items-center gap-3 rounded-[22px] bg-card px-4 py-3">
           <Crest team={champion} size={40} />
           <div>
-            <p className="text-[13px] text-muted-foreground">Campeón</p>
-            <p className="text-[20px] font-bold">{champion.name}</p>
+            <p className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Campeón</p>
+            <p className="text-[length:min(1.1765rem,30px)] font-bold">{champion.name}</p>
           </div>
         </div>
       )}
@@ -431,7 +415,7 @@ export function CupBracket({
         (g) =>
           g.items.length > 0 && (
             <section key={g.title} aria-label={g.title} className="space-y-3">
-              <h2 className="px-1 text-[20px] font-bold tracking-tight">
+              <h2 className="px-1 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
                 {g.title} <span className="text-muted-foreground tabular-nums">{g.items.length}</span>
               </h2>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -451,7 +435,7 @@ export function CupBracket({
           ),
       )}
       {waiting > 0 && (
-        <p className="px-1 text-[15px] text-muted-foreground">
+        <p className="px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
           {waiting === 1 ? "Queda 1 cruce" : `Quedan ${waiting} cruces`} por decidir hasta que acaben las rondas anteriores.
         </p>
       )}
@@ -469,11 +453,11 @@ export function CupBracket({
             });
             if (ok) draw(false);
           }}
-          className="h-11 rounded-full bg-card px-4 text-[15px] font-semibold text-destructive disabled:opacity-50"
+          className="h-11 rounded-full bg-card px-4 text-[length:min(0.8824rem,22.5px)] font-semibold text-destructive disabled:opacity-50"
         >
           Volver a sortear esta copa
         </button>
-        {error && <p className="mt-2 text-[15px] text-destructive">{error}</p>}
+        {error && <p className="mt-2 text-[length:min(0.8824rem,22.5px)] text-destructive">{error}</p>}
       </div>}
 
       <Dialog open={!!open} onOpenChange={(o) => !o && closeTie()}>

@@ -27,7 +27,7 @@ function SquadList({ team, players, teams, goals }: { team: Team; players: Playe
         if (!list.length) return null;
         return (
           <section key={key} aria-label={label}>
-            <h3 className="mb-1.5 px-4 text-[13px] text-muted-foreground">
+            <h3 className="mb-1.5 px-4 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
               {label} <span className="tabular-nums">{list.length}</span>
             </h3>
             <ul className="overflow-hidden rounded-[22px] bg-card">
@@ -47,15 +47,15 @@ function SquadList({ team, players, teams, goals }: { team: Team; players: Playe
                   <div className="flex min-h-[60px] min-w-0 flex-1 items-center self-stretch border-b border-border pr-1 group-last:border-b-0">
                     <Link href={`/players/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3 py-2">
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[17px] leading-tight">{p.name}</span>
-                        <span className="block text-[13px] text-muted-foreground">
+                        <span className="block truncate text-[length:min(1rem,25.5px)] leading-tight">{p.name}</span>
+                        <span className="block text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
                           {p.position}
                           {p.age ? ` · ${p.age} años` : ""}
                           {goals[p.id] ? ` · ${goals[p.id]} ${goals[p.id] === 1 ? "gol" : "goles"}` : ""}
                           {p.available_in_market ? " · En venta" : ""}
                         </span>
                       </span>
-                      <span className="text-[20px] font-bold tabular-nums">{getPlayerEffectiveRating(p) || "–"}</span>
+                      <span className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums">{getPlayerEffectiveRating(p) || "–"}</span>
                     </Link>
                     <PlayerActions
                       playerId={p.id}
@@ -106,7 +106,7 @@ export function ClubSections({
               aria-selected={active}
               onClick={() => setView(t.key as typeof view)}
               className={cn(
-                "flex-1 rounded-[7px] text-[13px] font-semibold transition-colors",
+                "flex-1 rounded-[7px] text-[length:min(0.7647rem,19.5px)] font-semibold transition-colors",
                 active ? "bg-[#636366] text-white" : "text-[#ebebf5]/60",
               )}
             >
@@ -117,7 +117,7 @@ export function ClubSections({
       </div>
 
       {players.length === 0 ? (
-        <p className="rounded-[22px] bg-card px-4 py-10 text-center text-[15px] text-muted-foreground">
+        <p className="rounded-[22px] bg-card px-4 py-10 text-center text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
           Este club aún no tiene jugadores.
         </p>
       ) : view === "formation" ? (

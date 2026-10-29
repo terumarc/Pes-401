@@ -65,7 +65,7 @@ export function OfferSheet({
   }
 
   const selectCls =
-    "h-11 w-full rounded-[10px] bg-input px-3 text-[17px] outline-none focus-visible:ring-2 focus-visible:ring-ring/60";
+    "h-11 w-full rounded-[10px] bg-input px-3 text-[length:min(1rem,25.5px)] outline-none focus-visible:ring-2 focus-visible:ring-ring/60";
 
   // Sin club propio (y sin ser admin), o el jugador ya es suyo: no hay oferta que hacer.
   if (buyers.length === 0) return null;
@@ -75,33 +75,33 @@ export function OfferSheet({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="h-[50px] w-full rounded-full bg-white text-[17px] font-semibold text-black active:opacity-80"
+        className="h-[50px] w-full rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black active:opacity-80"
       >
         Hacer oferta
       </button>
       <Dialog open={open} onOpenChange={reset}>
         <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
           <span aria-hidden className="mx-auto mb-1 h-[5px] w-9 rounded-full bg-white/25 sm:hidden" />
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-            <button type="button" onClick={() => reset(false)} className="h-11 justify-self-start text-[17px] text-[#0a84ff]">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center large-text:grid-cols-1 large-text:justify-items-start large-text:gap-1">
+            <button type="button" onClick={() => reset(false)} className="h-11 justify-self-start text-[length:min(1rem,25.5px)] text-[#0a84ff]">
               {done ? "Cerrar" : "Cancelar"}
             </button>
-            <DialogTitle className="text-[17px] font-semibold">Oferta por {player.name}</DialogTitle>
+            <DialogTitle className="text-[length:min(1rem,25.5px)] font-semibold">Oferta por {player.name}</DialogTitle>
             <span />
           </div>
 
           {done ? (
-            <DialogDescription className="mt-6 pb-4 text-center text-[17px]">
+            <DialogDescription className="mt-6 pb-4 text-center text-[length:min(1rem,25.5px)]">
               Oferta enviada a {player.teamName}. Su dueño la verá en Mercado → Ofertas.
             </DialogDescription>
           ) : (
             <>
-              <DialogDescription className="mt-3 text-[15px] text-muted-foreground">
+              <DialogDescription className="mt-3 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
                 {player.teamName} decide si la acepta. Solo se puede aceptar con el mercado abierto.
               </DialogDescription>
 
               <label className="mt-5 block">
-                <span className="mb-1.5 block px-1 text-[13px] text-muted-foreground">
+                <span className="mb-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
                   {viewer?.isAdmin ? "Club que oferta (como admin puedes elegir cualquiera)" : "Club que oferta"}
                 </span>
                 {viewer?.isAdmin ? (
@@ -118,19 +118,19 @@ export function OfferSheet({
                   <p className={`${selectCls} flex items-center`}>{buyer?.name}</p>
                 )}
                 {buyer && (
-                  <span className={`mt-1.5 block px-1 text-[13px] ${short ? "text-[#ff453a]" : "text-muted-foreground"}`}>
+                  <span className={`mt-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] ${short ? "text-[#ff453a]" : "text-muted-foreground"}`}>
                     Presupuesto: {formatMoney(buyer.budget)}
                   </span>
                 )}
               </label>
 
               <div className="mt-4">
-                <span className="mb-1.5 block px-1 text-[13px] text-muted-foreground">Dinero</span>
+                <span className="mb-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Dinero</span>
                 <MoneyInput value={amount} onChange={setAmount} ariaLabel="Dinero de la oferta" placeholder="0" />
               </div>
 
               <label className="mt-4 block">
-                <span className="mb-1.5 block px-1 text-[13px] text-muted-foreground">Jugador a cambio (opcional)</span>
+                <span className="mb-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Jugador a cambio (opcional)</span>
                 <select value={swapId} onChange={(e) => setSwapId(e.target.value)} disabled={!buyerId} className={`${selectCls} disabled:opacity-40`}>
                   <option value="">Ninguno</option>
                   {squad.map((p) => (
@@ -141,12 +141,12 @@ export function OfferSheet({
                 </select>
               </label>
 
-              {error && <p className="mt-3 text-[15px] text-destructive">{error}</p>}
+              {error && <p className="mt-3 text-[length:min(0.8824rem,22.5px)] text-destructive">{error}</p>}
               <button
                 type="button"
                 onClick={send}
                 disabled={pending || !buyerId || short || (amount <= 0 && !swapId)}
-                className="mt-6 h-[50px] w-full rounded-full bg-white text-[17px] font-semibold text-black disabled:opacity-40"
+                className="mt-6 h-[50px] w-full rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black disabled:opacity-40"
               >
                 {pending ? "Enviando…" : "Enviar oferta"}
               </button>

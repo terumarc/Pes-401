@@ -14,6 +14,8 @@ import {
   X,
   Coins,
   History,
+  Home,
+  Plane,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -181,7 +183,7 @@ export function QuickMatchModal({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="flex h-11 items-center gap-1.5 rounded-full bg-card pl-3 pr-4 text-[15px] font-semibold text-foreground transition-opacity active:opacity-70"
+          className="flex h-11 items-center gap-1.5 rounded-full bg-card pl-3 pr-4 text-[length:min(0.8824rem,22.5px)] font-semibold text-foreground transition-opacity active:opacity-70"
         >
           <Plus className="size-[18px]" strokeWidth={2.4} aria-hidden />
           Nuevo partido
@@ -189,15 +191,15 @@ export function QuickMatchModal({
       </DialogTrigger>
 
       <DialogContent
-        className="max-h-[92vh] overflow-y-auto sm:max-w-xl border-border bg-card/95 p-5 sm:p-6"
+        className="max-h-[92vh] grid-cols-[minmax(0,1fr)] overflow-y-auto overflow-x-hidden sm:max-w-xl border-border bg-card/95 p-5 sm:p-6"
         onKeyDown={handleKeyDown}
       >
         <DialogHeader className="text-left space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/25">
+          <div className="flex items-center gap-2 pr-8">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/25">
               <Swords className="size-4" />
             </span>
-            <DialogTitle className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            <DialogTitle className="min-w-0 text-xl sm:text-2xl font-black tracking-tight text-foreground large-text:whitespace-normal">
               Arena de Enfrentamientos
             </DialogTitle>
           </div>
@@ -222,7 +224,7 @@ export function QuickMatchModal({
             />
           )}
 
-          <div className="relative z-10 grid grid-cols-[1fr,auto,1fr] items-center gap-3 text-center">
+          <div className="relative z-10 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 text-center">
             {/* LOCAL */}
             <div
               className={cn(
@@ -232,8 +234,8 @@ export function QuickMatchModal({
                   : "border-2 border-dashed border-border bg-white/[0.01]",
               )}
             >
-              <span className="mb-1 text-[12px] font-bold text-muted-foreground flex items-center gap-1">
-                🏠 Local
+              <span className="mb-1 text-[length:min(0.7059rem,18px)] font-bold text-muted-foreground flex items-center gap-1">
+                <Home className="size-3.5" aria-hidden /> Local
               </span>
               {homeTeam ? (
                 <>
@@ -243,7 +245,7 @@ export function QuickMatchModal({
                     color={homeTeam.primary_color}
                     size="md"
                   />
-                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-[130px]">
+                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-full">
                     {homeTeam.short_name || homeTeam.name}
                   </p>
                 </>
@@ -252,7 +254,7 @@ export function QuickMatchModal({
                   <div className="flex size-10 items-center justify-center rounded-full bg-white/[0.05] text-xs font-bold text-muted-foreground/60">
                     ?
                   </div>
-                  <span className="text-[12px] font-medium">Elige local</span>
+                  <span className="text-[length:min(0.7059rem,18px)] font-medium">Elige local</span>
                 </div>
               )}
             </div>
@@ -285,8 +287,8 @@ export function QuickMatchModal({
                   : "border-2 border-dashed border-border bg-white/[0.01]",
               )}
             >
-              <span className="mb-1 text-[12px] font-bold text-muted-foreground flex items-center gap-1">
-                ✈️ Visitante
+              <span className="mb-1 text-[length:min(0.7059rem,18px)] font-bold text-muted-foreground flex items-center gap-1">
+                <Plane className="size-3.5" aria-hidden /> Visitante
               </span>
               {awayTeam ? (
                 <>
@@ -296,7 +298,7 @@ export function QuickMatchModal({
                     color={awayTeam.primary_color}
                     size="md"
                   />
-                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-[130px]">
+                  <p className="mt-2 text-xs sm:text-sm font-black text-foreground truncate max-w-full">
                     {awayTeam.short_name || awayTeam.name}
                   </p>
                 </>
@@ -305,7 +307,7 @@ export function QuickMatchModal({
                   <div className="flex size-10 items-center justify-center rounded-full bg-white/[0.05] text-xs font-bold text-muted-foreground/60">
                     ?
                   </div>
-                  <span className="text-[12px] font-medium">Elige visitante</span>
+                  <span className="text-[length:min(0.7059rem,18px)] font-medium">Elige visitante</span>
                 </div>
               )}
             </div>
@@ -316,19 +318,19 @@ export function QuickMatchModal({
             <div className="relative z-10 mt-3 border-t border-border/80 pt-2.5 text-center text-xs">
               <div className="flex flex-wrap items-center justify-center gap-2">
                 {pendingMatches.length > 0 ? (
-                  <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/25 font-bold text-[12px]">
+                  <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/25 font-bold text-[length:min(0.7059rem,18px)]">
                     <Sparkles className="size-3" />
                     {pendingMatches.length} partido(s) oficial(es) pendiente(s) en calendario
                   </Badge>
                 ) : playedMatches.length > 0 ? (
-                  <Badge variant="outline" className="gap-1 bg-[#30d158]/10 text-[#30d158] font-bold text-[12px]">
+                  <Badge variant="outline" className="gap-1 bg-[#30d158]/10 text-[#30d158] font-bold text-[length:min(0.7059rem,18px)]">
                     <Trophy className="size-3" />
                     Ya disputaron ida y vuelta ({playedMatches.map((m) => `${m.home_goals}-${m.away_goals}`).join(", ")})
                   </Badge>
                 ) : null}
 
                 {h2hStats && playedMatches.length > 0 && (
-                  <span className="text-[12px] text-muted-foreground font-medium">
+                  <span className="text-[length:min(0.7059rem,18px)] text-muted-foreground font-medium">
                     Histórico directo: <strong>{h2hStats.homeWins}V</strong> {homeTeam.short_name || homeTeam.name} · <strong>{h2hStats.draws}E</strong> · <strong>{h2hStats.awayWins}V</strong> {awayTeam.short_name || awayTeam.name}
                   </span>
                 )}
@@ -365,12 +367,12 @@ export function QuickMatchModal({
             {/* SELECCIÓN LOCAL */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-muted-foreground text-[12px]">
+                <span className="font-bold text-muted-foreground text-[length:min(0.7059rem,18px)]">
                   1. Equipo Local
                 </span>
                 {homeTeam && (
-                  <span className="font-bold text-primary text-[12px] truncate max-w-[120px]">
-                    ✓ {homeTeam.short_name || homeTeam.name}
+                  <span className="font-bold text-primary text-[length:min(0.7059rem,18px)] truncate max-w-[120px]">
+                    <Check className="inline size-3.5 align-[-2px]" aria-hidden /> {homeTeam.short_name || homeTeam.name}
                   </span>
                 )}
               </div>
@@ -412,12 +414,12 @@ export function QuickMatchModal({
             {/* SELECCIÓN VISITANTE */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-muted-foreground text-[12px]">
+                <span className="font-bold text-muted-foreground text-[length:min(0.7059rem,18px)]">
                   2. Equipo Visitante
                 </span>
                 {awayTeam && (
-                  <span className="font-bold text-primary text-[12px] truncate max-w-[120px]">
-                    ✓ {awayTeam.short_name || awayTeam.name}
+                  <span className="font-bold text-primary text-[length:min(0.7059rem,18px)] truncate max-w-[120px]">
+                    <Check className="inline size-3.5 align-[-2px]" aria-hidden /> {awayTeam.short_name || awayTeam.name}
                   </span>
                 )}
               </div>
@@ -461,7 +463,7 @@ export function QuickMatchModal({
           {homeTeam && awayTeam && (
             <div className="rounded-2xl border border-border bg-black/40 p-4 shadow-inner space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[12px] font-bold text-muted-foreground flex items-center gap-1">
+                <span className="text-[length:min(0.7059rem,18px)] font-bold text-muted-foreground flex items-center gap-1">
                   <Coins className="size-3 text-muted-foreground" /> 3. Marcador del Encuentro
                 </span>
               </div>
@@ -515,7 +517,7 @@ export function QuickMatchModal({
                         type="button"
                         onClick={() => setHomeGoals(q)}
                         className={cn(
-                          "size-6 rounded-md text-[12px] font-bold transition-all",
+                          "size-6 rounded-md text-[length:min(0.7059rem,18px)] font-bold transition-all",
                           homeGoals === q
                             ? "bg-primary text-primary-foreground shadow-xs"
                             : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground",
@@ -575,7 +577,7 @@ export function QuickMatchModal({
                         type="button"
                         onClick={() => setAwayGoals(q)}
                         className={cn(
-                          "size-6 rounded-md text-[12px] font-bold transition-all",
+                          "size-6 rounded-md text-[length:min(0.7059rem,18px)] font-bold transition-all",
                           awayGoals === q
                             ? "bg-primary text-primary-foreground shadow-xs"
                             : "bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground",

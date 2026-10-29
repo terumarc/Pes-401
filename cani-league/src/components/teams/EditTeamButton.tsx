@@ -62,7 +62,7 @@ export function EditTeamButton({
       </DialogTrigger>
       <DialogContent className="max-h-[92vh] overflow-y-auto border-0 bg-card p-5 sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-[17px] font-semibold">
+          <DialogTitle className="text-[length:min(1rem,25.5px)] font-semibold">
             Editar club
           </DialogTitle>
         </DialogHeader>

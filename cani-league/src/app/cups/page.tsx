@@ -35,7 +35,7 @@ export default async function CupsPage({ searchParams }: Props) {
               key={t}
               href={`/cups?c=${t}`}
               aria-current={t === trophy ? "page" : undefined}
-              className={cn("flex h-9 items-center rounded-full px-4 text-[15px] font-semibold", t === trophy ? "bg-white text-black" : "bg-card")}
+              className={cn("flex h-9 items-center rounded-full px-4 text-[length:min(0.8824rem,22.5px)] font-semibold", t === trophy ? "bg-white text-black" : "bg-card")}
             >
               {CUP_LABELS[t]}
             </Link>

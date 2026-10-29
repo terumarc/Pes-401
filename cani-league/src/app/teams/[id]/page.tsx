@@ -73,20 +73,20 @@ export default async function TeamDetailPage({ params }: Props) {
         />
         <div className="relative flex flex-col items-center text-center">
           <TeamLogo name={team.name} logoUrl={team.logo_url} color={team.primary_color} size="xl" />
-          <h1 className="mt-3 text-[28px] font-bold leading-tight tracking-tight">{team.name}</h1>
-          <p className="text-[15px] text-muted-foreground">{team.owner_name?.trim() || "Sin propietario"}</p>
+          <h1 className="mt-3 text-[length:min(1.6471rem,42px)] font-bold leading-tight tracking-tight">{team.name}</h1>
+          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground">{team.owner_name?.trim() || "Sin propietario"}</p>
           <FormDots form={form} className="mt-2" />
 
           <dl className="mt-5 grid w-full max-w-md grid-cols-3 rounded-[22px] bg-card py-3">
             {stats.map((s, i) => (
               <div key={s.label} className={i > 0 ? "border-l border-border" : undefined}>
-                <dt className="text-[13px] text-muted-foreground">{s.label}</dt>
-                <dd className="text-[20px] font-bold tabular-nums">{s.value}</dd>
+                <dt className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">{s.label}</dt>
+                <dd className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums">{s.value}</dd>
               </div>
             ))}
           </dl>
 
-          <div className="mt-4 flex w-full max-w-md gap-2 empty:hidden">
+          <div className="mt-4 flex w-full max-w-md gap-2 empty:hidden large-text:flex-col large-text:[&>*]:min-h-11">
             {viewer?.isAdmin && (
               <Button asChild variant="secondary" className="flex-1 gap-1.5">
                 <Link href={`/players?new=1&team=${team.id}`}>
@@ -104,10 +104,10 @@ export default async function TeamDetailPage({ params }: Props) {
 
       <section aria-labelledby="club-activity" className="mt-10">
         <div className="mb-2 flex items-baseline justify-between px-1">
-          <h2 id="club-activity" className="text-[20px] font-bold tracking-tight">
+          <h2 id="club-activity" className="text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
             Últimos movimientos
           </h2>
-          <Link href={`/movimientos?club=${team.id}`} className="text-[15px] text-[#0a84ff] active:opacity-50">
+          <Link href={`/movimientos?club=${team.id}`} className="text-[length:min(0.8824rem,22.5px)] text-[#0a84ff] active:opacity-50">
             Ver todos
           </Link>
         </div>

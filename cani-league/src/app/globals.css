@@ -3,6 +3,38 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+/* Letra grande del sistema (≥ 21 px de base): las tarjetas pasan a una disposición apilada. */
+@custom-variant large-text (&:where([data-large-text], [data-large-text] *));
+
+/*
+ * Letra que sigue el tamaño elegido en el móvil.
+ * 1rem = 17 px con el tamaño normal (como el texto de iOS) y crece si la persona lo agranda:
+ * en iPhone con «Tamaño del texto», en el resto con el tamaño de letra del navegador.
+ * Los espacios, márgenes y alturas siguen en px fijos para que la maqueta no se descoloque;
+ * cada tamaño de texto tiene además un tope de 1,5× para que quepa en botones y filas.
+ */
+@theme {
+  --spacing: 4px;
+  --text-xs: min(calc(12rem / 17), 18px);
+  --text-sm: min(calc(14rem / 17), 21px);
+  --text-base: min(calc(16rem / 17), 24px);
+  --text-lg: min(calc(18rem / 17), 27px);
+  --text-xl: min(calc(20rem / 17), 30px);
+  --text-2xl: min(calc(24rem / 17), 36px);
+  --text-3xl: min(calc(30rem / 17), 45px);
+}
+
+html {
+  font-size: 106.25%;
+}
+
+/* Solo iPhone/iPad: el tamaño base sale del ajuste del sistema (Dynamic Type). */
+@supports (font: -apple-system-body) and (-webkit-touch-callout: none) {
+  html {
+    font: -apple-system-body;
+    line-height: 1.5;
+  }
+}
 
 :root {
   --card: oklch(1 0 0);
@@ -27,7 +59,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.875rem;
+  --radius: 14px;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -139,7 +171,15 @@ body {
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--primary) 22%, white);
+  /* Azul de la app a media opacidad: el texto blanco sigue leyéndose al seleccionarlo. */
+  background: rgb(10 132 255 / 0.45);
+  color: #fff;
+}
+
+/* Cursor de texto con el azul de la app, no el del navegador. */
+input,
+textarea {
+  caret-color: #0a84ff;
 }
 
 @layer base {

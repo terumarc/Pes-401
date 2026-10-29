@@ -148,7 +148,7 @@ export function PlayerActions({
             <DropdownMenuItem asChild>
               <Link
                 href={`/players/${playerId}?edit=1`}
-                className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px]"
+                className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[length:min(0.8824rem,22.5px)]"
               >
                 <Edit3 className="size-4 text-muted-foreground" />
                 <span>Editar jugador</span>
@@ -157,7 +157,7 @@ export function PlayerActions({
 
             <DropdownMenuItem
               onClick={() => setMoving(true)}
-              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px]"
+              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[length:min(0.8824rem,22.5px)]"
             >
               <ArrowRightLeft className="size-4 text-muted-foreground" />
               <span>Mover de equipo</span>
@@ -168,7 +168,7 @@ export function PlayerActions({
             {owns && (
             <DropdownMenuItem
               onClick={toggleMarket}
-              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px]"
+              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[length:min(0.8824rem,22.5px)]"
             >
               <Store className="size-4 text-muted-foreground" />
               <span>{availableInMarket ? "Retirar de mercado" : "Poner en mercado"}</span>
@@ -178,7 +178,7 @@ export function PlayerActions({
             {!isFreeAgent && owns && (
               <DropdownMenuItem
                 onClick={() => setReleasing(true)}
-                className="flex items-center gap-2.5 cursor-pointer py-2 text-[15px]"
+                className="flex items-center gap-2.5 cursor-pointer py-2 text-[length:min(0.8824rem,22.5px)]"
               >
                 <Coins className="size-4" />
                 <span>Liberar (+30% valor)</span>
@@ -191,7 +191,7 @@ export function PlayerActions({
 
             <DropdownMenuItem
               onClick={remove}
-              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[15px] text-destructive focus:text-destructive focus:bg-destructive/10"
+              className="flex items-center gap-2.5 cursor-pointer py-2.5 text-[length:min(0.8824rem,22.5px)] text-destructive focus:text-destructive focus:bg-destructive/10"
             >
               <Trash2 className="size-3.5" />
               <span>Eliminar jugador</span>
@@ -206,7 +206,7 @@ export function PlayerActions({
         <Dialog open={moving} onOpenChange={setMoving}>
           <DialogContent className="border-0 bg-card p-5 sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-[20px] font-bold">
+              <DialogTitle className="flex items-center gap-2 text-[length:min(1.1765rem,30px)] font-bold">
                 <ArrowRightLeft className="size-4 text-primary" />
                 Mover a {playerForRelease.name}
               </DialogTitle>
@@ -336,7 +336,7 @@ export function PlayerActions({
       <Dialog open={moving} onOpenChange={setMoving}>
         <DialogContent className="border-0 bg-card p-5 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-[20px] font-bold">
+            <DialogTitle className="flex items-center gap-2 text-[length:min(1.1765rem,30px)] font-bold">
               <ArrowRightLeft className="size-4 text-primary" />
               Mover a {playerForRelease.name}
             </DialogTitle>

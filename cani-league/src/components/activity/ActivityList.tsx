@@ -75,8 +75,8 @@ export function ActivityList({
   if (rows.length === 0) {
     return (
       <div className="rounded-[22px] bg-card px-6 py-10 text-center">
-        <p className="text-[17px] font-semibold">{emptyTitle}</p>
-        <p className="mx-auto mt-1 max-w-xs text-[15px] text-muted-foreground">{emptyText}</p>
+        <p className="text-[length:min(1rem,25.5px)] font-semibold">{emptyTitle}</p>
+        <p className="mx-auto mt-1 max-w-xs text-[length:min(0.8824rem,22.5px)] text-muted-foreground">{emptyText}</p>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export function ActivityList({
     <div className="space-y-6">
       {groups.map((g) => (
         <section key={g.label} aria-label={g.label}>
-          <h2 className="mb-1.5 px-4 text-[13px] text-muted-foreground">{g.label}</h2>
+          <h2 className="mb-1.5 px-4 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">{g.label}</h2>
           <ul className="overflow-hidden rounded-[22px] bg-card">
             {g.items.map((row) => {
               const meta = KIND[row.kind] ?? { Icon: Wallet, tint: "#8e8e93" };
@@ -110,8 +110,8 @@ export function ActivityList({
                   </span>
                   <div className="flex min-h-[60px] min-w-0 flex-1 items-start gap-3 border-b border-border py-2.5 pr-4 group-last:border-b-0">
                     <div className="min-w-0 flex-1">
-                      <p className="text-[15px] leading-snug">{row.title}</p>
-                      <p className="mt-0.5 text-[13px] text-muted-foreground">
+                      <p className="text-[length:min(0.8824rem,22.5px)] leading-snug">{row.title}</p>
+                      <p className="mt-0.5 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
                         {timeOf.format(new Date(row.created_at))}
                         {row.actor_name ? ` · ${row.actor_name}` : ""}
                         {row.as_admin && <span className="text-[#ff9f0a]"> · como admin</span>}
@@ -121,7 +121,7 @@ export function ActivityList({
                     {money != null && (
                       <span
                         className={cn(
-                          "shrink-0 pt-0.5 text-[15px] font-semibold tabular-nums",
+                          "shrink-0 pt-0.5 text-[length:min(0.8824rem,22.5px)] font-semibold tabular-nums",
                           !teamId ? "text-foreground" : money > 0 ? "text-[#30d158]" : "text-[#ff453a]",
                         )}
                       >
@@ -129,7 +129,7 @@ export function ActivityList({
                       </span>
                     )}
                     {neutralAmount != null && (
-                      <span className="shrink-0 pt-0.5 text-[15px] tabular-nums text-muted-foreground">
+                      <span className="shrink-0 pt-0.5 text-[length:min(0.8824rem,22.5px)] tabular-nums text-muted-foreground">
                         {formatMoney(neutralAmount)}
                       </span>
                     )}

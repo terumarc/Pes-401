@@ -34,7 +34,7 @@ export function NavMain({
                 isActive={item.isActive}
                 asChild
                 className={cn(
-                  "relative h-9 rounded-[10px] px-3 text-[15px] transition-colors",
+                  "relative h-9 rounded-[10px] px-3 text-[length:min(0.8824rem,22.5px)] transition-colors",
                   item.isActive
                     ? "bg-secondary font-semibold text-foreground"
                     : "text-foreground/85 hover:bg-white/[0.04]"

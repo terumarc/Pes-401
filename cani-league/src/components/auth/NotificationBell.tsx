@@ -111,20 +111,20 @@ export function NotificationBell({ className }: { className?: string }) {
       </PopoverTrigger>
       <PopoverContent align="end" sideOffset={6} className="w-[min(92vw,380px)] gap-0 p-0">
         <div className="flex items-center justify-between border-b border-border/80 px-4 py-3">
-          <p className="text-[15px] font-semibold">Avisos</p>
+          <p className="text-[length:min(0.8824rem,22.5px)] font-semibold">Avisos</p>
           <button
             type="button"
             onClick={markAllRead}
             disabled={unread === 0}
-            className="text-[15px] text-[#0a84ff] active:opacity-50 disabled:text-muted-foreground"
+            className="text-[length:min(0.8824rem,22.5px)] text-[#0a84ff] active:opacity-50 disabled:text-muted-foreground"
           >
             Marcar como leídos
           </button>
         </div>
         {items.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <p className="text-[15px] font-medium">Sin avisos</p>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="text-[length:min(0.8824rem,22.5px)] font-medium">Sin avisos</p>
+            <p className="mt-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
               Aquí te avisamos de ofertas, fichajes, resultados y premios de tu club.
             </p>
           </div>
@@ -143,12 +143,12 @@ export function NotificationBell({ className }: { className?: string }) {
                   />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-baseline justify-between gap-2">
-                      <span className={cn("truncate text-[15px]", !n.read_at && "font-semibold")}>{n.title}</span>
-                      <span className="shrink-0 text-[12px] text-muted-foreground">
+                      <span className={cn("truncate text-[length:min(0.8824rem,22.5px)]", !n.read_at && "font-semibold")}>{n.title}</span>
+                      <span className="shrink-0 text-[length:min(0.7059rem,18px)] text-muted-foreground">
                         {formatDistanceToNowStrict(new Date(n.created_at), { locale: es })}
                       </span>
                     </span>
-                    {n.body && <span className="mt-0.5 block text-[13px] leading-snug text-muted-foreground">{n.body}</span>}
+                    {n.body && <span className="mt-0.5 block text-[length:min(0.7647rem,19.5px)] leading-snug text-muted-foreground">{n.body}</span>}
                   </span>
                 </button>
               </li>
@@ -158,7 +158,7 @@ export function NotificationBell({ className }: { className?: string }) {
         <Link
           href="/movimientos"
           onClick={() => setOpen(false)}
-          className="block border-t border-border/80 px-4 py-3 text-center text-[15px] text-[#0a84ff] active:opacity-50"
+          className="block border-t border-border/80 px-4 py-3 text-center text-[length:min(0.8824rem,22.5px)] text-[#0a84ff] active:opacity-50"
         >
           Ver todos los movimientos
         </Link>

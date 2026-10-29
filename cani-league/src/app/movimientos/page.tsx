@@ -76,7 +76,7 @@ export default async function MovimientosPage({
                   href={href(s.key, group ?? null)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex h-full items-center justify-center truncate rounded-[7px] px-2 text-[13px] font-semibold transition-colors",
+                    "flex h-full items-center justify-center truncate rounded-[7px] px-2 text-[length:min(0.7647rem,19.5px)] font-semibold transition-colors",
                     active && "bg-[#636366] shadow-[0_3px_8px_rgba(0,0,0,0.12)]",
                   )}
                 >
@@ -98,7 +98,7 @@ export default async function MovimientosPage({
                   href={href(club, t.key)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex h-8 items-center rounded-full px-3.5 text-[15px] transition-colors",
+                    "flex h-8 items-center rounded-full px-3.5 text-[length:min(0.8824rem,22.5px)] transition-colors",
                     active ? "bg-white font-semibold text-black" : "bg-card text-foreground active:bg-white/10",
                   )}
                 >
@@ -113,12 +113,12 @@ export default async function MovimientosPage({
       {teamId && (incoming > 0 || outgoing > 0) && (
         <dl className="mb-6 grid grid-cols-2 rounded-[22px] bg-card py-3 text-center">
           <div>
-            <dt className="text-[13px] text-muted-foreground">Ha entrado</dt>
-            <dd className="text-[20px] font-bold tabular-nums text-[#30d158]">+{formatMoney(incoming)}</dd>
+            <dt className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Ha entrado</dt>
+            <dd className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums text-[#30d158]">+{formatMoney(incoming)}</dd>
           </div>
           <div className="border-l border-border">
-            <dt className="text-[13px] text-muted-foreground">Ha salido</dt>
-            <dd className="text-[20px] font-bold tabular-nums text-[#ff453a]">−{formatMoney(outgoing)}</dd>
+            <dt className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Ha salido</dt>
+            <dd className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums text-[#ff453a]">−{formatMoney(outgoing)}</dd>
           </div>
         </dl>
       )}
@@ -134,7 +134,7 @@ export default async function MovimientosPage({
       />
 
       {rows.length >= 100 && (
-        <p className="mt-4 px-4 text-[13px] text-muted-foreground">Se muestran los 100 movimientos más recientes.</p>
+        <p className="mt-4 px-4 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Se muestran los 100 movimientos más recientes.</p>
       )}
     </div>
   );

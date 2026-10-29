@@ -183,7 +183,7 @@ export function CommandMenuButton() {
     >
       <Search className="size-3.5" aria-hidden />
       <span className="min-w-0 flex-1 truncate whitespace-nowrap text-left">Buscar club o jugador…</span>
-      <kbd className="rounded border border-border bg-background px-1 font-sans text-[12px] font-medium">
+      <kbd className="rounded border border-border bg-background px-1 font-sans text-[length:min(0.7059rem,18px)] font-medium">
         {isMac ? "⌘" : "Ctrl"} K
       </kbd>
     </button>

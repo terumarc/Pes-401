@@ -35,18 +35,18 @@ export default async function SeasonsPage() {
       <SegmentedNav label="Secciones de la tabla" items={TABLE_SECTIONS} current="/seasons" />
 
       <section aria-label="Temporada en curso" className="mb-8 rounded-[22px] bg-card p-4">
-        <p className="text-[13px] text-muted-foreground">Temporada en curso</p>
-        <p className="mb-4 text-[28px] font-bold tracking-tight">{league.season}</p>
+        <p className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Temporada en curso</p>
+        <p className="mb-4 text-[length:min(1.6471rem,42px)] font-bold tracking-tight">{league.season}</p>
         {viewer?.isAdmin ? (
           <NewSeason leagueId={league.id} current={league.season} suggested={suggested} />
         ) : (
-          <p className="text-[15px] text-muted-foreground">Un admin abre la temporada siguiente cuando acaba esta.</p>
+          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground">Un admin abre la temporada siguiente cuando acaba esta.</p>
         )}
       </section>
 
-      <h2 className="mb-2 px-1 text-[20px] font-bold tracking-tight">Temporadas anteriores</h2>
+      <h2 className="mb-2 px-1 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">Temporadas anteriores</h2>
       {seasons.length === 0 ? (
-        <p className="rounded-[22px] bg-card px-4 py-8 text-center text-[15px] text-muted-foreground">
+        <p className="rounded-[22px] bg-card px-4 py-8 text-center text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
           Cuando cierres la temporada {league.season}, aparecerá aquí con su clasificación, campeones y goleadores.
         </p>
       ) : (
@@ -55,8 +55,8 @@ export default async function SeasonsPage() {
             <details key={s.id} className="group overflow-hidden rounded-[22px] bg-card">
               <summary className="flex min-h-[64px] cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[20px] font-bold">{s.season}</p>
-                  <p className="truncate text-[15px] text-muted-foreground">
+                  <p className="text-[length:min(1.1765rem,30px)] font-bold">{s.season}</p>
+                  <p className="truncate text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
                     Campeón: {s.champions.league?.name ?? "—"}
                     {s.top_scorers[0] ? ` · Pichichi: ${s.top_scorers[0].name} (${s.top_scorers[0].goals})` : ""}
                   </p>
@@ -67,16 +67,16 @@ export default async function SeasonsPage() {
               <div className="border-t border-border">
                 <ul>
                   {TITLES.map(([k, l]) => (
-                    <li key={k} className="flex justify-between gap-3 border-b border-border px-4 py-2.5 text-[15px]">
+                    <li key={k} className="flex justify-between gap-3 border-b border-border px-4 py-2.5 text-[length:min(0.8824rem,22.5px)]">
                       <span>{l}</span>
                       <span className="text-muted-foreground">{s.champions[k]?.name ?? "—"}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="px-4 pb-1 pt-4 text-[13px] text-muted-foreground">Clasificación final</p>
+                <p className="px-4 pb-1 pt-4 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Clasificación final</p>
                 <ol>
                   {s.standings.map((r) => (
-                    <li key={r.team_id} className="flex items-center gap-3 border-b border-border px-4 py-2 text-[15px] last:border-b-0">
+                    <li key={r.team_id} className="flex items-center gap-3 border-b border-border px-4 py-2 text-[length:min(0.8824rem,22.5px)] last:border-b-0">
                       <span className="w-5 text-muted-foreground tabular-nums">{r.position}</span>
                       <span className="min-w-0 flex-1 truncate">{r.name}</span>
                       <span className="text-muted-foreground tabular-nums">
@@ -88,10 +88,10 @@ export default async function SeasonsPage() {
                 </ol>
                 {s.top_scorers.length > 0 && (
                   <>
-                    <p className="px-4 pb-1 pt-4 text-[13px] text-muted-foreground">Goleadores</p>
+                    <p className="px-4 pb-1 pt-4 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Goleadores</p>
                     <ol className="pb-2">
                       {s.top_scorers.slice(0, 5).map((g, i) => (
-                        <li key={i} className="flex justify-between gap-3 px-4 py-1.5 text-[15px]">
+                        <li key={i} className="flex justify-between gap-3 px-4 py-1.5 text-[length:min(0.8824rem,22.5px)]">
                           <span className="truncate">
                             {g.name} <span className="text-muted-foreground">· {g.team ?? ""}</span>
                           </span>

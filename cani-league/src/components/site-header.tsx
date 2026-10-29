@@ -99,7 +99,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
               type="button"
               onClick={goBack}
               aria-label="Volver a la pantalla anterior"
-              className="flex h-11 items-center gap-0.5 pr-2 text-[15px] text-primary select-none active:opacity-50"
+              className="flex h-11 items-center gap-0.5 pr-2 text-[length:min(0.8824rem,22.5px)] text-primary select-none active:opacity-50"
             >
               <ChevronLeft className="size-6" strokeWidth={2.2} aria-hidden />
               <span className="max-w-[7rem] truncate">{detail?.parent ?? "Atrás"}</span>
@@ -108,7 +108,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
         </div>
         <p
           className={cn(
-            "max-w-[50vw] truncate text-center text-[15px] font-semibold transition-opacity duration-200",
+            "max-w-[50vw] truncate text-center text-[length:min(0.8824rem,22.5px)] font-semibold transition-opacity duration-200",
             root && !scrolled ? "opacity-0" : "opacity-100",
           )}
         >
@@ -159,7 +159,7 @@ export function SiteHeader({ season }: { season?: string | null }) {
           {season && (
             <Badge
               variant="outline"
-              className="border-border bg-white/[0.03] text-[12px] font-medium text-muted-foreground"
+              className="border-border bg-white/[0.03] text-[length:min(0.7059rem,18px)] font-medium text-muted-foreground"
             >
               Temporada {season}
             </Badge>

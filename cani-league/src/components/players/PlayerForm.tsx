@@ -217,7 +217,7 @@ export function PlayerForm({
       </div>
 
       <div>
-        <p className="mb-3 text-[12px] font-medium tracking-[0.14em] text-muted-foreground">
+        <p className="mb-3 text-[length:min(0.7059rem,18px)] font-medium tracking-[0.14em] text-muted-foreground">
           Stats
         </p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -237,7 +237,7 @@ export function PlayerForm({
       </div>
 
       <div>
-        <p className="mb-3 text-[12px] font-medium tracking-[0.14em] text-muted-foreground">
+        <p className="mb-3 text-[length:min(0.7059rem,18px)] font-medium tracking-[0.14em] text-muted-foreground">
           Valor
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -294,7 +294,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-[12px] text-muted-foreground">
+      <Label className="text-[length:min(0.7059rem,18px)] text-muted-foreground">
         {label}
       </Label>
       {children}

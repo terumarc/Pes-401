@@ -37,11 +37,11 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
                 <h3 className="truncate font-display text-sm sm:text-base font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors">
                   {player.name}
                 </h3>
-                <span className={`text-[12px] uppercase font-bold px-2 py-0.5 rounded-full ${tierInfo.bgColor} ${tierInfo.color} ring-1 ring-white/10 shadow-xs`}>
+                <span className={`text-[length:min(0.7059rem,18px)] uppercase font-bold px-2 py-0.5 rounded-full ${tierInfo.bgColor} ${tierInfo.color} ring-1 ring-white/10 shadow-xs`}>
                   {tierInfo.tier}
                 </span>
                 <span
-                  className="text-[12px] font-medium px-1.5 py-0.5 rounded-md bg-white/[0.03] text-muted-foreground border border-border/80 flex items-center gap-1"
+                  className="text-[length:min(0.7059rem,18px)] font-medium px-1.5 py-0.5 rounded-md bg-white/[0.03] text-muted-foreground border border-border/80 flex items-center gap-1"
                   title={`Contrato: ${contractInfo.durationLabel}`}
                 >
                   {contractInfo.duration > 0 ? (
@@ -56,7 +56,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
               </div>
 
               <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground/90 bg-white/[0.06] border border-border/80 px-1.5 py-0.5 rounded text-[12px] uppercase tracking-wider">
+                <span className="font-semibold text-foreground/90 bg-white/[0.06] border border-border/80 px-1.5 py-0.5 rounded text-[length:min(0.7059rem,18px)] uppercase tracking-wider">
                   {player.position}
                 </span>
                 {player.nationality ? (
@@ -74,7 +74,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
                   </span>
                 ) : null}
                 {player.available_in_market ? (
-                  <Badge variant="secondary" className="text-[12px] px-1.5 py-0 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                  <Badge variant="secondary" className="text-[length:min(0.7059rem,18px)] px-1.5 py-0 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                     Mercado
                   </Badge>
                 ) : null}
@@ -87,7 +87,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
               }`}>
                 {formatStat(mediaValue)}
               </span>
-              <p className="text-[9px] text-muted-foreground font-semibold">
+              <p className="text-[length:min(0.7059rem,18px)] text-muted-foreground font-semibold">
                 Media
               </p>
             </div>
@@ -95,7 +95,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
 
           <div className="mt-3 flex flex-wrap items-center justify-between border-t border-border/60 pt-2 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-[12px] text-muted-foreground">Valor:</span>
+              <span className="text-[length:min(0.7059rem,18px)] text-muted-foreground">Valor:</span>
               <span className="font-semibold text-foreground tabular-nums">
                 <BudgetDisplay amount={contractInfo.price} size="sm" />
               </span>
@@ -104,7 +104,7 @@ export function PlayerCard({ player, href }: PlayerCardProps) {
               className="flex items-center gap-1.5"
               title={contractInfo.renewalPercent > 0 ? `Coste de renovación: ${contractInfo.renewalPercentLabel} (${contractInfo.renewalCostLabel})` : "Renovación gratuita"}
             >
-              <span className="text-[12px] text-muted-foreground">Renovación:</span>
+              <span className="text-[length:min(0.7059rem,18px)] text-muted-foreground">Renovación:</span>
               <span className="font-semibold tabular-nums">
                 {contractInfo.renewalCost > 0 ? (
                   <span className="text-amber-400 font-bold">{contractInfo.renewalPercentLabel} ({contractInfo.renewalCostLabel})</span>

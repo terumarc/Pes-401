@@ -26,7 +26,7 @@ export function PositionChip({ position, className }: { position: string; classN
   return (
     <span
       className={cn(
-        "inline-flex h-[18px] min-w-8 items-center justify-center rounded-[5px] px-1 text-[12px] font-bold leading-none tracking-wide tabular-nums",
+        "inline-flex h-[18px] min-w-8 items-center justify-center rounded-[5px] px-1 text-[length:min(0.7059rem,18px)] font-bold leading-none tracking-wide tabular-nums",
         tone.chip,
         className,
       )}
@@ -74,10 +74,10 @@ export function RatingValue({ player, className }: { player: Parameters<typeof g
   const tier = getPlayerTier(player as never);
   return (
     <span className={cn("flex flex-col items-end leading-none", className)}>
-      <span className={cn("text-[22px] font-bold tabular-nums tracking-tight", rating >= 88 ? "text-primary" : "text-foreground")}>
+      <span className={cn("text-[length:min(1.2941rem,33px)] font-bold tabular-nums tracking-tight", rating >= 88 ? "text-primary" : "text-foreground")}>
         {rating || "–"}
       </span>
-      <span className={cn("mt-1 text-[12px] font-semibold", tier.color)}>{tier.tier}</span>
+      <span className={cn("mt-1 text-[length:min(0.7059rem,18px)] font-semibold", tier.color)}>{tier.tier}</span>
     </span>
   );
 }
@@ -112,7 +112,7 @@ export function PlayerRow({
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <PositionChip position={player.position} />
-          <span className="truncate text-[15px] font-semibold">{player.name}</span>
+          <span className="truncate text-[length:min(0.8824rem,22.5px)] font-semibold">{player.name}</span>
         </span>
         <span className="mt-0.5 block truncate text-xs text-muted-foreground">{subtitle}</span>
         {meta && <span className="mt-0.5 block truncate text-xs font-medium tabular-nums text-foreground/80">{meta}</span>}
@@ -154,9 +154,9 @@ export function StatStrip({ items }: { items: { label: string; value: ReactNode;
       <dl className="flex gap-2 sm:grid sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {items.map((it) => (
           <div key={it.label} className="min-w-[8.5rem] shrink-0 rounded-2xl border border-border/80 bg-card/60 px-3.5 py-3">
-            <dt className="text-[12px] font-medium text-muted-foreground">{it.label}</dt>
+            <dt className="text-[length:min(0.7059rem,18px)] font-medium text-muted-foreground">{it.label}</dt>
             <dd className="mt-1 text-lg font-bold tabular-nums tracking-tight">{it.value}</dd>
-            {it.hint && <dd className="mt-0.5 text-[12px] text-muted-foreground">{it.hint}</dd>}
+            {it.hint && <dd className="mt-0.5 text-[length:min(0.7059rem,18px)] text-muted-foreground">{it.hint}</dd>}
           </div>
         ))}
       </dl>

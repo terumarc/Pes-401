@@ -210,13 +210,13 @@ function TrophyColumn({
 
       <div className="flex min-w-0 flex-1 flex-col py-4 pr-4 sm:px-5 sm:pb-5 sm:pt-4">
         <div className="flex flex-col gap-0.5">
-          <h2 className="text-[17px] font-semibold leading-tight">{label}</h2>
-          <span className="text-[13px] text-muted-foreground tabular-nums">
+          <h2 className="text-[length:min(1rem,25.5px)] font-semibold leading-tight">{label}</h2>
+          <span className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground tabular-nums">
             {editions} {editions === 1 ? "edición" : "ediciones"}
           </span>
         </div>
 
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
           {prize > 0 ? (
             <>
               Premio <span className="font-medium text-foreground tabular-nums">{compactMoney(prize)}</span>
@@ -235,8 +235,8 @@ function TrophyColumn({
                   className="size-2.5 shrink-0 rounded-full ring-1 ring-white/20"
                   style={{ backgroundColor: c.team.primary_color }}
                 />
-                <span className="min-w-0 flex-1 text-[15px] leading-tight">{c.team.name}</span>
-                <span className="shrink-0 text-[15px] font-semibold tabular-nums">×{c.trophies[type]}</span>
+                <span className="min-w-0 flex-1 text-[length:min(0.8824rem,22.5px)] leading-tight">{c.team.name}</span>
+                <span className="shrink-0 text-[length:min(0.8824rem,22.5px)] font-semibold tabular-nums">×{c.trophies[type]}</span>
                 {canEdit && <Button
                   variant="ghost"
                   size="icon-xs"
@@ -252,7 +252,7 @@ function TrophyColumn({
             ))}
           </ul>
         ) : (
-          <p className="mt-4 text-[15px] text-muted-foreground">Nadie la ha ganado todavía.</p>
+          <p className="mt-4 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">Nadie la ha ganado todavía.</p>
         )}
       </div>
     </section>
@@ -279,7 +279,7 @@ function AddTitle({
 
   return (
     <Card className={cn(CARD, "p-5")}>
-      <h2 className="text-[20px] font-bold tracking-tight">Añadir título</h2>
+      <h2 className="text-[length:min(1.1765rem,30px)] font-bold tracking-tight">Añadir título</h2>
 
       <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div role="radiogroup" aria-label="Competición" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:flex-1">
@@ -293,7 +293,7 @@ function AddTitle({
                 aria-checked={active}
                 onClick={() => setTrophy(t.key)}
                 className={cn(
-                  "flex min-h-11 items-center gap-2 rounded-[12px] px-3 py-2 text-left text-[15px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
+                  "flex min-h-11 items-center gap-2 rounded-[12px] px-3 py-2 text-left text-[length:min(0.8824rem,22.5px)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
                   active ? "bg-white font-semibold text-black" : "bg-secondary text-foreground",
                 )}
               >
@@ -332,7 +332,7 @@ function AddTitle({
       <p
         aria-live="polite"
         className={cn(
-          "mt-3 text-pretty text-[13px]",
+          "mt-3 text-pretty text-[length:min(0.7647rem,19.5px)]",
           feedback?.kind === "error"
             ? "text-destructive"
             : feedback
@@ -356,8 +356,8 @@ function Standings({ ranking }: { ranking: TeamTrophyCabinet[] }) {
 
   return (
     <Card className={CARD}>
-      <h2 className="px-5 pt-5 text-[20px] font-bold tracking-tight">Palmarés</h2>
-      <div className={cn(cols, "mt-3 border-b border-border px-5 pb-2 text-[12px] text-muted-foreground")}>
+      <h2 className="px-5 pt-5 text-[length:min(1.1765rem,30px)] font-bold tracking-tight">Palmarés</h2>
+      <div className={cn(cols, "mt-3 border-b border-border px-5 pb-2 text-[length:min(0.7059rem,18px)] text-muted-foreground")}>
         <span>#</span>
         <span>Club</span>
         {TROPHIES.map((t) => (
@@ -369,7 +369,7 @@ function Standings({ ranking }: { ranking: TeamTrophyCabinet[] }) {
       </div>
       <ol className="pb-2">
         {ranking.map((c, idx) => (
-          <li key={c.team.id} className={cn(cols, "px-5 py-2.5 text-[15px]")}>
+          <li key={c.team.id} className={cn(cols, "px-5 py-2.5 text-[length:min(0.8824rem,22.5px)]")}>
             <span className="tabular-nums text-muted-foreground">{idx + 1}</span>
             <span className="flex min-w-0 items-center gap-2.5">
               <span
@@ -428,8 +428,8 @@ function PrizesCard({
 
   return (
     <Card className={cn(CARD, "p-5")}>
-      <h2 className="text-[20px] font-bold tracking-tight">Premio de cada trofeo</h2>
-      <p className="mt-1 text-pretty text-[13px] text-muted-foreground">
+      <h2 className="text-[length:min(1.1765rem,30px)] font-bold tracking-tight">Premio de cada trofeo</h2>
+      <p className="mt-1 text-pretty text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
         Lo que cobra un club al ganar cada competición. Se suma a su presupuesto al añadir el título.
       </p>
 
@@ -445,7 +445,7 @@ function PrizesCard({
             const value = parsed[t.key];
             return (
               <label key={t.key} className="flex flex-col gap-1.5">
-                <span className="flex items-center gap-2 text-[13px] font-medium text-muted-foreground">
+                <span className="flex items-center gap-2 text-[length:min(0.7647rem,19.5px)] font-medium text-muted-foreground">
                   <PixelTrophy type={t.key} spin={false} className="h-5" />
                   {t.label}
                 </span>
@@ -462,7 +462,7 @@ function PrizesCard({
                 />
                 <span
                   className={cn(
-                    "text-[12px] tabular-nums",
+                    "text-[length:min(0.7059rem,18px)] tabular-nums",
                     value === null ? "text-destructive" : "text-muted-foreground",
                   )}
                 >
@@ -477,7 +477,7 @@ function PrizesCard({
           <p
             aria-live="polite"
             className={cn(
-              "text-[13px]",
+              "text-[length:min(0.7647rem,19.5px)]",
               message?.kind === "error"
                 ? "text-destructive"
                 : message

@@ -114,7 +114,7 @@ export function TransferModal({
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="border-0 bg-card p-5 sm:max-w-md">
                 <DialogHeader className="space-y-1 text-left">
-                    <DialogTitle className="flex items-center gap-2 text-[20px] font-bold">
+                    <DialogTitle className="flex items-center gap-2 text-[length:min(1.1765rem,30px)] font-bold">
                         {isClausula ? (
                             <span className="flex items-center gap-2">
                                 <Zap className="size-5 shrink-0" aria-hidden="true" />
@@ -127,7 +127,7 @@ export function TransferModal({
                             </span>
                         )}
                     </DialogTitle>
-                    <DialogDescription className="text-[15px] text-muted-foreground">
+                    <DialogDescription className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
                         {isClausula
                             ? "Ejecuta la cláusula contractual para incorporar al jugador inmediatamente."
                             : "Ficha a este agente libre para reforzar la plantilla de tu club."}
@@ -137,7 +137,7 @@ export function TransferModal({
                 {status === "success" ? (
                     <div className="flex flex-col items-center gap-3 py-6 text-center animate-in zoom-in-95 duration-200">
                         <CheckCircle2 className="size-12 text-[#30d158]" aria-hidden="true" />
-                        <h3 className="text-[20px] font-bold">Fichaje hecho</h3>
+                        <h3 className="text-[length:min(1.1765rem,30px)] font-bold">Fichaje hecho</h3>
                         <p className="text-sm text-muted-foreground max-w-xs">
                             <span className="font-semibold text-foreground">{player.name}</span> se ha incorporado con éxito a{" "}
                             <span className="font-semibold text-foreground">
@@ -161,10 +161,10 @@ export function TransferModal({
                                     <h4 className="truncate font-display text-sm font-bold text-foreground">
                                         {player.name}
                                     </h4>
-                                    <span className="rounded bg-muted px-1.5 py-0.5 text-[12px] font-extrabold uppercase tracking-wide">
+                                    <span className="rounded bg-muted px-1.5 py-0.5 text-[length:min(0.7059rem,18px)] font-extrabold uppercase tracking-wide">
                                         {player.position}
                                     </span>
-                                    <span className={`rounded px-1.5 py-0.5 text-[12px] font-extrabold ${tierInfo.bgColor} ${tierInfo.color}`}>
+                                    <span className={`rounded px-1.5 py-0.5 text-[length:min(0.7059rem,18px)] font-extrabold ${tierInfo.bgColor} ${tierInfo.color}`}>
                                         T{tierInfo.tier} · {rating}
                                     </span>
                                 </div>
@@ -180,7 +180,7 @@ export function TransferModal({
                                 </p>
                             </div>
                             <div className="text-right shrink-0">
-                                <span className="text-[12px] font-bold text-muted-foreground block">
+                                <span className="text-[length:min(0.7059rem,18px)] font-bold text-muted-foreground block">
                                     {isClausula ? "Cláusula" : "Precio"}
                                 </span>
                                 <BudgetDisplay amount={price} size="sm" className="font-bold text-foreground" />
