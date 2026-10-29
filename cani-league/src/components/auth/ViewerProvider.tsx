@@ -7,7 +7,6 @@ export type ClientViewer = {
   userId: string;
   memberId: string;
   name: string;
-  email: string;
   teamId: string | null;
   teamName: string | null;
   teamLogo: string | null;

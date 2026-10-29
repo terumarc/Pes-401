@@ -49,7 +49,6 @@ async function getClientViewer(): Promise<ClientViewer | null> {
       userId: viewer.userId,
       memberId: viewer.memberId,
       name: viewer.name,
-      email: viewer.email,
       teamId: viewer.teamId,
       teamName: viewer.teamName,
       teamLogo: viewer.teamLogo,

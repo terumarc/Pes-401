@@ -9,6 +9,20 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      member_devices: {
+        Row: { user_id: string; member_id: string; created_at: string; last_seen_at: string };
+        Insert: { user_id: string; member_id: string; created_at?: string; last_seen_at?: string };
+        Update: { member_id?: string; last_seen_at?: string };
+        Relationships: [
+          {
+            foreignKeyName: "member_devices_member_id_fkey";
+            columns: ["member_id"];
+            isOneToOne: false;
+            referencedRelation: "members";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       league_invites: {
         Row: { code: string; created_at: string; created_by: string | null; revoked_at: string | null };
         Insert: { code: string; created_at?: string; created_by?: string | null; revoked_at?: string | null };
@@ -26,6 +40,9 @@ export type Database = {
           created_at: string;
           last_seen_at: string | null;
           onboarded_at: string | null;
+          pin_hash: string | null;
+          pin_failures: number;
+          pin_locked_until: string | null;
         };
         Insert: {
           id?: string;
@@ -748,6 +765,13 @@ export type Database = {
         Args: { p_name: string | null; p_team: string | null };
         Returns: Database["public"]["Tables"]["members"]["Row"];
       };
+      current_member_id: { Args: Record<string, never>; Returns: string | null };
+      entry_clubs: { Args: Record<string, never>; Returns: { team_id: string; owner_name: string }[] };
+      join_club: {
+        Args: { p_team: string; p_name: string | null; p_code: string };
+        Returns: Database["public"]["Tables"]["members"]["Row"];
+      };
+      remove_member_devices: { Args: { p_member: string }; Returns: number };
       claim_membership: {
         Args: Record<string, never>;
         Returns: Database["public"]["Tables"]["members"]["Row"] | null;

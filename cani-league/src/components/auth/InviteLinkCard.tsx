@@ -8,7 +8,7 @@ import { newInviteCodeAction } from "@/app/actions/profile";
 
 /**
  * Enlace de invitación para compartir en el grupo: quien entra con él pasa a
- * la liga solo y elige su club. Nadie tiene que añadir emails a mano.
+ * la liga eligiendo su club. Nadie tiene que añadir a nadie a mano.
  */
 export function InviteLinkCard({ origin, code }: { origin: string; code: string | null }) {
   const router = useRouter();
@@ -68,8 +68,8 @@ export function InviteLinkCard({ origin, code }: { origin: string; code: string 
         Enlace de invitación
       </h2>
       <p className="mt-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:pretty]">
-        Compártelo en el grupo. Quien entre con él pone su email, recibe un código y elige su club. No hace falta añadir a nadie
-        a mano.
+        Compártelo en el grupo. Quien lo abre elige su club y ya está dentro: sin correos ni códigos. Su móvil se queda
+        recordado.
       </p>
 
       {url ? (

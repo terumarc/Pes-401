@@ -7,14 +7,11 @@ export type Viewer = {
   userId: string;
   memberId: string;
   name: string;
-  email: string;
   teamId: string | null;
   teamName: string | null;
   teamLogo: string | null;
   teamColor: string | null;
   isAdmin: boolean;
-  /** Ya ha pasado por la bienvenida (nombre y club). */
-  onboarded: boolean;
 };
 
 export class AuthError extends Error {
@@ -25,44 +22,34 @@ export class AuthError extends Error {
   }
 }
 
-/** Una vez por petición: lee la sesión y la ficha del miembro (la enlaza si es su primera vez). */
+/** Una vez por petición: lee la sesión de este móvil y el miembro de la liga al que está unido. */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
   if (!userId) return null;
 
-  const { data: row } = await supabase
-    .from("members")
-    .select("*, team:teams(name, logo_url, primary_color)")
-    .eq("user_id", userId)
-    .maybeSingle();
-  let member: { id: string; display_name: string; email: string; team_id: string | null; is_admin: boolean; onboarded_at: string | null } | null = row;
-  type TeamBits = { name: string; logo_url: string | null; primary_color: string } | null;
-  let team = (row?.team as TeamBits) ?? null;
+  // Cada móvil/navegador es un "dispositivo" unido a un miembro (al elegir club o poner su PIN).
+  const { data: memberId } = await supabase.rpc("current_member_id");
+  if (!memberId) return null;
 
-  if (!member) {
-    // Primera vez que entra: se enlaza su cuenta con su ficha de miembro.
-    const { data: claimed } = await supabase.rpc("claim_membership");
-    member = claimed && claimed.id ? claimed : null;
-    if (member?.team_id) {
-      const { data } = await supabase.from("teams").select("name, logo_url, primary_color").eq("id", member.team_id).maybeSingle();
-      team = data ?? null;
-    }
-  }
+  const { data: member } = await supabase
+    .from("members")
+    .select("id, display_name, team_id, is_admin, onboarded_at, team:teams(name, logo_url, primary_color)")
+    .eq("id", memberId)
+    .maybeSingle();
   if (!member) return null;
+  const team = member.team as unknown as { name: string; logo_url: string | null; primary_color: string } | null;
 
   return {
     userId,
     memberId: member.id,
     name: member.display_name,
-    email: member.email,
     teamId: member.team_id,
     teamName: team?.name ?? null,
     teamLogo: member.team_id ? logoSrc(member.team_id, team?.logo_url) : null,
     teamColor: team?.primary_color ?? null,
     isAdmin: member.is_admin,
-    onboarded: !!member.onboarded_at,
   };
 });
 

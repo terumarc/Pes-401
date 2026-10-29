@@ -87,7 +87,7 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
       <DropdownMenuContent align="end" side={compact ? "bottom" : "top"} className="min-w-56">
         <DropdownMenuLabel className="font-normal">
           <span className="block truncate text-sm font-semibold text-foreground">{viewer.name}</span>
-          <span className="block truncate text-xs text-muted-foreground">{viewer.email}</span>
+          <span className="block truncate text-xs text-muted-foreground">{viewer.teamName ?? "Sin club"}{viewer.isAdmin ? " · Admin" : ""}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {viewer.teamId && (

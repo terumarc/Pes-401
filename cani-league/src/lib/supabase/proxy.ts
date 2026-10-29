@@ -11,7 +11,7 @@ function isPublic(pathname: string) {
 
 /**
  * Refresca la sesión (cookies) en cada petición y manda a /login a quien no
- * haya entrado. La comprobación de qué puede hacer cada uno va en el servidor.
+ * haya entrado (es decir, a quien este móvil aún no esté unido a un club). La comprobación de qué puede hacer cada uno va en el servidor.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -36,8 +36,15 @@ export async function updateSession(request: NextRequest) {
   // getClaims valida el token y lo renueva si hace falta. No meter nada entre
   // la creación del cliente y esta llamada.
   const { data } = await supabase.auth.getClaims();
-  const signedIn = Boolean(data?.claims?.sub);
+  const hasSession = Boolean(data?.claims?.sub);
   const { pathname, search } = request.nextUrl;
+
+  // Una sesión de móvil que aún no ha elegido club no cuenta como "dentro".
+  let signedIn = false;
+  if (hasSession && (!isPublic(pathname) || pathname === "/login")) {
+    const { data: memberId } = await supabase.rpc("current_member_id");
+    signedIn = Boolean(memberId);
+  }
 
   if (!signedIn && !isPublic(pathname)) {
     // Las llamadas a la API responden con error en vez de redirigir.

@@ -2,31 +2,30 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { useConfirm } from "@/components/ui/use-confirm";
-import { addMemberAction, removeMemberAction, updateMemberAction, type MemberInput } from "@/app/actions/members";
+import { removeDevicesAction, removeMemberAction, updateMemberAction, type MemberInput } from "@/app/actions/members";
 import { initials } from "@/components/auth/UserMenu";
 import { cn } from "@/lib/utils";
 import { TeamLogo } from "@/components/teams/TeamCard";
 
 export type MemberView = {
   id: string;
-  email: string;
   name: string;
   teamId: string | null;
   isAdmin: boolean;
-  /** Ya ha entrado alguna vez. */
-  joined: boolean;
+  /** Móviles o navegadores con los que ha entrado. */
+  devices: number;
   lastSeen: string | null;
 };
 
 type Club = { id: string; name: string; logoUrl: string | null; color: string };
 
-/** Lista de la liga: quién puede entrar, con qué club y quién es admin. */
+/** Quién está en la liga, con qué club y quién es admin. Se entra con el enlace del grupo. */
 export function UsersManager({ members, clubs, meId }: { members: MemberView[]; clubs: Club[]; meId: string }) {
-  const [editing, setEditing] = useState<MemberView | "new" | null>(null);
+  const [editing, setEditing] = useState<MemberView | null>(null);
   const clubOf = (id: string | null) => clubs.find((c) => c.id === id) ?? null;
   const takenClubs = new Map(members.filter((m) => m.teamId).map((m) => [m.teamId!, m.name]));
   const clubsWithoutOwner = clubs.filter((c) => !takenClubs.has(c.id));
@@ -34,8 +33,8 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
   return (
     <div className="space-y-6">
       <p className="px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
-        Quien está en la liga. Cada uno gestiona su club; los admins pueden hacer de todo y actuar por cualquier club. Toca a
-        alguien para cambiar su club o hacerle admin.
+        Cada uno entra con el enlace y eligiendo su club. Los admins pueden hacer de todo y actuar por cualquier club. Toca a
+        alguien para cambiarle el nombre o el club, hacerle admin o sacarle de la liga.
       </p>
 
       <ul className="overflow-hidden rounded-[22px] bg-card">
@@ -69,9 +68,12 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
                     )}
                   </span>
                   <span className="block truncate text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
-                    {club?.name ?? "Sin club"} · {m.email}
+                    {club?.name ?? "Sin club"}
+                    {m.devices > 1 ? ` · ${m.devices} móviles` : ""}
                   </span>
-                  {!m.joined && <span className="block text-[length:min(0.7647rem,19.5px)] text-[#0a84ff]">Aún no ha entrado</span>}
+                  {m.devices === 0 && (
+                    <span className="block text-[length:min(0.7647rem,19.5px)] text-[#0a84ff]">Aún no ha entrado</span>
+                  )}
                 </span>
                 <ChevronRight className="size-4 shrink-0 text-[#5a5a5f]" aria-hidden />
               </span>
@@ -81,29 +83,20 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
         })}
       </ul>
 
-      <button
-        type="button"
-        onClick={() => setEditing("new")}
-        className="flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-secondary text-[length:min(0.8824rem,22.5px)] font-semibold text-foreground active:opacity-70"
-      >
-        <Plus className="size-4" strokeWidth={2.4} aria-hidden />
-        Añadir a alguien a mano
-      </button>
-
       {clubsWithoutOwner.length > 0 && (
         <p className="px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
-          Clubes sin nadie asignado: {clubsWithoutOwner.map((c) => c.name).join(", ")}.
+          Clubes libres: {clubsWithoutOwner.map((c) => c.name).join(", ")}.
         </p>
       )}
 
       <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
         {editing !== null && (
           <MemberSheet
-            key={editing === "new" ? "new" : editing.id}
-            member={editing === "new" ? null : editing}
+            key={editing.id}
+            member={editing}
             clubs={clubs}
             takenClubs={takenClubs}
-            isMe={editing !== "new" && editing.id === meId}
+            isMe={editing.id === meId}
             onClose={() => setEditing(null)}
           />
         )}
@@ -119,7 +112,7 @@ function MemberSheet({
   isMe,
   onClose,
 }: {
-  member: MemberView | null;
+  member: MemberView;
   clubs: Club[];
   takenClubs: Map<string, string>;
   isMe: boolean;
@@ -130,16 +123,35 @@ function MemberSheet({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<MemberInput>({
-    email: member?.email ?? "",
-    displayName: member?.name ?? "",
-    teamId: member?.teamId ?? null,
-    isAdmin: member?.isAdmin ?? false,
+    displayName: member.name,
+    teamId: member.teamId,
+    isAdmin: member.isAdmin,
   });
 
   function save() {
     setError(null);
     startTransition(async () => {
-      const res = member ? await updateMemberAction(member.id, form) : await addMemberAction(form);
+      const res = await updateMemberAction(member.id, form);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      onClose();
+      router.refresh();
+    });
+  }
+
+  async function signOutDevices() {
+    const ok = await confirm({
+      title: `Sacar los móviles de ${member.name}`,
+      description: "Sus móviles dejan de estar dentro. Para volver, tendrá que abrir el enlace y elegir su club otra vez.",
+      confirmLabel: "Sacar móviles",
+      destructive: true,
+    });
+    if (!ok) return;
+    setError(null);
+    startTransition(async () => {
+      const res = await removeDevicesAction(member.id);
       if (!res.ok) {
         setError(res.error);
         return;
@@ -150,10 +162,9 @@ function MemberSheet({
   }
 
   async function remove() {
-    if (!member) return;
     const ok = await confirm({
       title: `Quitar a ${member.name}`,
-      description: "Ya no podrá entrar en la app. Sus movimientos se quedan en el historial.",
+      description: "Sale de la liga y su club queda libre. Sus movimientos se quedan en el historial.",
       confirmLabel: "Quitar de la liga",
       destructive: true,
     });
@@ -173,7 +184,7 @@ function MemberSheet({
   const field =
     "h-11 w-full rounded-[10px] bg-input px-3 text-[length:min(1rem,25.5px)] outline-none focus-visible:ring-2 focus-visible:ring-ring/60";
   const owner = form.teamId ? takenClubs.get(form.teamId) : undefined;
-  const ownerIsOther = owner && owner !== member?.name;
+  const ownerIsOther = owner && owner !== member.name;
 
   return (
     <DialogContent showCloseButton={false} className="gap-0 border-0 bg-card p-5 pt-2 sm:max-w-md">
@@ -183,17 +194,17 @@ function MemberSheet({
         <button type="button" onClick={onClose} className="h-11 justify-self-start text-[length:min(1rem,25.5px)] text-[#0a84ff] active:opacity-60">
           Cancelar
         </button>
-        <DialogTitle className="text-[length:min(1rem,25.5px)] font-semibold">{member ? "Editar" : "Nueva persona"}</DialogTitle>
+        <DialogTitle className="text-[length:min(1rem,25.5px)] font-semibold">Editar</DialogTitle>
         <button
           type="button"
           onClick={save}
-          disabled={pending || !form.email.trim() || !form.displayName.trim()}
+          disabled={pending || !form.displayName.trim()}
           className="h-11 justify-self-end text-[length:min(1rem,25.5px)] font-semibold text-[#0a84ff] active:opacity-60 disabled:text-muted-foreground"
         >
-          {pending ? "Guardando…" : member ? "Guardar" : "Añadir"}
+          {pending ? "Guardando…" : "Guardar"}
         </button>
       </div>
-      <DialogDescription className="sr-only">Nombre, email, club y permisos</DialogDescription>
+      <DialogDescription className="sr-only">Nombre, club y permisos</DialogDescription>
 
       <div className="mt-4 space-y-4">
         <label className="block">
@@ -207,24 +218,6 @@ function MemberSheet({
           />
         </label>
         <label className="block">
-          <span className="mb-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Email</span>
-          <input
-            type="email"
-            inputMode="email"
-            autoCapitalize="none"
-            spellCheck={false}
-            value={form.email}
-            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            placeholder="email@ejemplo.com"
-            className={field}
-          />
-          {member?.joined && (
-            <span className="mt-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
-              Ya ha entrado: su cuenta sigue funcionando aunque cambies el email aquí.
-            </span>
-          )}
-        </label>
-        <label className="block">
           <span className="mb-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">Club</span>
           <select
             value={form.teamId ?? ""}
@@ -235,13 +228,13 @@ function MemberSheet({
             {clubs.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
-                {takenClubs.has(c.id) && takenClubs.get(c.id) !== member?.name ? ` · ${takenClubs.get(c.id)}` : ""}
+                {takenClubs.has(c.id) && takenClubs.get(c.id) !== member.name ? ` · ${takenClubs.get(c.id)}` : ""}
               </option>
             ))}
           </select>
           {ownerIsOther && (
             <span className="mt-1.5 block px-1 text-[length:min(0.7647rem,19.5px)] text-[#ff9f0a]">
-              {owner} también lleva este club: los dos podrán gestionarlo.
+              Este club ya es de {owner}. Cámbiale antes a {owner} de club.
             </span>
           )}
         </label>
@@ -263,15 +256,27 @@ function MemberSheet({
 
       {error && <p role="alert" className="mt-4 text-[length:min(0.8824rem,22.5px)] text-destructive">{error}</p>}
 
-      {member && !isMe && (
-        <button
-          type="button"
-          onClick={remove}
-          disabled={pending}
-          className={cn("mt-6 h-[50px] w-full rounded-full text-[length:min(1rem,25.5px)] font-medium text-destructive active:bg-white/5 disabled:opacity-50")}
-        >
-          Quitar de la liga
-        </button>
+      {!isMe && (
+        <div className="mt-6 space-y-1">
+          {member.devices > 0 && (
+            <button
+              type="button"
+              onClick={signOutDevices}
+              disabled={pending}
+              className="h-[50px] w-full rounded-full text-[length:min(1rem,25.5px)] font-medium text-[#0a84ff] active:bg-white/5 disabled:opacity-50"
+            >
+              Sacar sus móviles ({member.devices})
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={remove}
+            disabled={pending}
+            className={cn("h-[50px] w-full rounded-full text-[length:min(1rem,25.5px)] font-medium text-destructive active:bg-white/5 disabled:opacity-50")}
+          >
+            Quitar de la liga
+          </button>
+        </div>
       )}
     </DialogContent>
   );

@@ -17,10 +17,13 @@ export default async function UsuariosPage() {
   const supabase = await createClient();
   const [league, { data: members }, { data: invite }, h] = await Promise.all([
     getPrimaryLeague(),
-    supabase.from("members").select("*").order("display_name"),
+    supabase.from("members").select("id, display_name, team_id, is_admin, last_seen_at").order("display_name"),
     supabase.from("league_invites").select("code").is("revoked_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     headers(),
   ]);
+  const { data: devices } = await supabase.from("member_devices").select("member_id");
+  const deviceCount = new Map<string, number>();
+  for (const d of devices ?? []) deviceCount.set(d.member_id, (deviceCount.get(d.member_id) ?? 0) + 1);
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const origin = `${proto}://${host}`;
@@ -32,11 +35,10 @@ export default async function UsuariosPage() {
 
   const views: MemberView[] = (members ?? []).map((m) => ({
     id: m.id,
-    email: m.email,
     name: m.display_name,
     teamId: m.team_id,
     isAdmin: m.is_admin,
-    joined: !!m.user_id,
+    devices: deviceCount.get(m.id) ?? 0,
     lastSeen: m.last_seen_at,
   }));
 

@@ -6,17 +6,6 @@ import { requireAdmin } from "@/lib/auth";
 
 export type ProfileResult = { ok: true } | { ok: false; error: string };
 
-/** Primera entrada: nombre y club (o ninguno, si solo administra). */
-export async function completeProfileAction(name: string, teamId: string | null): Promise<ProfileResult> {
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("complete_profile", { p_name: name, p_team: teamId });
-  if (error) return { ok: false, error: error.message };
-  try {
-    revalidatePath("/", "layout");
-  } catch {}
-  return { ok: true };
-}
-
 /** Crea un enlace de invitación nuevo; el anterior deja de valer. */
 export async function newInviteCodeAction(): Promise<ProfileResult & { code?: string }> {
   try {

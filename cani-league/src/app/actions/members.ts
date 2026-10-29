@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { AuthError, requireAdmin } from "@/lib/auth";
 
 export type MemberInput = {
-  email: string;
   displayName: string;
   teamId: string | null;
   isAdmin: boolean;
@@ -14,11 +13,8 @@ export type MemberInput = {
 /** Se devuelve el error en vez de lanzarlo: así el mensaje llega tal cual a la pantalla. */
 export type MemberResult = { ok: true } | { ok: false; error: string };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function clean(input: MemberInput) {
   return {
-    email: input.email.trim().toLowerCase(),
     display_name: input.displayName.trim(),
     team_id: input.teamId || null,
     is_admin: input.isAdmin,
@@ -27,12 +23,12 @@ function clean(input: MemberInput) {
 
 function validate(row: ReturnType<typeof clean>): string | null {
   if (!row.display_name) return "Escribe un nombre.";
-  if (!EMAIL_RE.test(row.email)) return "Escribe un email válido.";
+  if (row.display_name.length > 40) return "El nombre es demasiado largo.";
   return null;
 }
 
 function friendly(message: string): string {
-  if (/members_email_key|duplicate key/i.test(message)) return "Ese email ya está en la liga.";
+  if (/members_team_key/i.test(message)) return "Ese club ya es de otra persona. Cámbiale antes de club.";
   if (/al menos un admin/i.test(message)) return "Tiene que quedar al menos un admin.";
   return message;
 }
@@ -54,19 +50,6 @@ function done(): MemberResult {
   return { ok: true };
 }
 
-export async function addMemberAction(input: MemberInput): Promise<MemberResult> {
-  const denied = await guard();
-  if (denied) return denied;
-  const row = clean(input);
-  const invalid = validate(row);
-  if (invalid) return { ok: false, error: invalid };
-
-  const supabase = await createClient();
-  const { error } = await supabase.from("members").insert(row);
-  if (error) return { ok: false, error: friendly(error.message) };
-  return done();
-}
-
 export async function updateMemberAction(id: string, input: MemberInput): Promise<MemberResult> {
   const denied = await guard();
   if (denied) return denied;
@@ -85,6 +68,16 @@ export async function removeMemberAction(id: string): Promise<MemberResult> {
   if (denied) return denied;
   const supabase = await createClient();
   const { error } = await supabase.from("members").delete().eq("id", id);
+  if (error) return { ok: false, error: friendly(error.message) };
+  return done();
+}
+
+/** Saca de la liga los móviles de alguien (por si alguien ha entrado con un club que no es el suyo). */
+export async function removeDevicesAction(id: string): Promise<MemberResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("remove_member_devices", { p_member: id });
   if (error) return { ok: false, error: friendly(error.message) };
   return done();
 }
