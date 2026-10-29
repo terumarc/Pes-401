@@ -5,7 +5,7 @@ import { MATCH_SECTIONS, SegmentedNav } from "@/components/layout/SegmentedNav";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { GenerateFixturesBtn } from "@/components/league/GenerateFixturesBtn";
 import { ResetLeagueBtn } from "@/components/league/ResetLeagueBtn";
-import { QuickMatchModal } from "@/components/league/QuickMatchModal";
+import { NewLeagueMatchButton } from "@/components/league/NewMatchButton";
 import { Scoreboard, type Roster } from "@/components/league/Scoreboard";
 import { getAllPlayedMatches, getGoals } from "@/lib/data/stats";
 import type { GoalRow } from "@/lib/stats";
@@ -57,12 +57,12 @@ export default async function CalendarPage() {
     <div className="animate-fade-up pb-12">
       <PageHeader
         title="Partidos"
-        actions={<QuickMatchModal leagueId={league.id} teams={teams} matches={matches} />}
+        actions={matches.length > 0 ? <NewLeagueMatchButton /> : undefined}
       />
       <SegmentedNav label="Competiciones" items={MATCH_SECTIONS} current="/calendar" />
 
       {matches.length > 0 ? (
-        <Scoreboard matches={matches} records={records} extras={{ rosters, goals: goalsByMatch, history, teamNames }} />
+        <Scoreboard leagueId={league.id} matches={matches} records={records} extras={{ rosters, goals: goalsByMatch, history, teamNames }} />
       ) : (
         <div className="rounded-[22px] bg-card px-6 py-12 text-center">
           <p className="text-[length:min(1rem,25.5px)] font-semibold">Aún no hay calendario</p>
