@@ -9,7 +9,8 @@ import { PlayersPageClient } from "@/components/players/PlayersPageClient";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
-import { getPlayers, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
+import { searchPlayers } from "@/lib/data/player-search";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/auth";
 
@@ -33,8 +34,8 @@ export default async function PlayersPage({ searchParams }: Props) {
     return <p className="text-muted-foreground">No hay liga configurada.</p>;
   }
 
-  const [players, teams, viewer] = await Promise.all([
-    getPlayers(),
+  const [initial, teams, viewer] = await Promise.all([
+    searchPlayers({}),
     getTeamsByLeague(league.id),
     getViewer(),
   ]);
@@ -61,7 +62,7 @@ export default async function PlayersPage({ searchParams }: Props) {
         defaultTeamId={params.team}
       />
 
-      <PlayerBrowser mode="players" players={players} teams={teams} />
+      <PlayerBrowser mode="players" initial={initial} teams={teams} />
     </div>
   );
 }
