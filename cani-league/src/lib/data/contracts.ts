@@ -1,6 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
-import { DEFAULT_SALARY_PERCENT, TIERS, closeSeasonForPlayer, getPlayerSalary, type SalaryTable } from "@/lib/contracts";
+import {
+  DEFAULT_SALARY_PERCENT,
+  TIERS,
+  closeSeasonForPlayer,
+  getPlayerSalary,
+  salaryShareFor,
+  winterStartOf,
+  type SalaryTable,
+} from "@/lib/contracts";
 import type { Player } from "@/types";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -74,6 +82,16 @@ export async function closeSeasonContracts(leagueId: string, calendarKey: string
     freeAgents = data ?? undefined;
   }
   const clubs = teams.filter((t) => !isSystemTeam(t.name));
+
+  // Fichajes de invierno: quien llegó al club después de acabar la ida paga media temporada.
+  const { data: firstRound } = await supabase
+    .from("matches")
+    .select("round, played, played_at")
+    .eq("league_id", leagueId)
+    .eq("round", 1)
+    .gte("created_at", calendarKey);
+  const winterStart = winterStartOf(firstRound ?? []);
+  const salaryShareOf = (p: Player) => salaryShareFor(p.joined_team_at, winterStart);
   const summary: ContractClosureSummary[] = [];
 
   for (const club of clubs) {
@@ -87,7 +105,7 @@ export async function closeSeasonContracts(leagueId: string, calendarKey: string
     const released: string[] = [];
 
     for (const p of squad) {
-      const result = closeSeasonForPlayer(p, budget, salaries);
+      const result = closeSeasonForPlayer(p, budget, salaries, salaryShareOf(p));
       budget = result.budget;
       for (const step of result.steps) {
         events.push({

@@ -36,6 +36,21 @@ export function getPlayerSalary(player: ContractPlayer, salaries: SalaryTable = 
   return Math.round((TIER_FIXED_PRICES[tier] * (salaries[tier] ?? 0)) / 100);
 }
 
+/**
+ * Cuándo abrió el mercado de invierno: el último partido de la ida, si la ida ya acabó.
+ * Quien llega a un club después paga media temporada de sueldo.
+ */
+export function winterStartOf(matches: { round: number | null; played: boolean | null; played_at: string | null }[]): string | null {
+  const first = matches.filter((m) => (m.round ?? 1) === 1);
+  if (first.length === 0 || !first.every((m) => m.played)) return null;
+  return first.reduce<string | null>((max, m) => (m.played_at && (!max || m.played_at > max) ? m.played_at : max), null);
+}
+
+/** Parte de la temporada que paga: 0,5 si llegó en el mercado de invierno o después, 1 si no. */
+export function salaryShareFor(joinedTeamAt: string | null | undefined, winterStart: string | null): number {
+  return winterStart && joinedTeamAt && joinedTeamAt > winterStart ? 0.5 : 1;
+}
+
 /** Temporadas que le quedan al contrato (null en la base de datos = contrato completo). */
 export function getSeasonsLeft(player: ContractPlayer): number {
   const duration = TIER_CONTRACT_DURATIONS[getPlayerTierName(player)];
@@ -52,6 +67,7 @@ export type ContractStep = {
 /**
  * Lo que le pasa a un jugador al cerrar la temporada, dado el dinero que le queda al club:
  * 1. Se cobra su sueldo. Si no hay dinero, queda libre.
+ *    `salaryShare` es la parte de la temporada que ha estado en el club (0,5 si llegó en invierno).
  * 2. Su contrato baja una temporada. Si se acaba, se cobra la renovación y vuelve a empezar;
  *    si no hay dinero para renovar, queda libre.
  */
@@ -59,12 +75,13 @@ export function closeSeasonForPlayer(
   player: ContractPlayer,
   budget: number,
   salaries: SalaryTable,
+  salaryShare = 1,
 ): { steps: ContractStep[]; budget: number; released: boolean; seasonsLeft: number | null } {
   const tier = getPlayerTierName(player);
   const duration = TIER_CONTRACT_DURATIONS[tier];
   const steps: ContractStep[] = [];
 
-  const salary = getPlayerSalary(player, salaries);
+  const salary = Math.round(getPlayerSalary(player, salaries) * salaryShare);
   if (salary > 0) {
     if (budget < salary) return { steps: [{ kind: "released", amount: 0 }], budget, released: true, seasonsLeft: null };
     budget -= salary;

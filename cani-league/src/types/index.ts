@@ -87,6 +87,8 @@ export type Player = {
   available_in_market: boolean;
   /** Temporadas que le quedan al contrato; null = contrato completo de su nivel. */
   contract_seasons_left?: number | null;
+  /** Cuándo llegó a su club actual (lo pone la base de datos al cambiar de equipo). */
+  joined_team_at?: string | null;
   pes_stats?: PesStats;
   created_at: string;
 };

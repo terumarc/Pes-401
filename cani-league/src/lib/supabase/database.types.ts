@@ -650,6 +650,7 @@ export type Database = {
           transfer_price: number;
           available_in_market: boolean;
           contract_seasons_left: number | null;
+          joined_team_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -673,6 +674,7 @@ export type Database = {
           transfer_price?: number;
           available_in_market?: boolean;
           contract_seasons_left?: number | null;
+          joined_team_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -696,6 +698,7 @@ export type Database = {
           transfer_price?: number;
           available_in_market?: boolean;
           contract_seasons_left?: number | null;
+          joined_team_at?: string | null;
           created_at?: string;
         };
         Relationships: [
