@@ -3,7 +3,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { safeCache, invalidateMemCache } from "./cache";
 import { LOGO_ROUTE, PHOTO_ROUTE, withLogoUrls } from "@/lib/logo";
 import { getOrEstimatePesStats } from "@/lib/data/pes_stats";
-import { getPlayerFixedPrice } from "@/lib/players";
+import { getPlayerEffectiveRating, getPlayerFixedPrice } from "@/lib/players";
 import type {
   League,
   Player,
@@ -133,11 +133,13 @@ async function fetchTeamsWithStandings(leagueId: string): Promise<TeamWithStandi
     stat.count += 1;
     stat.squadValue += getPlayerFixedPrice(p);
 
+    // Igual que en la ficha del club: los porteros cuentan con su media de portero.
     if (p.overall != null) {
-      stat.totalOverall += p.overall;
+      const rating = getPlayerEffectiveRating(p);
+      stat.totalOverall += rating;
       stat.overallCount += 1;
-      if (!stat.topPlayer || p.overall > stat.topPlayer.overall) {
-        stat.topPlayer = { name: p.name, overall: p.overall };
+      if (!stat.topPlayer || rating > stat.topPlayer.overall) {
+        stat.topPlayer = { name: p.name, overall: rating };
       }
     }
 

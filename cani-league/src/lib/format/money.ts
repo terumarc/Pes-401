@@ -42,3 +42,12 @@ export function getBudgetPercentage(
   if (maxBudget <= 0) return 0;
   return Math.max(0, Math.min(100, (budget / maxBudget) * 100));
 }
+
+/** Cifras grandes y abreviadas para fichas y cabeceras (50M €, 2,5M €). */
+export function formatMoneyShort(value: number): string {
+  if (value >= 1_000_000) {
+    const m = value / 1_000_000;
+    return `${Number.isInteger(m) ? m : m.toFixed(1).replace(".", ",")}M €`;
+  }
+  return formatMoney(value);
+}

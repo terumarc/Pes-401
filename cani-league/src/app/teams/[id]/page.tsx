@@ -9,7 +9,7 @@ import { ClubSections } from "@/components/teams/ClubSections";
 import { Button } from "@/components/ui/button";
 import { getPlayers, getPrimaryLeague, getTeamById, getTeamsByLeague } from "@/lib/data/league";
 import { getPlayerEffectiveRating, getPlayerFixedPrice } from "@/lib/players";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoneyShort as short } from "@/lib/format/money";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getGoals } from "@/lib/data/stats";
 import { getMatchesByLeague } from "@/lib/data/matches";
@@ -20,15 +20,6 @@ import { getActivity } from "@/lib/data/activity";
 import { getViewer } from "@/lib/auth";
 
 type Props = { params: Promise<{ id: string }> };
-
-/** Cifras grandes y abreviadas para la cabecera del club (50M €). */
-function short(value: number) {
-  if (value >= 1_000_000) {
-    const m = value / 1_000_000;
-    return `${Number.isInteger(m) ? m : m.toFixed(1).replace(".", ",")}M €`;
-  }
-  return formatMoney(value);
-}
 
 export default async function TeamDetailPage({ params }: Props) {
   if (!isSupabaseConfigured()) return <p className="text-muted-foreground">Configura Supabase primero.</p>;

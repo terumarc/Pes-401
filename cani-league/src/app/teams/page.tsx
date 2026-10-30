@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SetupNotice } from "@/components/layout/SetupNotice";
-import { TeamList } from "@/components/teams/TeamList";
+import { ClubCards } from "@/components/teams/ClubCards";
 import { SegmentedNav, TEAM_SECTIONS } from "@/components/layout/SegmentedNav";
 import {
   getPrimaryLeague,
@@ -26,7 +26,7 @@ export default async function TeamsPage() {
     <div className="animate-fade-up pb-12">
       <PageHeader title="Equipos" />
       <SegmentedNav label="Secciones de equipos" items={TEAM_SECTIONS} current="/teams" />
-      <TeamList teams={teams} />
+      <ClubCards teams={teams} />
     </div>
   );
 }
