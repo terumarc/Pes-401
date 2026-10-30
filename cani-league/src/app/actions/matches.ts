@@ -8,6 +8,9 @@ import { recordLeagueMatch } from "@/lib/data/record-match";
 import { requireOneOf } from "@/lib/auth";
 import type { Match } from "@/types";
 
+// Quien apunta o borra un resultado lo ve al momento: los datos caducan ya, sin servir los viejos mientras tanto.
+const NOW = { expire: 0 };
+
 /**
  * Apunta un partido eligiendo los dos equipos: usa el partido pendiente que
  * cuadre (en ese orden o al revés) o, si no hay ninguno, crea uno.
@@ -84,28 +87,36 @@ export async function recordDirectMatchAction(
 /** Borra el resultado de un partido (vuelve a pendiente): sus dos clubes o un admin. */
 export async function resetMatchResultAction(matchId: string): Promise<Match> {
   const supabase = await createClient();
-  const { data: m } = await supabase.from("matches").select("home_team_id, away_team_id").eq("id", matchId).single();
+  const [{ data: m }, { count: cards }] = await Promise.all([
+    supabase.from("matches").select("home_team_id, away_team_id").eq("id", matchId).single(),
+    supabase.from("card_draws").select("id", { count: "exact", head: true }).eq("match_id", matchId),
+  ]);
   if (!m) throw new Error("Partido no encontrado.");
   await requireOneOf([m.home_team_id, m.away_team_id]);
 
-  await supabase.from("match_goals").delete().eq("match_id", matchId);
-  const { data, error } = await supabase
-    .from("matches")
-    .update({ home_goals: null, away_goals: null, played: false, played_at: null })
-    .eq("id", matchId)
-    .select("*")
-    .single();
+  // Goles fuera y partido a pendiente a la vez (las cartas las anula la base de datos).
+  const [, { data, error }] = await Promise.all([
+    supabase.from("match_goals").delete().eq("match_id", matchId),
+    supabase
+      .from("matches")
+      .update({ home_goals: null, away_goals: null, played: false, played_at: null })
+      .eq("id", matchId)
+      .select("*")
+      .single(),
+  ]);
   if (error || !data) throw new Error(error?.message ?? "No se pudo borrar el resultado.");
 
   invalidateMemCache();
   try {
-    revalidateTag("matches", "max");
-    revalidateTag("standings", "max");
-    // Las cartas de este partido se anulan en la base de datos y el dinero vuelve.
-    revalidateTag("teams", "max");
+    revalidateTag("matches", NOW);
+    revalidateTag("standings", NOW);
     revalidatePath("/calendar");
     revalidatePath("/standings");
-    revalidatePath("/noticias");
+    // Si tenía cartas, se han anulado y el dinero ha vuelto a los clubes.
+    if (cards) {
+      revalidateTag("teams", NOW);
+      revalidatePath("/noticias");
+    }
   } catch {}
   return data as Match;
 }

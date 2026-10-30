@@ -8,6 +8,9 @@ import { buildLeagueTable } from "@/lib/data/matches";
 import type { Database } from "@/lib/supabase/database.types";
 import type { Team, MatchWithTeams } from "@/types";
 
+// Quien apunta o borra un resultado lo ve al momento: los datos caducan ya, sin servir los viejos mientras tanto.
+const NOW = { expire: 0 };
+
 export type RecordedMatch = {
   match: Database["public"]["Tables"]["matches"]["Row"];
   seasonStageApplied: "mid" | "end" | null;
@@ -123,22 +126,27 @@ export async function recordLeagueMatch(
 
   // 3. Cartas de Suerte y Caja B: lo decide la base de datos (25%, seguro tras 5 partidos
   //    sin carta, máximo 2 por vuelta). Un partido corregido no vuelve a sacar carta.
-  const cardsDrawn: string[] = [];
-  for (const teamId of [updatedMatch.home_team_id, updatedMatch.away_team_id]) {
-    try {
-      const { data: draw } = await supabase.rpc("draw_card", { p_match: updatedMatch.id, p_team: teamId });
-      if (draw?.id) cardsDrawn.push(teamId);
-    } catch {
-      // Sin cartas no pasa nada: el resultado ya está guardado.
-    }
-  }
+  //    Los dos clubes a la vez: cada uno saca (o no) la suya.
+  const draws = await Promise.all(
+    [updatedMatch.home_team_id, updatedMatch.away_team_id].map(async (teamId) => {
+      try {
+        const { data: draw } = await supabase.rpc("draw_card", { p_match: updatedMatch.id, p_team: teamId });
+        return draw?.id ? teamId : null;
+      } catch {
+        // Sin cartas no pasa nada: el resultado ya está guardado.
+        return null;
+      }
+    }),
+  );
+  const cardsDrawn = draws.filter((t): t is string => !!t);
 
   // 4. Invalidación de caché
   invalidateMemCache();
   try {
-    revalidateTag("matches", "max");
-    revalidateTag("standings", "max");
-    revalidateTag("teams", "max");
+    revalidateTag("matches", NOW);
+    revalidateTag("standings", NOW);
+    // El dinero de los clubes solo cambia con cartas o al cobrar premios de la vuelta.
+    if (cardsDrawn.length || seasonStageApplied) revalidateTag("teams", NOW);
   } catch {}
 
   try {

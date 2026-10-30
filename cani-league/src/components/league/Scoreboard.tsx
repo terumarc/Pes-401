@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -84,7 +85,20 @@ function Stepper({ value, onChange, label }: { value: number; onChange: (n: numb
   );
 }
 
-function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClose: () => void; extras: Extras }) {
+/** Cambio que se ve al momento, antes de que responda el servidor. */
+type Optimistic = Pick<MatchWithTeams, "home_goals" | "away_goals" | "played">;
+
+function ResultSheet({
+  match,
+  onClose,
+  extras,
+  onOptimistic,
+}: {
+  match: MatchWithTeams;
+  onClose: () => void;
+  extras: Extras;
+  onOptimistic: (patch: Optimistic | null) => void;
+}) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [home, setHome] = useState(match.home_goals ?? 0);
@@ -122,15 +136,20 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
   // Apuntar o corregir el resultado: los dos clubes del partido o un admin.
   const canRecord = canActFor(viewer, match.home_team.id) || canActFor(viewer, match.away_team.id);
 
-  async function run(fn: () => Promise<unknown>) {
+  // La hoja se cierra y el marcador cambia al momento; el servidor guarda por detrás.
+  // Si falla, se deshace el cambio y se avisa.
+  async function run(fn: () => Promise<unknown>, patch: Optimistic, refresh: boolean) {
     setBusy(true);
     setError(null);
+    onOptimistic(patch);
+    onClose();
     try {
       await fn();
-      onClose();
-      startTransition(() => router.refresh());
+      // «Borrar resultado» es una acción del servidor que ya trae la página al día.
+      if (refresh) startTransition(() => router.refresh());
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo guardar.");
+      onOptimistic(null);
+      toast.error(e instanceof Error ? e.message : "No se pudo guardar.");
     } finally {
       setBusy(false);
     }
@@ -194,7 +213,9 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
         <button
           type="button"
           disabled={busy}
-          onClick={() => run(() => recordMatchResultClient(match.id, home, away, scorersPayload()))}
+          onClick={() =>
+            run(() => recordMatchResultClient(match.id, home, away, scorersPayload()), { home_goals: home, away_goals: away, played: true }, true)
+          }
           className="h-[50px] w-full rounded-full bg-white text-[length:min(1rem,25.5px)] font-semibold text-black transition-opacity active:opacity-80 disabled:opacity-50"
         >
           {match.played ? "Guardar cambios" : "Guardar resultado"}
@@ -203,7 +224,7 @@ function ResultSheet({ match, onClose, extras }: { match: MatchWithTeams; onClos
           <button
             type="button"
             disabled={busy}
-            onClick={() => run(() => resetMatchResultClient(match.id))}
+            onClick={() => run(() => resetMatchResultClient(match.id), { home_goals: null, away_goals: null, played: false }, false)}
             className="h-[50px] w-full rounded-full text-[length:min(1rem,25.5px)] font-medium text-destructive active:bg-white/5 disabled:opacity-50"
           >
             Borrar resultado
@@ -425,8 +446,6 @@ function PickMatchSheet({
 
 /** Paso 2 cuando ya se jugaron la ida y la vuelta: marcador de un partido extra. */
 function ExtraMatchSheet({ leagueId, home, away, onClose }: { leagueId: string; home: Side; away: Side; onClose: () => void }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
   const [h, setH] = useState(0);
   const [a, setA] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -436,9 +455,9 @@ function ExtraMatchSheet({ leagueId, home, away, onClose }: { leagueId: string; 
     setBusy(true);
     setError(null);
     try {
+      // Es una acción del servidor: la respuesta ya trae la página al día.
       await recordDirectMatchClient(leagueId, home.id, away.id, h, a);
       onClose();
-      startTransition(() => router.refresh());
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo guardar el resultado.");
     } finally {
@@ -487,13 +506,30 @@ export function Scoreboard({
   records: Record<string, string>;
   extras: Extras;
 }) {
+  // Resultados apuntados o borrados que aún esperan al servidor. Se olvidan cuando llegan datos nuevos.
+  const [optimistic, setOptimistic] = useState<{ base: MatchWithTeams[]; patches: Record<string, Optimistic> }>({
+    base: matches,
+    patches: {},
+  });
+  const shown = useMemo(() => {
+    const patches = optimistic.base === matches ? optimistic.patches : {};
+    return matches.map((m) => (patches[m.id] ? { ...m, ...patches[m.id] } : m));
+  }, [matches, optimistic]);
+  const patchMatch = (id: string, patch: Optimistic | null) =>
+    setOptimistic((prev) => {
+      const current = prev.base === matches ? { ...prev.patches } : {};
+      if (patch) current[id] = patch;
+      else delete current[id];
+      return { base: matches, patches: current };
+    });
+
   const byRound = useMemo(() => {
     const order = (x: MatchWithTeams, y: MatchWithTeams) => x.matchday - y.matchday;
     return {
-      1: matches.filter((m) => m.round !== 2).sort(order),
-      2: matches.filter((m) => m.round === 2).sort(order),
+      1: shown.filter((m) => m.round !== 2).sort(order),
+      2: shown.filter((m) => m.round === 2).sort(order),
     } as const;
-  }, [matches]);
+  }, [shown]);
   // Por defecto, la ida si aún le quedan partidos; si no, la vuelta.
   const [round, setRound] = useState<1 | 2>(
     byRound[1].some((m) => !m.played) || !byRound[2].length ? 1 : 2,
@@ -522,7 +558,7 @@ export function Scoreboard({
   const list = byRound[round];
   const pending = list.filter((m) => !m.played);
   const played = list.filter((m) => m.played);
-  const open = matches.find((m) => m.id === openId) ?? null;
+  const open = shown.find((m) => m.id === openId) ?? null;
 
   const group = (title: string, items: MatchWithTeams[]) =>
     items.length > 0 && (
@@ -567,7 +603,15 @@ export function Scoreboard({
       {group("Jugados", played)}
 
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpenId(null)}>
-        {open && <ResultSheet key={open.id} match={open} extras={extras} onClose={() => setOpenId(null)} />}
+        {open && (
+          <ResultSheet
+            key={open.id}
+            match={open}
+            extras={extras}
+            onClose={() => setOpenId(null)}
+            onOptimistic={(patch) => patchMatch(open.id, patch)}
+          />
+        )}
       </Dialog>
       <Dialog open={picking} onOpenChange={setPicking}>
         {picking && (
