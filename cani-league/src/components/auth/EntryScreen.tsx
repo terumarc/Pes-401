@@ -27,7 +27,7 @@ async function ensureDeviceSession(): Promise<string | null> {
 }
 
 /**
- * Entrada sin correo ni códigos: con el enlace del grupo, eliges tu club y ya
+ * Entrada sin correo, códigos ni enlaces: eliges tu club y ya
  * estás dentro. Si está libre, pones tu nombre; si ya es tuyo (otro móvil),
  * entras directamente. Este móvil queda recordado.
  */
@@ -35,13 +35,11 @@ export function EntryScreen({
   season,
   clubs,
   next,
-  invite,
   initialError = null,
 }: {
   season: string | null;
   clubs: EntryClub[];
   next: string;
-  invite: string | null;
   initialError?: string | null;
 }) {
   const router = useRouter();
@@ -80,7 +78,7 @@ export function EntryScreen({
           setError(sessionError);
           return;
         }
-        const res = await joinClubAction({ teamId: club.id, name: claiming ? name : null, invite });
+        const res = await joinClubAction({ teamId: club.id, name: claiming ? name : null });
         if (!res.ok) {
           setError(res.error);
           return;
@@ -123,9 +121,7 @@ export function EntryScreen({
                 ¿Cuál es tu club?
               </h2>
               <p className="mt-0.5 mb-3 px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:pretty]">
-                {invite
-                  ? "Elige el tuyo y ya estás dentro. Este móvil se queda recordado."
-                  : "Para entrar, abre el enlace de invitación que hay en el grupo."}
+                Elige el tuyo y ya estás dentro. Este móvil se queda recordado.
               </p>
 
               {error && (
@@ -141,13 +137,11 @@ export function EntryScreen({
               ) : (
                 <ul className="overflow-hidden rounded-[22px] bg-card">
                   {clubs.map((c) => {
-                    const locked = !invite;
                     return (
                       <li key={c.id} className="group">
                         <button
                           type="button"
                           onClick={() => pick(c)}
-                          disabled={locked}
                           className="flex min-h-[68px] w-full items-center gap-3 pl-4 text-left outline-none transition-colors active:bg-white/[0.06] focus-visible:bg-white/[0.06] disabled:opacity-45 lg:hover:bg-white/[0.03]"
                         >
                           <span className="shrink-0 large-text:self-start large-text:pt-3">

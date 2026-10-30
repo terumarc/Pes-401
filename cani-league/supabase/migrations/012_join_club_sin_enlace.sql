@@ -1,0 +1,6 @@
+-- 012 · Entrar sin enlace de invitación
+--
+-- join_club ya no pide el código del enlace: cualquiera que abra la web elige su
+-- club y entra. El parámetro p_code se queda (opcional) para no romper llamadas
+-- antiguas, pero no se comprueba. Mismo cuerpo que en 011 sin la comprobación
+-- de is_valid_invite (aplicado con apply_migration).

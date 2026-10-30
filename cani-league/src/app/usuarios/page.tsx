@@ -15,10 +15,9 @@ export default async function UsuariosPage() {
   if (!viewer.isAdmin) redirect("/calendar");
 
   const supabase = await createClient();
-  const [league, { data: members }, { data: invite }, h] = await Promise.all([
+  const [league, { data: members }, h] = await Promise.all([
     getPrimaryLeague(),
     supabase.from("members").select("id, display_name, team_id, is_admin, last_seen_at").order("display_name"),
-    supabase.from("league_invites").select("code").is("revoked_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     headers(),
   ]);
   const { data: devices } = await supabase.from("member_devices").select("member_id");
@@ -46,7 +45,7 @@ export default async function UsuariosPage() {
     <div className="animate-fade-up mx-auto max-w-2xl pb-12">
       <PageHeader title="Usuarios" />
       <div className="space-y-8">
-        <InviteLinkCard origin={origin} code={invite?.code ?? null} />
+        <InviteLinkCard origin={origin} />
         <UsersManager members={views} clubs={clubs} meId={viewer.memberId} />
       </div>
     </div>

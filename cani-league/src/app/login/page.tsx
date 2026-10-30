@@ -12,5 +12,5 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   // Solo rutas internas: nada de redirigir a otra web.
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/calendar";
   const { season, clubs } = isSupabaseConfigured() ? await getEntryData() : { season: null, clubs: [] };
-  return <EntryScreen season={season} clubs={clubs} next={safeNext} invite={null} />;
+  return <EntryScreen season={season} clubs={clubs} next={safeNext} />;
 }

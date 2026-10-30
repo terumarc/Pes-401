@@ -13,18 +13,16 @@ function done(): EnterResult {
 }
 
 /**
- * Elegir club con el enlace del grupo. Si está libre, se queda con él quien lo
+ * Elegir club. Si está libre, se queda con él quien lo
  * elige (con su nombre); si ya tiene dueño, este móvil entra como él y al dueño
  * le llega un aviso. Sin correo, sin código y sin PIN: el móvil queda recordado.
  * La sesión anónima de este móvil la abre el navegador antes de llamar aquí.
  */
-export async function joinClubAction(input: { teamId: string; name: string | null; invite: string | null }): Promise<EnterResult> {
-  if (!input.invite) return { ok: false, error: "Para entrar, abre el enlace de invitación del grupo." };
+export async function joinClubAction(input: { teamId: string; name: string | null }): Promise<EnterResult> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("join_club", {
     p_team: input.teamId,
     p_name: input.name?.trim() || null,
-    p_code: input.invite,
   });
   if (error) return { ok: false, error: error.message };
   return done();
