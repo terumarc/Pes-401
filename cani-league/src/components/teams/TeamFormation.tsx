@@ -257,7 +257,7 @@ function BenchZone({ children, count }: { children: React.ReactNode; count: numb
     <div
       ref={setNodeRef}
       className={cn(
-        "rounded-2xl bg-card p-3 transition-shadow",
+        "rounded-2xl bg-card p-3 transition-shadow lg:sticky lg:top-[calc(var(--header-height)+1rem)]",
         active && "shadow-[0_0_0_1px_var(--color-border)]",
         isOver && "shadow-[0_0_0_2px_var(--color-primary)]",
       )}
@@ -393,6 +393,9 @@ export function TeamFormation({
       />
 
       <DndContext id="formacion" sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
+        {/* En escritorio el campo ocupa el alto de la pantalla y el banquillo va al lado. */}
+        <div className="space-y-3 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] lg:items-start lg:gap-4 lg:space-y-0">
+        <div className="space-y-3">
         {/* Campo */}
         <div
           className="relative overflow-hidden rounded-3xl"
@@ -410,7 +413,7 @@ export function TeamFormation({
             </g>
           </svg>
 
-          <div className="relative flex min-h-[527px] flex-col justify-around gap-1 px-1 py-4 sm:min-h-[595px]">
+          <div className="relative flex min-h-[527px] flex-col justify-around gap-1 px-1 py-4 sm:min-h-[595px] lg:h-[calc(100dvh-10rem)] lg:max-h-[900px]">
             {rows.map((row, i) => (
               <div key={i} className="flex justify-evenly">
                 {row.map((idx) => (
@@ -429,10 +432,11 @@ export function TeamFormation({
         </div>
 
         <p className="px-1 text-xs text-muted-foreground">Mantén pulsado un jugador y suéltalo en otro hueco o en el banquillo.</p>
+        </div>
 
         <BenchZone count={bench.length}>
           {bench.length ? (
-            <div className="-mx-3 flex gap-1 overflow-x-auto px-3 pb-1 [scrollbar-width:none]">
+            <div className="-mx-3 flex gap-1 overflow-x-auto px-3 pb-1 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-[repeat(auto-fill,minmax(80px,1fr))] lg:justify-items-center lg:gap-y-2 lg:overflow-visible lg:px-0">
               {bench.map((p) => (
                 <BenchItem key={p.id} player={p} team={team} suppressClick={suppressClick} />
               ))}
@@ -441,6 +445,7 @@ export function TeamFormation({
             <p className="text-sm text-muted-foreground">Arrastra aquí a un titular para sentarlo.</p>
           )}
         </BenchZone>
+        </div>
 
         {/* La ficha que sigue al dedo va en <body>: si la página tiene una animación con
             transform, un elemento fixed dentro de ella se descoloca. */}

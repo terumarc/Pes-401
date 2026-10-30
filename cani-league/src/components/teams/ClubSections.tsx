@@ -121,10 +121,7 @@ export function ClubSections({
           Este club aún no tiene jugadores.
         </p>
       ) : view === "formation" ? (
-        // En escritorio el campo no se estira a todo el ancho.
-        <div className="max-w-2xl">
-          <TeamFormation team={team} players={players} teamId={team.id} />
-        </div>
+        <TeamFormation team={team} players={players} teamId={team.id} />
       ) : (
         <SquadList team={team} players={players} teams={teams} goals={goals} />
       )}
