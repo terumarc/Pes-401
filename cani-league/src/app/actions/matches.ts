@@ -101,8 +101,11 @@ export async function resetMatchResultAction(matchId: string): Promise<Match> {
   try {
     revalidateTag("matches", "max");
     revalidateTag("standings", "max");
+    // Las cartas de este partido se anulan en la base de datos y el dinero vuelve.
+    revalidateTag("teams", "max");
     revalidatePath("/calendar");
     revalidatePath("/standings");
+    revalidatePath("/noticias");
   } catch {}
   return data as Match;
 }
