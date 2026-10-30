@@ -767,6 +767,10 @@ export type Database = {
       };
       current_member_id: { Args: Record<string, never>; Returns: string | null };
       entry_clubs: { Args: Record<string, never>; Returns: { team_id: string; owner_name: string }[] };
+      entry_clubs_status: {
+        Args: Record<string, never>;
+        Returns: { team_id: string; owner_name: string; locked: boolean }[];
+      };
       join_club: {
         Args: { p_team: string; p_name: string | null; p_code?: string | null };
         Returns: Database["public"]["Tables"]["members"]["Row"];

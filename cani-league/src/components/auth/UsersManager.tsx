@@ -34,7 +34,7 @@ export function UsersManager({ members, clubs, meId }: { members: MemberView[]; 
     <div className="space-y-6">
       <p className="px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground">
         Cada uno entra con el enlace y eligiendo su club. Los admins pueden hacer de todo y actuar por cualquier club. Toca a
-        alguien para cambiarle el nombre o el club, hacerle admin o sacarle de la liga.
+        alguien para cambiarle el nombre o el club, hacerle admin, dejarle entrar desde otro móvil o sacarle de la liga.
       </p>
 
       <ul className="overflow-hidden rounded-[22px] bg-card">
@@ -143,9 +143,9 @@ function MemberSheet({
 
   async function signOutDevices() {
     const ok = await confirm({
-      title: `Sacar los móviles de ${member.name}`,
-      description: "Sus móviles dejan de estar dentro. Para volver, tendrá que abrir el enlace y elegir su club otra vez.",
-      confirmLabel: "Sacar móviles",
+      title: `Dejar que ${member.name} entre desde otro móvil`,
+      description: "Su club se desbloquea: el siguiente que lo toque en la pantalla de entrada entrará como él. Sus móviles de ahora salen de la app.",
+      confirmLabel: "Desbloquear club",
       destructive: true,
     });
     if (!ok) return;
@@ -265,7 +265,7 @@ function MemberSheet({
               disabled={pending}
               className="h-[50px] w-full rounded-full text-[length:min(1rem,25.5px)] font-medium text-[#0a84ff] active:bg-white/5 disabled:opacity-50"
             >
-              Sacar sus móviles ({member.devices})
+              Dejar entrar desde otro móvil
             </button>
           )}
           <button

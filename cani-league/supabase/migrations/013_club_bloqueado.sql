@@ -1,0 +1,9 @@
+-- 013 · Club con dueño bloqueado
+--
+-- Si un club ya tiene un móvil dentro, nadie más puede entrar con él.
+-- Si el dueño cambia de móvil, un admin le "deja entrar de nuevo" (borra sus
+-- móviles con remove_member_devices) y el siguiente que toque el club entra como él.
+-- entry_clubs_status() dice qué clubes están bloqueados para la pantalla de entrada.
+-- join_club: igual que en 012, pero con un club ocupado lanza
+-- 'Este club ya es de X. Si es el tuyo y has cambiado de móvil, pide a un admin…'
+-- (aplicado con apply_migration).

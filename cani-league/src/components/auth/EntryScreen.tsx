@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Loader2, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Lock, User } from "lucide-react";
 import { CaniLeagueCrest } from "@/components/brand/CaniLeagueCrest";
 import { TeamLogo } from "@/components/teams/TeamCard";
 import { joinClubAction } from "@/app/login/actions";
@@ -121,7 +121,7 @@ export function EntryScreen({
                 ¿Cuál es tu club?
               </h2>
               <p className="mt-0.5 mb-3 px-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:pretty]">
-                Elige el tuyo y ya estás dentro. Este móvil se queda recordado.
+                Elige el tuyo y ya estás dentro. Este móvil se queda recordado y nadie más podrá entrar con tu club.
               </p>
 
               {error && (
@@ -142,6 +142,8 @@ export function EntryScreen({
                         <button
                           type="button"
                           onClick={() => pick(c)}
+                          disabled={c.locked || busy}
+                          aria-describedby={c.locked ? `locked-${c.id}` : undefined}
                           className="flex min-h-[68px] w-full items-center gap-3 pl-4 text-left outline-none transition-colors active:bg-white/[0.06] focus-visible:bg-white/[0.06] disabled:opacity-45 lg:hover:bg-white/[0.03]"
                         >
                           <span className="shrink-0 large-text:self-start large-text:pt-3">
@@ -151,10 +153,15 @@ export function EntryScreen({
                             <span className="min-w-0 flex-1">
                               <span className="line-clamp-2 text-[length:min(1rem,25.5px)] font-semibold leading-tight">{c.name}</span>
                               <span className="line-clamp-2 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
-                                {c.owner ? (
+                                {c.owner && c.locked ? (
+                                  <span id={`locked-${c.id}`}>
+                                    <Lock className="mr-1 inline size-3 -translate-y-px" aria-hidden />
+                                    Lo lleva {c.owner}
+                                  </span>
+                                ) : c.owner ? (
                                   <>
                                     <User className="mr-1 inline size-3 -translate-y-px" aria-hidden />
-                                    {c.owner}
+                                    {c.owner} · puede volver a entrar
                                   </>
                                 ) : c.hint ? (
                                   `Libre · apuntado como ${c.hint}`
@@ -163,7 +170,7 @@ export function EntryScreen({
                                 )}
                               </span>
                             </span>
-                            <ChevronRight className="size-4 shrink-0 text-[#5a5a5f]" aria-hidden />
+                            {!c.locked && <ChevronRight className="size-4 shrink-0 text-[#5a5a5f]" aria-hidden />}
                           </span>
                         </button>
                       </li>
@@ -226,7 +233,7 @@ export function EntryScreen({
                 <>
                   <h2 className="text-[length:min(1.1765rem,30px)] font-bold tracking-tight">¿Eres {club.owner}?</h2>
                   <p className="mt-1 text-[length:min(0.8824rem,22.5px)] text-muted-foreground [text-wrap:pretty]">
-                    Entras en tu club también desde este móvil. A {club.owner} le llega un aviso, por si no eres tú.
+                    Un admin te ha dejado volver a entrar con tu club desde este móvil.
                   </p>
                 </>
               )}
