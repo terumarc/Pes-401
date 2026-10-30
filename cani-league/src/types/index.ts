@@ -16,6 +16,8 @@ export type Team = {
   secondary_color: string;
   budget: number;
   created_at: string;
+  /** Bando del lore: la Fede, la Antifede o la CEFA. */
+  faction?: string | null;
 };
 
 export type PlayerPosition =

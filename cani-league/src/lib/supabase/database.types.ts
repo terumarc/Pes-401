@@ -9,6 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      card_events: {
+        Row: {
+          id: string;
+          deck: string;
+          faction: string | null;
+          rarity: string;
+          weight: number;
+          icon: string;
+          text: string;
+          effect: Json;
+          active: boolean;
+        };
+        Insert: {
+          id: string;
+          deck: string;
+          faction?: string | null;
+          rarity: string;
+          weight: number;
+          icon: string;
+          text: string;
+          effect: Json;
+          active?: boolean;
+        };
+        Update: {
+          id?: string;
+          deck?: string;
+          faction?: string | null;
+          rarity?: string;
+          weight?: number;
+          icon?: string;
+          text?: string;
+          effect?: Json;
+          active?: boolean;
+        };
+        Relationships: [];
+      };
+      card_draws: {
+        Row: {
+          id: string;
+          created_at: string;
+          league_id: string;
+          team_id: string;
+          match_id: string | null;
+          season: string | null;
+          round: number | null;
+          event_id: string;
+          deck: string;
+          rarity: string;
+          faction: string | null;
+          icon: string;
+          text: string;
+          amount: number;
+          transfers: Json;
+          status: string;
+          revealed_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       member_devices: {
         Row: { user_id: string; member_id: string; created_at: string; last_seen_at: string };
         Insert: { user_id: string; member_id: string; created_at?: string; last_seen_at?: string };
@@ -530,6 +590,7 @@ export type Database = {
           secondary_color: string;
           budget: number;
           created_at: string;
+          faction: string | null;
         };
         Insert: {
           id?: string;
@@ -542,6 +603,7 @@ export type Database = {
           secondary_color?: string;
           budget?: number;
           created_at?: string;
+          faction?: string | null;
         };
         Update: {
           id?: string;
@@ -554,6 +616,7 @@ export type Database = {
           secondary_color?: string;
           budget?: number;
           created_at?: string;
+          faction?: string | null;
         };
         Relationships: [
           {
@@ -754,6 +817,14 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      draw_card: {
+        Args: { p_match: string; p_team: string };
+        Returns: Database["public"]["Tables"]["card_draws"]["Row"] | null;
+      };
+      reveal_card: {
+        Args: { p_draw: string };
+        Returns: Database["public"]["Tables"]["card_draws"]["Row"] | null;
+      };
       is_invited: { Args: { p_email: string }; Returns: boolean };
       is_member: { Args: Record<string, never>; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };

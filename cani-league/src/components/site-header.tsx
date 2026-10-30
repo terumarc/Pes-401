@@ -18,6 +18,7 @@ const ROUTE_LABELS: Record<string, { title: string; parent?: string }> = {
   "/standings": { title: "Clasificación", parent: "Competición" },
   "/trophies": { title: "Sala de trofeos", parent: "Competición" },
   "/cups": { title: "Copas", parent: "Competición" },
+  "/noticias": { title: "Noticias", parent: "Competición" },
   "/scorers": { title: "Goleadores", parent: "Competición" },
   "/seasons": { title: "Historial", parent: "Competición" },
   "/teams": { title: "Equipos", parent: "Clubes" },

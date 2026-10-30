@@ -60,6 +60,7 @@ export const TABLE_SECTIONS = [
 export const MATCH_SECTIONS = [
   { href: "/calendar", label: "Liga" },
   { href: "/cups", label: "Copas" },
+  { href: "/noticias", label: "Noticias" },
 ];
 
 export const TEAM_SECTIONS = [
