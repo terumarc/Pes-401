@@ -31,6 +31,7 @@ import {
   History,
   Activity,
   UserCog,
+  Newspaper,
 } from "lucide-react"
 
 import { ADMIN_NAV_ITEMS, NAV_ITEMS } from "@/constants"
@@ -53,6 +54,7 @@ const ICONS = {
   History,
   Activity,
   UserCog,
+  Newspaper,
 } as const;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

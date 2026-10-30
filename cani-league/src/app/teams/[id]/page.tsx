@@ -18,6 +18,9 @@ import { FormDots } from "@/components/league/FormDots";
 import { ActivityList } from "@/components/activity/ActivityList";
 import { getActivity } from "@/lib/data/activity";
 import { getViewer } from "@/lib/auth";
+import { CardList } from "@/components/cards/CardList";
+import { getTeamCards } from "@/lib/data/cards";
+import { FACTION_LABEL, signedMillions, type Faction } from "@/lib/cards";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -29,14 +32,17 @@ export default async function TeamDetailPage({ params }: Props) {
   if (!team) notFound();
 
   const league = await getPrimaryLeague();
-  const [players, teams, goals, matches, viewer, activity] = await Promise.all([
+  const [players, teams, goals, matches, viewer, activity, cardData] = await Promise.all([
     getPlayers({ teamId: team.id }),
     league ? getTeamsByLeague(league.id) : Promise.resolve([]),
     league ? getGoals(league.id, league.season) : Promise.resolve([]),
     league ? getMatchesByLeague(league.id).catch(() => []) : Promise.resolve([]),
     getViewer(),
     getActivity({ teamId: team.id, limit: 5 }),
+    getTeamCards(team.id, league?.season ?? null),
   ]);
+  const cardTotal = cardData.cards.reduce((sum, c) => sum + c.amount, 0);
+  const faction = (team.faction ?? null) as Faction | null;
   const goalsByPlayer: Record<string, number> = {};
   for (const g of goals) if (g.player_id && g.team_id === team.id) goalsByPlayer[g.player_id] = (goalsByPlayer[g.player_id] ?? 0) + g.goals;
   const form = teamForm(matches, team.id);
@@ -65,7 +71,9 @@ export default async function TeamDetailPage({ params }: Props) {
         <div className="relative flex flex-col items-center text-center">
           <TeamLogo name={team.name} logoUrl={team.logo_url} color={team.primary_color} size="xl" />
           <h1 className="mt-3 text-[length:min(1.6471rem,42px)] font-bold leading-tight tracking-tight">{team.name}</h1>
-          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground">{team.owner_name?.trim() || "Sin propietario"}</p>
+          <p className="text-[length:min(0.8824rem,22.5px)] text-muted-foreground">{team.owner_name?.trim() || "Sin propietario"}
+            {faction ? ` · ${FACTION_LABEL[faction]}` : ""}
+          </p>
           <FormDots form={form} className="mt-2" />
 
           <dl className="mt-5 grid w-full max-w-md grid-cols-3 rounded-[22px] bg-card py-3">
@@ -92,6 +100,33 @@ export default async function TeamDetailPage({ params }: Props) {
       </header>
 
       <ClubSections team={team} players={players} teams={teams} goals={goalsByPlayer} />
+
+      {(cardData.cards.length > 0 || cardData.pending > 0) && (
+        <section aria-labelledby="club-cards" className="mt-10">
+          <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
+            <h2 id="club-cards" className="text-[length:min(1.1765rem,30px)] font-bold tracking-tight">
+              Cartas de esta temporada
+            </h2>
+            <span className="shrink-0 text-[length:min(0.8824rem,22.5px)] text-muted-foreground tabular-nums">
+              {cardData.cards.length}
+              {cardData.cards.length > 0 && (
+                <>
+                  {" · "}
+                  <span className={cardTotal > 0 ? "font-semibold text-[#30d158]" : cardTotal < 0 ? "font-semibold text-[#ff6961]" : ""}>
+                    {signedMillions(cardTotal)}
+                  </span>
+                </>
+              )}
+            </span>
+          </div>
+          {cardData.cards.length > 0 && <CardList cards={cardData.cards} />}
+          {cardData.pending > 0 && (
+            <p className="mt-2 px-1 text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
+              {cardData.pending === 1 ? "Tiene una carta boca abajo." : `Tiene ${cardData.pending} cartas boca abajo.`}
+            </p>
+          )}
+        </section>
+      )}
 
       <section aria-labelledby="club-activity" className="mt-10">
         <div className="mb-2 flex items-baseline justify-between px-1">

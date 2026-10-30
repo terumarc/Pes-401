@@ -11,6 +11,8 @@ import type { Team, MatchWithTeams } from "@/types";
 export type RecordedMatch = {
   match: Database["public"]["Tables"]["matches"]["Row"];
   seasonStageApplied: "mid" | "end" | null;
+  /** Clubes a los que les ha salido carta con este partido. */
+  cardsDrawn: string[];
 };
 
 /**
@@ -119,7 +121,19 @@ export async function recordLeagueMatch(
     }
   }
 
-  // 3. Invalidación de caché
+  // 3. Cartas de Suerte y Caja B: lo decide la base de datos (25%, seguro tras 5 partidos
+  //    sin carta, máximo 2 por vuelta). Un partido corregido no vuelve a sacar carta.
+  const cardsDrawn: string[] = [];
+  for (const teamId of [updatedMatch.home_team_id, updatedMatch.away_team_id]) {
+    try {
+      const { data: draw } = await supabase.rpc("draw_card", { p_match: updatedMatch.id, p_team: teamId });
+      if (draw?.id) cardsDrawn.push(teamId);
+    } catch {
+      // Sin cartas no pasa nada: el resultado ya está guardado.
+    }
+  }
+
+  // 4. Invalidación de caché
   invalidateMemCache();
   try {
     revalidateTag("matches", "max");
@@ -133,8 +147,9 @@ export async function recordLeagueMatch(
     revalidatePath("/league");
     revalidatePath("/teams");
     revalidatePath("/finances");
+    if (cardsDrawn.length) revalidatePath("/noticias");
   } catch {}
 
 
-  return { match: updatedMatch, seasonStageApplied };
+  return { match: updatedMatch, seasonStageApplied, cardsDrawn };
 }

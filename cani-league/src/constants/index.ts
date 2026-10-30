@@ -19,6 +19,7 @@ export const PLAYER_POSITIONS: PlayerPosition[] = [
 export const NAV_ITEMS = [
   { href: "/calendar", label: "Partidos", icon: "Swords" },
   { href: "/cups", label: "Copas", icon: "Medal" },
+  { href: "/noticias", label: "Noticias", icon: "Newspaper" },
   { href: "/standings", label: "Clasificación", icon: "ListOrdered" },
   { href: "/scorers", label: "Goleadores", icon: "Goal" },
   { href: "/trophies", label: "Trofeos", icon: "Trophy" },

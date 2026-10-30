@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ListOrdered, Shield, Store, Swords, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePendingCard } from "@/components/cards/CardsProvider";
 
 /**
  * Pestañas de la barra inferior en móvil. Sin pestaña «Más» (las guías de Apple la
@@ -11,7 +12,7 @@ import { cn } from "@/lib/utils";
  * `also` son las pantallas que cuentan como esa pestaña.
  */
 export const TABS = [
-  { href: "/calendar", label: "Partidos", Icon: Swords, also: ["/cups"] },
+  { href: "/calendar", label: "Partidos", Icon: Swords, also: ["/cups", "/noticias"] },
   { href: "/standings", label: "Tabla", Icon: ListOrdered, also: ["/scorers", "/trophies", "/seasons"] },
   { href: "/teams", label: "Equipos", Icon: Shield, also: ["/finances"] },
   { href: "/players", label: "Jugadores", Icon: Users, also: [] as string[] },
@@ -34,6 +35,7 @@ export function isRootScreen(pathname: string) {
 /** Barra tipo iOS: cápsula de cristal flotante; la pestaña activa en una cápsula más clara. */
 export function MobileTabBar() {
   const pathname = usePathname();
+  const { pending } = usePendingCard();
 
   return (
     <nav
@@ -44,18 +46,29 @@ export function MobileTabBar() {
         {TABS.map((tab) => {
           const active = isActive(pathname, tab);
           const { href, label, Icon } = tab;
+          // Punto rojo en Partidos mientras el club tenga una carta boca abajo.
+          const dot = !!pending && href === "/calendar";
           return (
             // El color va en el <li>: la regla global de los enlaces (color: inherit) lo hereda.
             <li key={href} className={cn("h-full flex-1", active ? "text-white" : "text-[#98989f]")}>
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
+                aria-label={dot ? `${label}, tienes una carta por girar` : undefined}
                 className={cn(
                   "flex h-full flex-col items-center justify-center gap-[3px] rounded-full text-[12px] font-medium tracking-[-0.01em] transition-colors duration-200 select-none active:bg-white/10",
                   active && "bg-white/[0.13]",
                 )}
               >
-                <Icon className="size-[22px]" strokeWidth={active ? 2.2 : 1.9} aria-hidden />
+                <span className="relative">
+                  <Icon className="size-[22px]" strokeWidth={active ? 2.2 : 1.9} aria-hidden />
+                  {dot && (
+                    <span
+                      aria-hidden
+                      className="absolute -top-0.5 -right-1.5 size-[9px] rounded-full bg-[#ff453a] shadow-[0_0_0_2px_rgb(30,30,32)]"
+                    />
+                  )}
+                </span>
                 {label}
               </Link>
             </li>

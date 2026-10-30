@@ -4,6 +4,7 @@ import {
   CircleSlash,
   FileSignature,
   HandCoins,
+  Layers,
   Medal,
   SlidersHorizontal,
   Swords,
@@ -37,6 +38,7 @@ const KIND: Record<string, { Icon: LucideIcon; tint: string }> = {
   trophy: { Icon: Trophy, tint: "#e8b341" },
   trophy_removed: { Icon: Trophy, tint: "#8e8e93" },
   budget_adjust: { Icon: SlidersHorizontal, tint: "#64d2ff" },
+  card: { Icon: Layers, tint: "#ff9f0a" },
 };
 
 // La liga es en España: fechas y horas en hora de Madrid aunque el servidor esté en UTC.
