@@ -5,7 +5,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { changeTeamTrophyAction } from "@/app/actions/trophies";
-import { calendarKeyOf, closeSeasonContracts } from "@/lib/data/contracts";
+import { calendarKeyOf, tickContracts } from "@/lib/data/contracts";
 import { generateFixtures } from "@/lib/data/matches";
 import { buildLeagueTable } from "@/lib/data/matches";
 import { topScorers, type GoalRow } from "@/lib/stats";
@@ -102,8 +102,9 @@ export async function startNewSeasonAction(leagueId: string, nextSeason: string)
   // Título de Liga para el campeón (las copas ya se dan al jugar su final).
   if (ranking[0] && played.length > 0) await changeTeamTrophyAction(ranking[0], "league", 1);
 
-  // Sueldos y renovaciones (no hace nada si ya se cobraron al acabar la vuelta).
-  if (matches && matches.length) await closeSeasonContracts(leagueId, calendarKeyOf(matches));
+  // Mercado de inicio de temporada: los contratos que cuentan en él cumplen un año
+  // (no hace nada si ya se hizo al acabar la vuelta).
+  if (matches && matches.length) await tickContracts(leagueId, calendarKeyOf(matches), "summer");
 
   // Temporada nueva: las flechas de la clasificación empiezan de cero.
   for (const s of standings ?? []) {

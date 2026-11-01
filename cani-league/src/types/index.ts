@@ -87,6 +87,8 @@ export type Player = {
   available_in_market: boolean;
   /** Temporadas que le quedan al contrato; null = contrato completo de su nivel. */
   contract_seasons_left?: number | null;
+  /** Mercado en el que su contrato cumple años: «winter» o «summer» (inicio de temporada). */
+  contract_anchor?: string | null;
   /** Cuándo llegó a su club actual (lo pone la base de datos al cambiar de equipo). */
   joined_team_at?: string | null;
   pes_stats?: PesStats;
@@ -148,6 +150,8 @@ export type PlayerCreateInput = {
   transfer_price?: number;
   available_in_market?: boolean;
   contract_seasons_left?: number | null;
+  /** Mercado en el que su contrato cumple años: «winter» o «summer» (inicio de temporada). */
+  contract_anchor?: string | null;
 };
 
 export type PlayerUpdateInput = Partial<PlayerCreateInput>;

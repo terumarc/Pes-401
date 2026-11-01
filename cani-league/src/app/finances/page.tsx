@@ -1,14 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { FinancesPanel } from "@/components/finances/FinancesPanel";
-import { LastClosure, SalariesEditor } from "@/components/finances/ContractSections";
+import { ExpiredContracts, RenewalsEditor } from "@/components/finances/ContractSections";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SegmentedNav, TEAM_SECTIONS } from "@/components/layout/SegmentedNav";
 import { SetupNotice } from "@/components/layout/SetupNotice";
-import { getPlayerSalary, salaryShareFor, winterStartOf } from "@/lib/contracts";
-import { getMatchesByLeague } from "@/lib/data/matches";
-import { getLastContractEvents, getSalaryTable } from "@/lib/data/contracts";
-import { getLeagueSquads, getPrimaryLeague, getTeamsWithStandings } from "@/lib/data/league";
+import { getExpiredContracts, getRenewalTable } from "@/lib/data/contracts";
+import { getPrimaryLeague, getTeamsWithStandings } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 export default async function FinancesPage() {
@@ -17,21 +15,15 @@ export default async function FinancesPage() {
   const league = await getPrimaryLeague();
   if (!league) return <p className="text-muted-foreground">No hay ninguna liga configurada.</p>;
 
-  const [teams, players, salaries, events, matches] = await Promise.all([
+  const [teams, renewals, expired] = await Promise.all([
     getTeamsWithStandings(league.id),
-    getLeagueSquads(league.id),
-    getSalaryTable(league.id),
-    getLastContractEvents(league.id).catch(() => []),
-    getMatchesByLeague(league.id).catch(() => []),
+    getRenewalTable(league.id),
+    getExpiredContracts(league.id).catch(() => []),
   ]);
-  const winterStart = winterStartOf(matches);
 
-  // Lo que paga cada club en sueldos esta temporada (los fichajes de invierno, la mitad).
-  const salaryByTeam: Record<string, number> = {};
-  for (const p of players) {
-    if (!p.team_id) continue;
-    salaryByTeam[p.team_id] = (salaryByTeam[p.team_id] ?? 0) + Math.round(getPlayerSalary(p, salaries) * salaryShareFor(p.joined_team_at, winterStart));
-  }
+  // Contratos acabados sin renovar de cada club.
+  const expiredByTeam: Record<string, number> = {};
+  for (const e of expired) expiredByTeam[e.teamId] = (expiredByTeam[e.teamId] ?? 0) + 1;
 
   return (
     <div className="animate-fade-up pb-12">
@@ -39,11 +31,11 @@ export default async function FinancesPage() {
       <SegmentedNav label="Secciones de equipos" items={TEAM_SECTIONS} current="/finances" />
       <FinancesPanel
         teams={teams}
-        salaryByTeam={salaryByTeam}
+        expiredByTeam={expiredByTeam}
         extra={
           <>
-            <SalariesEditor leagueId={league.id} initial={salaries} />
-            <LastClosure events={events} />
+            <ExpiredContracts rows={expired} />
+            <RenewalsEditor leagueId={league.id} initial={renewals} />
           </>
         }
       />

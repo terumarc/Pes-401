@@ -92,13 +92,13 @@ function BudgetSheet({ team, onClose }: { team: TeamWithStanding; onClose: () =>
 /** Finanzas en listas agrupadas de iOS: presupuesto de cada club y normas económicas. */
 export function FinancesPanel({
   teams,
-  salaryByTeam = {},
+  expiredByTeam = {},
   extra,
 }: {
   teams: TeamWithStanding[];
-  /** Sueldos que paga cada club por temporada. */
-  salaryByTeam?: Record<string, number>;
-  /** Secciones de contratos (sueldos y último cierre), entre Presupuestos y Normas. */
+  /** Contratos acabados sin renovar de cada club. */
+  expiredByTeam?: Record<string, number>;
+  /** Secciones de contratos (acabados y renovaciones), entre Presupuestos y Normas. */
   extra?: ReactNode;
 }) {
   const [editId, setEditId] = useState<string | null>(null);
@@ -138,9 +138,9 @@ export function FinancesPanel({
                       <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10" aria-hidden>
                         <div className="h-full rounded-full bg-white/70" style={{ width: `${pct}%` }} />
                       </div>
-                      {salaryByTeam[t.id] > 0 && (
-                        <p className="mt-1.5 text-[length:min(0.7647rem,19.5px)] text-muted-foreground tabular-nums">
-                          Sueldos {formatMoney(salaryByTeam[t.id])} por temporada
+                      {expiredByTeam[t.id] > 0 && (
+                        <p className="mt-1.5 text-[length:min(0.7647rem,19.5px)] text-[#ff9f0a] tabular-nums">
+                          {expiredByTeam[t.id] === 1 ? "1 contrato acabado" : `${expiredByTeam[t.id]} contratos acabados`}
                         </p>
                       )}
                     </div>

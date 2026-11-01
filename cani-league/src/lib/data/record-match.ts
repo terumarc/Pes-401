@@ -3,7 +3,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { invalidateMemCache } from "@/lib/data/cache";
 import { applySeasonMultipliers } from "@/lib/data/budget";
 import { saveLeagueMatchGoals, type ScorerInput } from "@/lib/data/goals";
-import { calendarKeyOf, claimSeasonStage, closeSeasonContracts } from "@/lib/data/contracts";
+import { calendarKeyOf, claimSeasonStage, tickContracts } from "@/lib/data/contracts";
 import { buildLeagueTable } from "@/lib/data/matches";
 import type { Database } from "@/lib/supabase/database.types";
 import type { Team, MatchWithTeams } from "@/types";
@@ -94,8 +94,8 @@ export async function recordLeagueMatch(
           await applySeasonMultipliers(updatedMatch.league_id, standings, "end");
           seasonStageApplied = "end";
         }
-        // Después de cobrar los premios, se pagan sueldos y renovaciones.
-        await closeSeasonContracts(updatedMatch.league_id, calendarKey);
+        // Abre el mercado de inicio de temporada: los contratos que cuentan en él cumplen un año.
+        await tickContracts(updatedMatch.league_id, calendarKey, "summer");
       }
     } else if (round1Complete && updatedMatch.round === 1) {
       // Completó todos los partidos de ida (mitad de temporada)
@@ -120,6 +120,8 @@ export async function recordLeagueMatch(
           await applySeasonMultipliers(updatedMatch.league_id, standings, "mid");
           seasonStageApplied = "mid";
         }
+        // Abre el mercado de invierno: los contratos que cuentan en él cumplen un año.
+        await tickContracts(updatedMatch.league_id, calendarKeyOf(allLeagueMatches), "winter");
       }
     }
   }

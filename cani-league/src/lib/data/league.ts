@@ -324,6 +324,7 @@ export type SquadMember = {
   defending: number | null;
   contract_seasons_left: number | null;
   joined_team_at: string | null;
+  contract_anchor: string | null;
 };
 
 async function fetchLeagueSquads(leagueId: string): Promise<SquadMember[]> {
@@ -332,7 +333,7 @@ async function fetchLeagueSquads(leagueId: string): Promise<SquadMember[]> {
   const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("players")
-    .select("id,name,team_id,position,overall,defending,contract_seasons_left,joined_team_at")
+    .select("id,name,team_id,position,overall,defending,contract_seasons_left,joined_team_at,contract_anchor")
     .in("team_id", teams.map((t) => t.id));
   if (error) throw error;
   return (data ?? []) as SquadMember[];
