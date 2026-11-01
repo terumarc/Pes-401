@@ -14,9 +14,9 @@ import { OfferList, type OfferView } from "@/components/market/OfferList";
 import { formatDay } from "@/components/market/MarketSections";
 import { formatMoney } from "@/lib/format/money";
 import { getPlayerTier, getPlayerEffectiveRating, getPlayerContractInfo } from "@/lib/players";
-import { getPlayerSalary, getSeasonsLeft, DEFAULT_SALARY_PERCENT, salaryShareFor, winterStartOf } from "@/lib/contracts";
-import { getMatchesByLeague } from "@/lib/data/matches";
-import { getSalaryTable } from "@/lib/data/contracts";
+import { ANCHOR_LABEL, DEFAULT_RENEWAL_PERCENT, anchorOf, getRenewalCost, getSeasonsLeft, isContractExpired } from "@/lib/contracts";
+import { getRenewalTable } from "@/lib/data/contracts";
+import { RenewContractButton } from "@/components/players/RenewContractButton";
 import { getGoals } from "@/lib/data/stats";
 import { createStaticClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/auth";
@@ -43,16 +43,10 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
   if (!player) notFound();
 
   const league = await getPrimaryLeague();
-  const [teams, salaries, allGoals, matches] = league
-    ? await Promise.all([
-        getTeamsByLeague(league.id),
-        getSalaryTable(league.id),
-        getGoals(league.id),
-        getMatchesByLeague(league.id).catch(() => []),
-      ])
-    : [[], DEFAULT_SALARY_PERCENT, [], []];
-  // Fichaje de invierno: esta temporada paga la mitad del sueldo.
-  const winterSigning = salaryShareFor(player.joined_team_at, winterStartOf(matches)) < 1;
+  const [teams, renewals, allGoals] = league
+    ? await Promise.all([getTeamsByLeague(league.id), getRenewalTable(league.id), getGoals(league.id)])
+    : [[], DEFAULT_RENEWAL_PERCENT, []];
+  const renewalCost = getRenewalCost(player, renewals);
   const freeAgentEarly = !player.team || /libre|sin equipo/i.test(player.team.name);
   const [offers, window, everyone] =
     league && !freeAgentEarly
@@ -103,17 +97,14 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
       "Contrato",
       freeAgent || contract.duration === 0
         ? "Sin contrato"
-        : `${getSeasonsLeft(player)} de ${contract.duration} ${contract.duration === 1 ? "temporada" : "temporadas"}`,
+        : isContractExpired(player)
+          ? <span className="font-semibold text-[#ff9f0a]">Acabado, sin renovar</span>
+          : `${getSeasonsLeft(player)} de ${contract.duration} ${contract.duration === 1 ? "temporada" : "temporadas"}`,
     ],
-    [
-      "Sueldo",
-      getPlayerSalary(player, salaries) > 0
-        ? `${formatMoney(getPlayerSalary(player, salaries))} por temporada${
-            winterSigning ? ` · esta, ${formatMoney(Math.round(getPlayerSalary(player, salaries) / 2))} (fichaje de invierno)` : ""
-          }`
-        : "Sin sueldo",
-    ],
-    ["Renovación", contract.renewalCost > 0 ? `${contract.renewalPercentLabel} · ${formatMoney(contract.renewalCost)}` : "Gratis"],
+    ...(freeAgent || contract.duration === 0
+      ? []
+      : ([["Cumple años", `En cada ${ANCHOR_LABEL[anchorOf(player)]}`]] as [string, React.ReactNode][])),
+    ["Renovación", contract.duration === 0 ? "Sin contrato" : renewalCost > 0 ? formatMoney(renewalCost) : "Gratis"],
     ["Goles", careerGoals ? `${seasonGoals} esta temporada · ${careerGoals} en total` : "Ninguno todavía"],
     ["En el mercado", player.available_in_market ? "Sí" : "No"],
   ];
@@ -194,6 +185,9 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
                 </li>
               ))}
             </ul>
+            {!freeAgent && team && isContractExpired(player) && (
+              <RenewContractButton playerId={player.id} teamId={team.id} cost={renewalCost} />
+            )}
           </section>
 
           {!freeAgent && edit !== "1" && (

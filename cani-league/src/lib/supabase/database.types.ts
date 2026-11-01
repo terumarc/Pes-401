@@ -366,6 +366,12 @@ export type Database = {
         };
         Relationships: [];
       };
+      contract_renewals: {
+        Row: { league_id: string; tier: string; percent: number; updated_at: string };
+        Insert: { league_id: string; tier: string; percent?: number; updated_at?: string };
+        Update: { league_id?: string; tier?: string; percent?: number; updated_at?: string };
+        Relationships: [];
+      };
       contract_salaries: {
         Row: {
           league_id: string;
@@ -650,6 +656,7 @@ export type Database = {
           transfer_price: number;
           available_in_market: boolean;
           contract_seasons_left: number | null;
+          contract_anchor: string | null;
           joined_team_at: string | null;
           created_at: string;
         };
@@ -674,6 +681,7 @@ export type Database = {
           transfer_price?: number;
           available_in_market?: boolean;
           contract_seasons_left?: number | null;
+          contract_anchor?: string | null;
           joined_team_at?: string | null;
           created_at?: string;
         };
@@ -698,6 +706,7 @@ export type Database = {
           transfer_price?: number;
           available_in_market?: boolean;
           contract_seasons_left?: number | null;
+          contract_anchor?: string | null;
           joined_team_at?: string | null;
           created_at?: string;
         };
