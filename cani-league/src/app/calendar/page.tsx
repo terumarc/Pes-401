@@ -13,6 +13,8 @@ import { getMatchesByLeague, buildLeagueTable } from "@/lib/data/matches";
 import { getLeagueSquads, getPrimaryLeague, getTeamsByLeague } from "@/lib/data/league";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/auth";
+import Link from "next/link";
+import { ChevronRight, Skull } from "lucide-react";
 
 export default async function CalendarPage() {
   if (!isSupabaseConfigured()) return <SetupNotice />;
@@ -60,6 +62,23 @@ export default async function CalendarPage() {
         actions={matches.length > 0 ? <NewLeagueMatchButton /> : undefined}
       />
       <SegmentedNav label="Competiciones" items={MATCH_SECTIONS} current="/calendar" />
+
+      {/* Antes del primer partido: aviso de que la Necroporra está abierta. */}
+      {matches.length > 0 && !matches.some((m) => m.played) && (
+        <Link
+          href="/necroporra"
+          className="mb-5 flex min-h-[60px] items-center gap-3 rounded-[22px] bg-card px-4 py-3 active:bg-white/5"
+        >
+          <Skull className="size-6 shrink-0 text-muted-foreground" strokeWidth={1.6} aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block text-[length:min(0.8824rem,22.5px)] font-semibold">La Necroporra está abierta</span>
+            <span className="block text-[length:min(0.7647rem,19.5px)] text-muted-foreground">
+              Ordena cómo acabará la liga antes del primer partido.
+            </span>
+          </span>
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+        </Link>
+      )}
 
       {matches.length > 0 ? (
         <Scoreboard leagueId={league.id} matches={matches} records={records} extras={{ rosters, goals: goalsByMatch, history, teamNames }} />

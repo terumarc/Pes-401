@@ -9,61 +9,18 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      card_events: {
+      necroporra_picks: {
         Row: {
           id: string;
-          deck: string;
-          faction: string | null;
-          rarity: string;
-          weight: number;
-          icon: string;
-          text: string;
-          effect: Json;
-          active: boolean;
-        };
-        Insert: {
-          id: string;
-          deck: string;
-          faction?: string | null;
-          rarity: string;
-          weight: number;
-          icon: string;
-          text: string;
-          effect: Json;
-          active?: boolean;
-        };
-        Update: {
-          id?: string;
-          deck?: string;
-          faction?: string | null;
-          rarity?: string;
-          weight?: number;
-          icon?: string;
-          text?: string;
-          effect?: Json;
-          active?: boolean;
-        };
-        Relationships: [];
-      };
-      card_draws: {
-        Row: {
-          id: string;
-          created_at: string;
           league_id: string;
-          team_id: string;
-          match_id: string | null;
-          season: string | null;
-          round: number | null;
-          event_id: string;
-          deck: string;
-          rarity: string;
-          faction: string | null;
-          icon: string;
-          text: string;
-          amount: number;
-          transfers: Json;
-          status: string;
-          revealed_at: string | null;
+          season: string;
+          member_id: string;
+          team_id: string | null;
+          ranking: string[];
+          points: number | null;
+          prize: number | null;
+          created_at: string;
+          updated_at: string;
         };
         Insert: never;
         Update: never;
@@ -829,13 +786,15 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
-      draw_card: {
-        Args: { p_match: string; p_team: string };
-        Returns: Database["public"]["Tables"]["card_draws"]["Row"] | null;
+      necroporra_locked: { Args: { p_league: string; p_season: string }; Returns: boolean };
+      necroporra_entrants: {
+        Args: { p_league: string; p_season: string };
+        Returns: { member_id: string; display_name: string; team_id: string | null; updated_at: string }[];
       };
-      reveal_card: {
-        Args: { p_draw: string };
-        Returns: Database["public"]["Tables"]["card_draws"]["Row"] | null;
+      pay_necroporra: { Args: { p_league: string; p_season: string; p_final: string[] }; Returns: number };
+      save_necroporra: {
+        Args: { p_league: string; p_ranking: string[] };
+        Returns: Database["public"]["Tables"]["necroporra_picks"]["Row"];
       };
       is_invited: { Args: { p_email: string }; Returns: boolean };
       is_member: { Args: Record<string, never>; Returns: boolean };
