@@ -17,6 +17,8 @@ export type Database = {
           member_id: string;
           team_id: string | null;
           ranking: string[];
+          points: number | null;
+          prize: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -789,6 +791,7 @@ export type Database = {
         Args: { p_league: string; p_season: string };
         Returns: { member_id: string; display_name: string; team_id: string | null; updated_at: string }[];
       };
+      pay_necroporra: { Args: { p_league: string; p_season: string; p_final: string[] }; Returns: number };
       save_necroporra: {
         Args: { p_league: string; p_ranking: string[] };
         Returns: Database["public"]["Tables"]["necroporra_picks"]["Row"];

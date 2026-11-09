@@ -13,8 +13,7 @@ import {
   UserPlus,
   UserX,
   Wallet,
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, Skull } from "lucide-react";
 import { amountFor, movesMoney, type ActivityRow } from "@/lib/data/activity";
 import { formatMoney } from "@/lib/format/money";
 import { cn } from "@/lib/utils";
@@ -39,6 +38,7 @@ const KIND: Record<string, { Icon: LucideIcon; tint: string }> = {
   trophy_removed: { Icon: Trophy, tint: "#8e8e93" },
   budget_adjust: { Icon: SlidersHorizontal, tint: "#64d2ff" },
   card: { Icon: Layers, tint: "#ff9f0a" },
+  necroporra: { Icon: Skull, tint: "#30d158" },
 };
 
 // La liga es en España: fechas y horas en hora de Madrid aunque el servidor esté en UTC.

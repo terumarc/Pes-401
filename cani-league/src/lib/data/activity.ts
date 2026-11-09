@@ -8,7 +8,7 @@ export const ACTIVITY_GROUPS = {
   fichajes: ["signing", "release", "transfer", "contract_released"],
   ofertas: ["offer_made", "offer_accepted", "offer_rejected", "offer_cancelled", "offer_expired"],
   partidos: ["match", "cup_match"],
-  dinero: ["salary", "renewal", "prize_position", "trophy", "trophy_removed", "budget_adjust", "card"],
+  dinero: ["salary", "renewal", "prize_position", "trophy", "trophy_removed", "budget_adjust", "card", "necroporra"],
 } as const;
 
 export type ActivityGroup = keyof typeof ACTIVITY_GROUPS;
@@ -53,6 +53,7 @@ export function amountFor(row: ActivityRow, teamId?: string | null): number | nu
       return -a;
     case "release":
     case "prize_position":
+    case "necroporra":
     case "trophy":
       return a;
     case "trophy_removed":
@@ -73,7 +74,7 @@ export function amountFor(row: ActivityRow, teamId?: string | null): number | nu
 
 /** Movimientos de dinero con signo; el resto (ofertas, partidos) no se suman. */
 export function movesMoney(row: ActivityRow): boolean {
-  return ["signing", "salary", "renewal", "release", "prize_position", "trophy", "trophy_removed", "budget_adjust", "transfer", "card"].includes(
+  return ["signing", "salary", "renewal", "release", "prize_position", "trophy", "trophy_removed", "budget_adjust", "transfer", "card", "necroporra"].includes(
     row.kind,
   );
 }

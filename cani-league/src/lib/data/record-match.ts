@@ -91,6 +91,14 @@ export async function recordLeagueMatch(
         if (await claimSeasonStage(supabase, updatedMatch.league_id, calendarKey, "end")) {
           await applySeasonMultipliers(updatedMatch.league_id, standings, "end");
           seasonStageApplied = "end";
+          // Premios de la Necroporra con la clasificación final (solo cobra una vez).
+          try {
+            await supabase.rpc("pay_necroporra", {
+              p_league: updatedMatch.league_id,
+              p_season: updatedMatch.season ?? "",
+              p_final: standings.map((s) => s.team_id),
+            });
+          } catch {}
         }
         // Abre el mercado de inicio de temporada: los contratos que cuentan en él cumplen un año.
         await tickContracts(updatedMatch.league_id, calendarKey, "summer");

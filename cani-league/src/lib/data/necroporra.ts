@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { buildLeagueTable, getMatchesByLeague } from "@/lib/data/matches";
 import { getTeamsByLeague } from "@/lib/data/league";
-import { scorePorra, type NecroPick } from "@/lib/necroporra";
+import { PRIZE_PER_POINT, WINNER_BONUS, scorePorra, type NecroPick } from "@/lib/necroporra";
 import type { League, Team } from "@/types";
 
 const isSystemTeam = (name: string) => /libre|sin equipo/i.test(name);
@@ -13,6 +13,8 @@ export type NecroEntry = {
   points: number;
   exact: number;
   picks: NecroPick[];
+  /** Lo que se lleva su club: ya cobrado, o lo que cobraría si la liga acabara hoy. */
+  prize: number;
 };
 
 export type Necroporra = {
@@ -54,16 +56,26 @@ export async function getNecroporra(league: League, memberId: string | null): Pr
   const nameOf = new Map(entrants.map((e) => [e.memberId, e.name]));
   const picks = rows ?? [];
 
-  const board = locked
-    ? picks
-        .map((p) => ({
-          memberId: p.member_id,
-          name: nameOf.get(p.member_id) ?? "Alguien",
-          teamId: p.team_id,
-          ...scorePorra(p.ranking, p.team_id, actual),
-        }))
-        .sort((a, b) => b.points - a.points || b.exact - a.exact || a.name.localeCompare(b.name, "es"))
+  const scored = locked
+    ? picks.map((p) => ({
+        memberId: p.member_id,
+        name: nameOf.get(p.member_id) ?? "Alguien",
+        teamId: p.team_id,
+        paid: p.prize,
+        ...scorePorra(p.ranking, p.team_id, actual),
+      }))
     : [];
+  // Igual que pay_necroporra: puntos × 500.000 € y el bote para quien gane (repartido si empatan). Sin club no cobra.
+  const best = Math.max(0, ...scored.filter((e) => e.teamId).map((e) => e.points));
+  const winners = scored.filter((e) => e.teamId && best > 0 && e.points === best).length;
+  const board: NecroEntry[] = scored
+    .map(({ paid, ...e }) => ({
+      ...e,
+      prize:
+        paid ??
+        (e.teamId ? e.points * PRIZE_PER_POINT + (best > 0 && e.points === best ? Math.floor(WINNER_BONUS / winners) : 0) : 0),
+    }))
+    .sort((a, b) => b.points - a.points || b.exact - a.exact || a.name.localeCompare(b.name, "es"));
 
   return {
     season: league.season,

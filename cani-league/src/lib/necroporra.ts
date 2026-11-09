@@ -5,6 +5,9 @@
 
 export const EXACT_POINTS = 3;
 export const NEAR_POINTS = 1;
+/** Premios al acabar la liga (los cobra la base de datos: pay_necroporra). */
+export const PRIZE_PER_POINT = 500_000;
+export const WINNER_BONUS = 3_000_000;
 
 export type NecroPick = { teamId: string; guess: number; actual: number | null; points: number };
 

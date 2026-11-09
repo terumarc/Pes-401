@@ -8,7 +8,8 @@ import { NecroporraEditor } from "@/components/necroporra/NecroporraEditor";
 import { TeamLogo } from "@/components/teams/TeamCard";
 import { getPrimaryLeague } from "@/lib/data/league";
 import { getNecroporra, type NecroEntry } from "@/lib/data/necroporra";
-import { EXACT_POINTS, NEAR_POINTS } from "@/lib/necroporra";
+import { EXACT_POINTS, NEAR_POINTS, PRIZE_PER_POINT, WINNER_BONUS } from "@/lib/necroporra";
+import { formatMoneyShort } from "@/lib/format/money";
 import { getViewer } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,10 @@ export default async function NecroporraPage() {
           </p>
           <p className={cn(small, "mx-auto mt-3 max-w-sm text-muted-foreground")}>
             {EXACT_POINTS} puntos por puesto exacto · {NEAR_POINTS} si te quedas a uno · tu club no puntúa
+          </p>
+          <p className={cn(small, "mx-auto mt-1 max-w-sm text-muted-foreground")}>
+            Al acabar la liga, tu club cobra {formatMoneyShort(PRIZE_PER_POINT)} por punto y quien gane la porra se lleva{" "}
+            {formatMoneyShort(WINNER_BONUS)} más.
           </p>
         </div>
       </section>
@@ -145,6 +150,7 @@ function BoardRow({ entry, rank, byId, mine }: { entry: NecroEntry; rank: number
             </span>
             <span className={cn("block text-[length:min(0.7059rem,18px)] text-muted-foreground")}>
               {entry.exact === 1 ? "1 puesto exacto" : `${entry.exact} puestos exactos`}
+              {entry.prize > 0 && <span className="text-[#30d158]"> · +{formatMoneyShort(entry.prize)}</span>}
             </span>
           </span>
           <span className="text-[length:min(1.1765rem,30px)] font-bold tabular-nums">{entry.points}</span>

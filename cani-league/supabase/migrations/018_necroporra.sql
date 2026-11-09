@@ -9,6 +9,10 @@
 --    liga de la temporada; entonces se cierra y se ven las porras de todos.
 --    Puntúan los demás clubes (el propio no): 3 puntos por puesto exacto y
 --    1 si se queda a un puesto.
+-- 3. Premios al acabar la liga (al club de cada uno): 500.000 € por punto y
+--    3M más para quien gane la porra (si empatan, se reparten). Con 7 clubes el
+--    máximo teórico es 12M; lo normal, 2–6M. Al nivel de las cartas (tope 5M)
+--    y lejos de los premios por puesto (25–55M por vuelta).
 
 -- ─── 1. Fuera las cartas ─────────────────────────────────────────────────────
 
@@ -35,6 +39,8 @@ create table if not exists public.necroporra_picks (
   member_id   uuid not null references public.members(id) on delete cascade,
   team_id     uuid references public.teams(id) on delete set null,  -- su club al hacer la porra (no puntúa)
   ranking     uuid[] not null,                                       -- todos los clubes, del 1º al último
+  points      integer,                                               -- al cobrar: puntos finales
+  prize       bigint,                                                -- al cobrar: lo que se llevó su club
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now(),
   unique (league_id, season, member_id)
@@ -127,3 +133,62 @@ drop trigger if exists leagues_necroporra_open on public.leagues;
 create trigger leagues_necroporra_open
   after update of season on public.leagues
   for each row execute function public.leagues_necroporra_open();
+
+-- ─── 3. Premios ──────────────────────────────────────────────────────────────
+-- Se llama al acabar la vuelta con la clasificación final (del 1º al último).
+-- Solo cobra una vez por temporada.
+
+create or replace function public.pay_necroporra(p_league uuid, p_season text, p_final uuid[])
+returns integer language plpgsql security definer set search_path = public as $$
+declare
+  c_per_point constant bigint := 500000;
+  c_winner    constant bigint := 3000000;
+  v_best      integer;
+  v_winners   integer;
+  v_prize     bigint;
+  r           record;
+  n           integer := 0;
+begin
+  if not public.is_member() then raise exception 'Hace falta entrar en la app.'; end if;
+  if exists (select 1 from public.necroporra_picks
+              where league_id = p_league and season = p_season and prize is not null) then
+    return 0;
+  end if;
+
+  -- Puntos de cada porra: el club propio no cuenta.
+  update public.necroporra_picks p set points = coalesce((
+    select sum(case abs(g.i - array_position(p_final, g.team))
+                 when 0 then 3 when 1 then 1 else 0 end)
+      from unnest(p.ranking) with ordinality as g(team, i)
+     where g.team is distinct from p.team_id and array_position(p_final, g.team) is not null
+  ), 0)
+  where p.league_id = p_league and p.season = p_season;
+
+  select max(points) into v_best from public.necroporra_picks
+   where league_id = p_league and season = p_season and team_id is not null;
+  select count(*) into v_winners from public.necroporra_picks
+   where league_id = p_league and season = p_season and team_id is not null
+     and points = v_best and v_best > 0;
+
+  for r in select * from public.necroporra_picks
+            where league_id = p_league and season = p_season loop
+    v_prize := case when r.team_id is null then 0 else
+      r.points * c_per_point
+      + case when r.points = v_best and v_best > 0 then c_winner / greatest(v_winners, 1) else 0 end end;
+    update public.necroporra_picks set prize = v_prize where id = r.id;
+    if v_prize > 0 then
+      update public.teams set budget = budget + v_prize where id = r.team_id;
+      perform public.record_activity(
+        'necroporra', p_league, r.team_id, null, null,
+        case when r.points = v_best then 'Gana la Necroporra (' || r.points || ' pts)'
+             else 'Necroporra: ' || r.points || ' pts' end,
+        v_prize, jsonb_build_object('season', p_season, 'points', r.points), false,
+        array[r.team_id], 'Premio de la Necroporra',
+        r.points || ' puntos: +' || public.fmt_money(v_prize), '/necroporra');
+    end if;
+    n := n + 1;
+  end loop;
+  return n;
+end $$;
+revoke all on function public.pay_necroporra(uuid, text, uuid[]) from public, anon;
+grant execute on function public.pay_necroporra(uuid, text, uuid[]) to authenticated;
