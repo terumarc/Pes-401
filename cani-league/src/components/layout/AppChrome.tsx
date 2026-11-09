@@ -6,7 +6,6 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { CommandMenu } from "@/components/layout/CommandMenu";
-import { CardsProvider } from "@/components/cards/CardsProvider";
 
 /** La barra lateral, la cabecera y las pestañas; la pantalla de entrada va sin nada de eso. */
 export function AppChrome({ season, children }: { season: string | null; children: React.ReactNode }) {
@@ -15,7 +14,7 @@ export function AppChrome({ season, children }: { season: string | null; childre
   if (bare) return <>{children}</>;
 
   return (
-    <CardsProvider>
+    <>
       <SidebarProvider
         style={
           {
@@ -36,6 +35,6 @@ export function AppChrome({ season, children }: { season: string | null; childre
       </SidebarProvider>
       <MobileTabBar />
       <CommandMenu />
-    </CardsProvider>
+    </>
   );
 }

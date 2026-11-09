@@ -87,14 +87,11 @@ export async function recordDirectMatchAction(
 /** Borra el resultado de un partido (vuelve a pendiente): sus dos clubes o un admin. */
 export async function resetMatchResultAction(matchId: string): Promise<Match> {
   const supabase = await createClient();
-  const [{ data: m }, { count: cards }] = await Promise.all([
-    supabase.from("matches").select("home_team_id, away_team_id").eq("id", matchId).single(),
-    supabase.from("card_draws").select("id", { count: "exact", head: true }).eq("match_id", matchId),
-  ]);
+  const { data: m } = await supabase.from("matches").select("home_team_id, away_team_id").eq("id", matchId).single();
   if (!m) throw new Error("Partido no encontrado.");
   await requireOneOf([m.home_team_id, m.away_team_id]);
 
-  // Goles fuera y partido a pendiente a la vez (las cartas las anula la base de datos).
+  // Goles fuera y partido a pendiente a la vez.
   const [, { data, error }] = await Promise.all([
     supabase.from("match_goals").delete().eq("match_id", matchId),
     supabase
@@ -112,11 +109,8 @@ export async function resetMatchResultAction(matchId: string): Promise<Match> {
     revalidateTag("standings", NOW);
     revalidatePath("/calendar");
     revalidatePath("/standings");
-    // Si tenía cartas, se han anulado y el dinero ha vuelto a los clubes.
-    if (cards) {
-      revalidateTag("teams", NOW);
-      revalidatePath("/noticias");
-    }
+    // Sin partidos jugados la Necroporra vuelve a estar abierta.
+    revalidatePath("/necroporra");
   } catch {}
   return data as Match;
 }

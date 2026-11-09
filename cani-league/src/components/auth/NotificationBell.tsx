@@ -11,7 +11,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { createClient } from "@/lib/supabase/client";
 import { useViewer } from "@/components/auth/ViewerProvider";
 import { cn } from "@/lib/utils";
-import { usePendingCard } from "@/components/cards/CardsProvider";
 
 type Notice = {
   id: string;
@@ -32,7 +31,6 @@ export function NotificationBell({ className }: { className?: string }) {
   const supabase = useMemo(() => createClient(), []);
   const [items, setItems] = useState<Notice[]>([]);
   const [open, setOpen] = useState(false);
-  const { pending, openCard } = usePendingCard();
   const userId = viewer?.userId;
 
   const load = useCallback(() => {
@@ -61,8 +59,7 @@ export function NotificationBell({ className }: { className?: string }) {
         (payload) => {
           const n = payload.new as Notice;
           setItems((prev) => [n, ...prev.filter((p) => p.id !== n.id)].slice(0, LIMIT));
-          // La carta por girar ya se abre sola como hoja: sin aviso emergente.
-          if (n.kind !== "card_pending") toast(n.title, { description: n.body ?? undefined });
+          toast(n.title, { description: n.body ?? undefined });
         },
       )
       .subscribe();
@@ -91,8 +88,6 @@ export function NotificationBell({ className }: { className?: string }) {
       setItems((prev) => prev.map((p) => (p.id === n.id ? { ...p, read_at: now } : p)));
       await supabase.from("notifications").update({ read_at: now }).eq("id", n.id);
     }
-    // Aviso de carta por girar: se abre la carta en vez de ir a otra pantalla.
-    if (n.kind === "card_pending" && pending) return openCard();
     if (n.link) router.push(n.link);
   }
 

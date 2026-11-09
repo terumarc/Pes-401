@@ -19,7 +19,7 @@ export const PLAYER_POSITIONS: PlayerPosition[] = [
 export const NAV_ITEMS = [
   { href: "/calendar", label: "Partidos", icon: "Swords" },
   { href: "/cups", label: "Copas", icon: "Medal" },
-  { href: "/noticias", label: "Noticias", icon: "Newspaper" },
+  { href: "/necroporra", label: "La Necroporra", icon: "Skull" },
   { href: "/standings", label: "Clasificación", icon: "ListOrdered" },
   { href: "/scorers", label: "Goleadores", icon: "Goal" },
   { href: "/trophies", label: "Trofeos", icon: "Trophy" },
@@ -56,3 +56,7 @@ export const TROPHIES: {
   { key: "cup", label: "Copa de Liga", short: "Copa de Liga" },
   { key: "conference", label: "Conference League", short: "Conference" },
 ];
+
+/** Los tres bandos del lore de la Cani League. */
+export type Faction = "fede" | "antifede" | "cefa";
+export const FACTION_LABEL: Record<Faction, string> = { fede: "La Fede", antifede: "La Antifede", cefa: "La CEFA" };
