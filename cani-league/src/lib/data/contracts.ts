@@ -72,6 +72,11 @@ export async function tickContracts(leagueId: string, calendarKey: string, ancho
     const events: EventInsert[] = [];
     for (const p of (players ?? []) as Player[]) {
       if (anchorOf(p) !== anchor || isContractExpired(p)) continue;
+      // Fichado con el mercado cerrado: su contrato empieza a contar ahora, este mercado no le quita un año.
+      if (p.contract_pending_start) {
+        await supabase.from("players").update({ contract_pending_start: false }).eq("id", p.id);
+        continue;
+      }
       const left = tickContract(p);
       if (left === null) continue;
       await supabase.from("players").update({ contract_seasons_left: left }).eq("id", p.id);

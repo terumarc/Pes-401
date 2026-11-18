@@ -9,6 +9,7 @@ import {
 /**
  * Contratos: los jugadores no cobran sueldo. Cada contrato dura unas temporadas según su
  * nivel y cumple un año en el mercado en el que fichó (invierno o inicio de temporada).
+ * Si se ficha con el mercado cerrado, cuenta desde el próximo mercado que se abra.
  * Cuando llega a 0, el club decide si lo renueva pagando el % de renovación de su nivel.
  */
 
@@ -35,6 +36,7 @@ type ContractPlayer = {
   defending?: number | null;
   contract_seasons_left?: number | null;
   contract_anchor?: string | null;
+  contract_pending_start?: boolean | null;
 };
 
 export function anchorOf(player: ContractPlayer): ContractAnchor {

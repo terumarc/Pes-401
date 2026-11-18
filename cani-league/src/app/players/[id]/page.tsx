@@ -103,7 +103,14 @@ export default async function PlayerDetailPage({ params, searchParams }: Props) 
     ],
     ...(freeAgent || contract.duration === 0
       ? []
-      : ([["Cumple años", `En cada ${ANCHOR_LABEL[anchorOf(player)]}`]] as [string, React.ReactNode][])),
+      : ([
+          [
+            "Cumple años",
+            player.contract_pending_start
+              ? `En cada ${ANCHOR_LABEL[anchorOf(player)]} (empieza a contar en el próximo)`
+              : `En cada ${ANCHOR_LABEL[anchorOf(player)]}`,
+          ],
+        ] as [string, React.ReactNode][])),
     ["Renovación", contract.duration === 0 ? "Sin contrato" : renewalCost > 0 ? formatMoney(renewalCost) : "Gratis"],
     ["Goles", careerGoals ? `${seasonGoals} esta temporada · ${careerGoals} en total` : "Ninguno todavía"],
     ["En el mercado", player.available_in_market ? "Sí" : "No"],

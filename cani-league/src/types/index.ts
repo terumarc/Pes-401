@@ -89,6 +89,8 @@ export type Player = {
   contract_seasons_left?: number | null;
   /** Mercado en el que su contrato cumple años: «winter» o «summer» (inicio de temporada). */
   contract_anchor?: string | null;
+  /** true = fichado con el mercado cerrado: su contrato empieza a contar en su próximo mercado. */
+  contract_pending_start?: boolean | null;
   /** Cuándo llegó a su club actual (lo pone la base de datos al cambiar de equipo). */
   joined_team_at?: string | null;
   pes_stats?: PesStats;

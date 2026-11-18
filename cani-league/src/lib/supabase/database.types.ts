@@ -614,6 +614,7 @@ export type Database = {
           available_in_market: boolean;
           contract_seasons_left: number | null;
           contract_anchor: string | null;
+          contract_pending_start: boolean;
           joined_team_at: string | null;
           created_at: string;
         };
@@ -639,6 +640,7 @@ export type Database = {
           available_in_market?: boolean;
           contract_seasons_left?: number | null;
           contract_anchor?: string | null;
+          contract_pending_start?: boolean;
           joined_team_at?: string | null;
           created_at?: string;
         };
@@ -664,6 +666,7 @@ export type Database = {
           available_in_market?: boolean;
           contract_seasons_left?: number | null;
           contract_anchor?: string | null;
+          contract_pending_start?: boolean;
           joined_team_at?: string | null;
           created_at?: string;
         };
