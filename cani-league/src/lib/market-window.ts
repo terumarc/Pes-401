@@ -1,10 +1,10 @@
 /**
  * Ventana de fichajes automática. El mercado está abierto:
  * - antes de que empiece la liga (ningún partido jugado de la temporada),
- * - en el parón entre la primera y la segunda vuelta (ida completa y ningún partido de vuelta jugado),
+ * - en el parón entre la primera y la segunda vuelta (ida completa y ningún partido de vuelta jugado después),
  * - al acabar la temporada (todos los partidos jugados).
  */
-export type WindowMatch = { played: boolean | null; round: number | null };
+export type WindowMatch = { played: boolean | null; round: number | null; played_at?: string | null };
 
 export type MarketWindow = {
   open: boolean;
@@ -21,7 +21,9 @@ export function marketWindow(matches: WindowMatch[]): MarketWindow {
   const first = matches.filter((m) => (m.round ?? 1) === 1);
   const second = matches.filter((m) => (m.round ?? 1) === 2);
   const firstDone = first.length > 0 && first.every((m) => m.played);
-  const secondStarted = second.some((m) => m.played);
+  // Los partidos de vuelta jugados antes de acabar la ida no cierran el mercado de invierno.
+  const idaEnd = first.reduce<string | null>((max, m) => (m.played_at && (!max || m.played_at > max) ? m.played_at : max), null);
+  const secondStarted = second.some((m) => m.played && (!idaEnd || !m.played_at || m.played_at > idaEnd));
   if (firstDone && !secondStarted) return { open: true, reason: "Mercado de invierno: abierto hasta el primer partido de la vuelta." };
 
   if (!firstDone) {

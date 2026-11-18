@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { marketWindow, type MarketWindow } from "@/lib/market-window";
+import { marketWindow, type MarketWindow, type WindowMatch } from "@/lib/market-window";
 
 /** Estado de la ventana de fichajes de la liga, según los partidos de la temporada en curso. */
 export async function getMarketWindow(supabase: SupabaseClient, leagueId: string | null | undefined): Promise<MarketWindow> {
@@ -9,8 +9,8 @@ export async function getMarketWindow(supabase: SupabaseClient, leagueId: string
     if (!leagueId) return marketWindow([]);
   }
   const season = await getLeagueSeason(supabase, leagueId);
-  const { data } = await supabase.from("matches").select("played, round").eq("league_id", leagueId).eq("season", season);
-  return marketWindow((data ?? []) as { played: boolean | null; round: number | null }[]);
+  const { data } = await supabase.from("matches").select("played, round, played_at").eq("league_id", leagueId).eq("season", season);
+  return marketWindow((data ?? []) as WindowMatch[]);
 }
 
 /** Temporada en curso de la liga (leagues.season). Los partidos de liga se guardan con ella. */
